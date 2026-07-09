@@ -1,30 +1,33 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:app/main.dart';
+import 'package:app/core/session/app_session_controller.dart';
+import 'package:app/data/services/biometric_service.dart';
+import 'package:app/features/onboarding/onboarding_screen.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('menampilkan onboarding ringkas dengan field nama panggilan',
+      (WidgetTester tester) async {
+    final AppSessionController sessionController = AppSessionController(
+      biometricService: _FakeBiometricService(),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: OnboardingScreen(sessionController: sessionController),
+      ),
+    );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Selamat datang di MoneyPilot'), findsOneWidget);
+    expect(find.text('Lanjutkan'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
   });
+}
+
+class _FakeBiometricService extends BiometricService {
+  @override
+  Future<bool> isAvailable() async => false;
+
+  @override
+  Future<bool> authenticate() async => false;
 }

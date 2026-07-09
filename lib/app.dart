@@ -3,9 +3,20 @@ import 'package:flutter/material.dart';
 import 'core/router/app_router.dart';
 import 'core/session/app_session_controller.dart';
 import 'core/theme/app_theme.dart';
+import 'data/local/local_database_service.dart';
+import 'data/repositories/category_repository.dart';
 
 class MoneyPilotApp extends StatefulWidget {
-  const MoneyPilotApp({super.key});
+  const MoneyPilotApp({
+    super.key,
+    required this.sessionController,
+    required this.databaseService,
+    required this.categoryRepository,
+  });
+
+  final AppSessionController sessionController;
+  final LocalDatabaseService databaseService;
+  final CategoryRepository categoryRepository;
 
   @override
   State<MoneyPilotApp> createState() => _MoneyPilotAppState();
@@ -20,9 +31,11 @@ class _MoneyPilotAppState extends State<MoneyPilotApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _sessionController = AppSessionController();
-    _appRouter = AppRouter(_sessionController);
-    _sessionController.initialize();
+    _sessionController = widget.sessionController;
+    _appRouter = AppRouter(
+      _sessionController,
+      categoryRepository: widget.categoryRepository,
+    );
   }
 
   @override
@@ -34,6 +47,7 @@ class _MoneyPilotAppState extends State<MoneyPilotApp>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _sessionController.dispose();
+    widget.databaseService.close();
     super.dispose();
   }
 

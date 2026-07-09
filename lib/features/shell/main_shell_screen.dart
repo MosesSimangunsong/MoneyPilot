@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../core/theme/app_colors.dart';
 
@@ -32,23 +31,23 @@ class MainShellScreen extends StatelessWidget {
           },
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-              icon: Icon(LucideIcons.house),
+              icon: Icon(Icons.home_outlined),
               label: 'Beranda',
             ),
             BottomNavigationBarItem(
-              icon: Icon(LucideIcons.newspaper),
+              icon: Icon(Icons.newspaper_outlined),
               label: 'Berita',
             ),
             BottomNavigationBarItem(
-              icon: Icon(LucideIcons.wallet),
+              icon: Icon(Icons.account_balance_wallet_outlined),
               label: 'Keuangan',
             ),
             BottomNavigationBarItem(
-              icon: Icon(LucideIcons.lineChart),
+              icon: Icon(Icons.show_chart_outlined),
               label: 'Portofolio',
             ),
             BottomNavigationBarItem(
-              icon: Icon(LucideIcons.brainCircuit),
+              icon: Icon(Icons.psychology_alt_outlined),
               label: 'Analisis',
             ),
           ],

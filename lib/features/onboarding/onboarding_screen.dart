@@ -148,7 +148,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         const SizedBox(height: AppSpacing.xl),
         SwitchListTile(
           value: isSupported && _enableBiometric,
-          activeColor: AppColors.primary,
+          activeThumbColor: AppColors.primary,
           contentPadding: EdgeInsets.zero,
           onChanged: isSupported
               ? (bool value) {

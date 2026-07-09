@@ -1,19 +1,23 @@
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../data/repositories/app_setting_repository.dart';
 import '../constants/app_constants.dart';
 import '../../data/services/biometric_service.dart';
 
 class AppSessionController extends ChangeNotifier {
   AppSessionController({
     BiometricService? biometricService,
-  }) : _biometricService = biometricService ?? BiometricService();
+    AppSettingRepository? appSettingRepository,
+  }) : _biometricService = biometricService ?? BiometricService(),
+       _appSettingRepository = appSettingRepository;
 
   static const String _onboardingKey = 'app.onboardingCompleted';
   static const String _nameKey = 'app.userName';
   static const String _biometricEnabledKey = 'app.biometricEnabled';
 
   final BiometricService _biometricService;
+  final AppSettingRepository? _appSettingRepository;
 
   bool _isInitialized = false;
   bool _hasCompletedOnboarding = false;
@@ -43,6 +47,10 @@ class AppSessionController extends ChangeNotifier {
     _biometricEnabled = preferences.getBool(_biometricEnabledKey) ?? true;
     _biometricSupported = await _biometricService.isAvailable();
     _isUnlocked = !requiresBiometricLock;
+    await _appSettingRepository?.ensureSeeded(
+      userName: _userName,
+      biometricEnabled: _biometricEnabled,
+    );
     _isInitialized = true;
     notifyListeners();
   }
@@ -59,6 +67,10 @@ class AppSessionController extends ChangeNotifier {
     await preferences.setString(_nameKey, _userName);
     await preferences.setBool(_onboardingKey, true);
     await preferences.setBool(_biometricEnabledKey, _biometricEnabled);
+    await _appSettingRepository?.ensureSeeded(
+      userName: _userName,
+      biometricEnabled: _biometricEnabled,
+    );
     notifyListeners();
   }
 

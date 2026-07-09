@@ -10,13 +10,18 @@ import '../../features/portofolio/portofolio_screen.dart';
 import '../../features/shell/main_shell_screen.dart';
 import '../../features/startup/biometric_lock_screen.dart';
 import '../../features/startup/splash_screen.dart';
+import '../../data/repositories/category_repository.dart';
 import '../constants/route_constants.dart';
 import '../session/app_session_controller.dart';
 
 class AppRouter {
-  AppRouter(this._sessionController);
+  AppRouter(
+    this._sessionController, {
+    required CategoryRepository categoryRepository,
+  }) : _categoryRepository = categoryRepository;
 
   final AppSessionController _sessionController;
+  final CategoryRepository _categoryRepository;
 
   late final GoRouter router = GoRouter(
     initialLocation: RouteConstants.splash,
@@ -42,20 +47,24 @@ class AppRouter {
         },
       ),
       StatefulShellRoute.indexedStack(
-        builder: (
-          BuildContext context,
-          GoRouterState state,
-          StatefulNavigationShell navigationShell,
-        ) {
-          return MainShellScreen(navigationShell: navigationShell);
-        },
+        builder:
+            (
+              BuildContext context,
+              GoRouterState state,
+              StatefulNavigationShell navigationShell,
+            ) {
+              return MainShellScreen(navigationShell: navigationShell);
+            },
         branches: <StatefulShellBranch>[
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
                 path: RouteConstants.beranda,
                 builder: (BuildContext context, GoRouterState state) {
-                  return BerandaScreen(sessionController: _sessionController);
+                  return BerandaScreen(
+                    sessionController: _sessionController,
+                    categoryRepository: _categoryRepository,
+                  );
                 },
               ),
             ],
