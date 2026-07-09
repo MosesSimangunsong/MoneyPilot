@@ -37,9 +37,21 @@ const WatchlistItemSchema = CollectionSchema(
       name: r'isDeleted',
       type: IsarType.bool,
     ),
-    r'market': PropertySchema(id: 4, name: r'market', type: IsarType.string),
-    r'note': PropertySchema(id: 5, name: r'note', type: IsarType.string),
-    r'symbol': PropertySchema(id: 6, name: r'symbol', type: IsarType.string),
+    r'market': PropertySchema(
+      id: 4,
+      name: r'market',
+      type: IsarType.string,
+    ),
+    r'note': PropertySchema(
+      id: 5,
+      name: r'note',
+      type: IsarType.string,
+    ),
+    r'symbol': PropertySchema(
+      id: 6,
+      name: r'symbol',
+      type: IsarType.string,
+    ),
     r'targetPrice': PropertySchema(
       id: 7,
       name: r'targetPrice',
@@ -50,7 +62,11 @@ const WatchlistItemSchema = CollectionSchema(
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
-    r'uuid': PropertySchema(id: 9, name: r'uuid', type: IsarType.string),
+    r'uuid': PropertySchema(
+      id: 9,
+      name: r'uuid',
+      type: IsarType.string,
+    )
   },
   estimateSize: _watchlistItemEstimateSize,
   serialize: _watchlistItemSerialize,
@@ -68,7 +84,7 @@ const WatchlistItemSchema = CollectionSchema(
           name: r'uuid',
           type: IndexType.hash,
           caseSensitive: true,
-        ),
+        )
       ],
     ),
     r'symbol': IndexSchema(
@@ -81,7 +97,7 @@ const WatchlistItemSchema = CollectionSchema(
           name: r'symbol',
           type: IndexType.hash,
           caseSensitive: false,
-        ),
+        )
       ],
     ),
     r'isDeleted': IndexSchema(
@@ -94,7 +110,7 @@ const WatchlistItemSchema = CollectionSchema(
           name: r'isDeleted',
           type: IndexType.value,
           caseSensitive: false,
-        ),
+        )
       ],
     ),
     r'updatedAt': IndexSchema(
@@ -107,9 +123,9 @@ const WatchlistItemSchema = CollectionSchema(
           name: r'updatedAt',
           type: IndexType.value,
           caseSensitive: false,
-        ),
+        )
       ],
-    ),
+    )
   },
   links: {},
   embeddedSchemas: {},
@@ -224,10 +240,7 @@ List<IsarLinkBase<dynamic>> _watchlistItemGetLinks(WatchlistItem object) {
 }
 
 void _watchlistItemAttach(
-  IsarCollection<dynamic> col,
-  Id id,
-  WatchlistItem object,
-) {
+    IsarCollection<dynamic> col, Id id, WatchlistItem object) {
   object.id = id;
 }
 
@@ -280,10 +293,8 @@ extension WatchlistItemByIndex on IsarCollection<WatchlistItem> {
     return putAllByIndex(r'uuid', objects);
   }
 
-  List<Id> putAllByUuidSync(
-    List<WatchlistItem> objects, {
-    bool saveLinks = true,
-  }) {
+  List<Id> putAllByUuidSync(List<WatchlistItem> objects,
+      {bool saveLinks = true}) {
     return putAllByIndexSync(r'uuid', objects, saveLinks: saveLinks);
   }
 }
@@ -316,16 +327,17 @@ extension WatchlistItemQueryWhereSort
 extension WatchlistItemQueryWhere
     on QueryBuilder<WatchlistItem, WatchlistItem, QWhereClause> {
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause> idEqualTo(
-    Id id,
-  ) {
+      Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
+      return query.addWhereClause(IdWhereClause.between(
+        lower: id,
+        upper: id,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause> idNotEqualTo(
-    Id id,
-  ) {
+      Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -348,9 +360,8 @@ extension WatchlistItemQueryWhere
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause> idGreaterThan(
-    Id id, {
-    bool include = false,
-  }) {
+      Id id,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -359,9 +370,8 @@ extension WatchlistItemQueryWhere
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause> idLessThan(
-    Id id, {
-    bool include = false,
-  }) {
+      Id id,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -376,273 +386,240 @@ extension WatchlistItemQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.between(
-          lower: lowerId,
-          includeLower: includeLower,
-          upper: upperId,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addWhereClause(IdWhereClause.between(
+        lower: lowerId,
+        includeLower: includeLower,
+        upper: upperId,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause> uuidEqualTo(
-    String uuid,
-  ) {
+      String uuid) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'uuid', value: [uuid]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'uuid',
+        value: [uuid],
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause> uuidNotEqualTo(
-    String uuid,
-  ) {
+      String uuid) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'uuid',
-                lower: [],
-                upper: [uuid],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'uuid',
-                lower: [uuid],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [],
+              upper: [uuid],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [uuid],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'uuid',
-                lower: [uuid],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'uuid',
-                lower: [],
-                upper: [uuid],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [uuid],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [],
+              upper: [uuid],
+              includeUpper: false,
+            ));
       }
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause> symbolEqualTo(
-    String symbol,
-  ) {
+      String symbol) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'symbol', value: [symbol]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'symbol',
+        value: [symbol],
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause>
-  symbolNotEqualTo(String symbol) {
+      symbolNotEqualTo(String symbol) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'symbol',
-                lower: [],
-                upper: [symbol],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'symbol',
-                lower: [symbol],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'symbol',
+              lower: [],
+              upper: [symbol],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'symbol',
+              lower: [symbol],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'symbol',
-                lower: [symbol],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'symbol',
-                lower: [],
-                upper: [symbol],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'symbol',
+              lower: [symbol],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'symbol',
+              lower: [],
+              upper: [symbol],
+              includeUpper: false,
+            ));
       }
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause>
-  isDeletedEqualTo(bool isDeleted) {
+      isDeletedEqualTo(bool isDeleted) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'isDeleted', value: [isDeleted]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'isDeleted',
+        value: [isDeleted],
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause>
-  isDeletedNotEqualTo(bool isDeleted) {
+      isDeletedNotEqualTo(bool isDeleted) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'isDeleted',
-                lower: [],
-                upper: [isDeleted],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'isDeleted',
-                lower: [isDeleted],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isDeleted',
+              lower: [],
+              upper: [isDeleted],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isDeleted',
+              lower: [isDeleted],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'isDeleted',
-                lower: [isDeleted],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'isDeleted',
-                lower: [],
-                upper: [isDeleted],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isDeleted',
+              lower: [isDeleted],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isDeleted',
+              lower: [],
+              upper: [isDeleted],
+              includeUpper: false,
+            ));
       }
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause>
-  updatedAtEqualTo(DateTime updatedAt) {
+      updatedAtEqualTo(DateTime updatedAt) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'updatedAt', value: [updatedAt]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'updatedAt',
+        value: [updatedAt],
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause>
-  updatedAtNotEqualTo(DateTime updatedAt) {
+      updatedAtNotEqualTo(DateTime updatedAt) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'updatedAt',
-                lower: [],
-                upper: [updatedAt],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'updatedAt',
-                lower: [updatedAt],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [],
+              upper: [updatedAt],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [updatedAt],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'updatedAt',
-                lower: [updatedAt],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'updatedAt',
-                lower: [],
-                upper: [updatedAt],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [updatedAt],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [],
+              upper: [updatedAt],
+              includeUpper: false,
+            ));
       }
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause>
-  updatedAtGreaterThan(DateTime updatedAt, {bool include = false}) {
+      updatedAtGreaterThan(
+    DateTime updatedAt, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'updatedAt',
-          lower: [updatedAt],
-          includeLower: include,
-          upper: [],
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [updatedAt],
+        includeLower: include,
+        upper: [],
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause>
-  updatedAtLessThan(DateTime updatedAt, {bool include = false}) {
+      updatedAtLessThan(
+    DateTime updatedAt, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'updatedAt',
-          lower: [],
-          upper: [updatedAt],
-          includeUpper: include,
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [],
+        upper: [updatedAt],
+        includeUpper: include,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause>
-  updatedAtBetween(
+      updatedAtBetween(
     DateTime lowerUpdatedAt,
     DateTime upperUpdatedAt, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'updatedAt',
-          lower: [lowerUpdatedAt],
-          includeLower: includeLower,
-          upper: [upperUpdatedAt],
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [lowerUpdatedAt],
+        includeLower: includeLower,
+        upper: [upperUpdatedAt],
+        includeUpper: includeUpper,
+      ));
     });
   }
 }
@@ -650,74 +627,71 @@ extension WatchlistItemQueryWhere
 extension WatchlistItemQueryFilter
     on QueryBuilder<WatchlistItem, WatchlistItem, QFilterCondition> {
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  companyNameIsNull() {
+      companyNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'companyName'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'companyName',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  companyNameIsNotNull() {
+      companyNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'companyName'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'companyName',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  companyNameEqualTo(String? value, {bool caseSensitive = true}) {
+      companyNameEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'companyName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'companyName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  companyNameGreaterThan(
+      companyNameGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'companyName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'companyName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  companyNameLessThan(
+      companyNameLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'companyName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'companyName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  companyNameBetween(
+      companyNameBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -725,237 +699,238 @@ extension WatchlistItemQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'companyName',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'companyName',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  companyNameStartsWith(String value, {bool caseSensitive = true}) {
+      companyNameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'companyName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'companyName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  companyNameEndsWith(String value, {bool caseSensitive = true}) {
+      companyNameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'companyName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'companyName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  companyNameContains(String value, {bool caseSensitive = true}) {
+      companyNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'companyName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'companyName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  companyNameMatches(String pattern, {bool caseSensitive = true}) {
+      companyNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'companyName',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'companyName',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  companyNameIsEmpty() {
+      companyNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'companyName', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'companyName',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  companyNameIsNotEmpty() {
+      companyNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'companyName', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'companyName',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  createdAtEqualTo(DateTime value) {
+      createdAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'createdAt', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'createdAt',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  createdAtGreaterThan(DateTime value, {bool include = false}) {
+      createdAtGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'createdAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'createdAt',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  createdAtLessThan(DateTime value, {bool include = false}) {
+      createdAtLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'createdAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'createdAt',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  createdAtBetween(
+      createdAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'createdAt',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'createdAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  deletedAtIsNull() {
+      deletedAtIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'deletedAt'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'deletedAt',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  deletedAtIsNotNull() {
+      deletedAtIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'deletedAt'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'deletedAt',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  deletedAtEqualTo(DateTime? value) {
+      deletedAtEqualTo(DateTime? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'deletedAt', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'deletedAt',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  deletedAtGreaterThan(DateTime? value, {bool include = false}) {
+      deletedAtGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'deletedAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'deletedAt',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  deletedAtLessThan(DateTime? value, {bool include = false}) {
+      deletedAtLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'deletedAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'deletedAt',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  deletedAtBetween(
+      deletedAtBetween(
     DateTime? lower,
     DateTime? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'deletedAt',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'deletedAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition> idEqualTo(
-    Id value,
-  ) {
+      Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'id', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  idGreaterThan(Id value, {bool include = false}) {
+      idGreaterThan(
+    Id value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
@@ -964,13 +939,11 @@ extension WatchlistItemQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
@@ -981,78 +954,74 @@ extension WatchlistItemQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'id',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  isDeletedEqualTo(bool value) {
+      isDeletedEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'isDeleted', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isDeleted',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  marketEqualTo(String value, {bool caseSensitive = true}) {
+      marketEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'market',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'market',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  marketGreaterThan(
+      marketGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'market',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'market',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  marketLessThan(
+      marketLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'market',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'market',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  marketBetween(
+      marketBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1060,104 +1029,102 @@ extension WatchlistItemQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'market',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'market',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  marketStartsWith(String value, {bool caseSensitive = true}) {
+      marketStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'market',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'market',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  marketEndsWith(String value, {bool caseSensitive = true}) {
+      marketEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'market',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'market',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  marketContains(String value, {bool caseSensitive = true}) {
+      marketContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'market',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'market',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  marketMatches(String pattern, {bool caseSensitive = true}) {
+      marketMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'market',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'market',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  marketIsEmpty() {
+      marketIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'market', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'market',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  marketIsNotEmpty() {
+      marketIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'market', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'market',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  noteIsNull() {
+      noteIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'note'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'note',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  noteIsNotNull() {
+      noteIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'note'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'note',
+      ));
     });
   }
 
@@ -1166,49 +1133,43 @@ extension WatchlistItemQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'note',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'note',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  noteGreaterThan(
+      noteGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'note',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'note',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  noteLessThan(
+      noteLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'note',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'note',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1220,142 +1181,136 @@ extension WatchlistItemQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'note',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'note',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  noteStartsWith(String value, {bool caseSensitive = true}) {
+      noteStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'note',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'note',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  noteEndsWith(String value, {bool caseSensitive = true}) {
+      noteEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'note',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'note',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  noteContains(String value, {bool caseSensitive = true}) {
+      noteContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'note',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'note',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition> noteMatches(
-    String pattern, {
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'note',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      noteIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'note',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      noteIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'note',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      symbolEqualTo(
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'note',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'symbol',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  noteIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'note', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  noteIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'note', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  symbolEqualTo(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'symbol',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  symbolGreaterThan(
+      symbolGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'symbol',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'symbol',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  symbolLessThan(
+      symbolLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'symbol',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'symbol',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  symbolBetween(
+      symbolBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1363,158 +1318,153 @@ extension WatchlistItemQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'symbol',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'symbol',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  symbolStartsWith(String value, {bool caseSensitive = true}) {
+      symbolStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'symbol',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'symbol',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  symbolEndsWith(String value, {bool caseSensitive = true}) {
+      symbolEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'symbol',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'symbol',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  symbolContains(String value, {bool caseSensitive = true}) {
+      symbolContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'symbol',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'symbol',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  symbolMatches(String pattern, {bool caseSensitive = true}) {
+      symbolMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'symbol',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'symbol',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  symbolIsEmpty() {
+      symbolIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'symbol', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'symbol',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  symbolIsNotEmpty() {
+      symbolIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'symbol', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'symbol',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  targetPriceIsNull() {
+      targetPriceIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'targetPrice'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'targetPrice',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  targetPriceIsNotNull() {
+      targetPriceIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'targetPrice'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'targetPrice',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  targetPriceEqualTo(double? value, {double epsilon = Query.epsilon}) {
+      targetPriceEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'targetPrice',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'targetPrice',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  targetPriceGreaterThan(
+      targetPriceGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'targetPrice',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'targetPrice',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  targetPriceLessThan(
+      targetPriceLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'targetPrice',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'targetPrice',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  targetPriceBetween(
+      targetPriceBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -1522,71 +1472,70 @@ extension WatchlistItemQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'targetPrice',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'targetPrice',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  updatedAtEqualTo(DateTime value) {
+      updatedAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'updatedAt', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'updatedAt',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  updatedAtGreaterThan(DateTime value, {bool include = false}) {
+      updatedAtGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'updatedAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'updatedAt',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  updatedAtLessThan(DateTime value, {bool include = false}) {
+      updatedAtLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'updatedAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'updatedAt',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  updatedAtBetween(
+      updatedAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'updatedAt',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'updatedAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
@@ -1595,49 +1544,43 @@ extension WatchlistItemQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  uuidGreaterThan(
+      uuidGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  uuidLessThan(
+      uuidLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1649,88 +1592,85 @@ extension WatchlistItemQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'uuid',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'uuid',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  uuidStartsWith(String value, {bool caseSensitive = true}) {
+      uuidStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  uuidEndsWith(String value, {bool caseSensitive = true}) {
+      uuidEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  uuidContains(String value, {bool caseSensitive = true}) {
+      uuidContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition> uuidMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'uuid',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'uuid',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  uuidIsEmpty() {
+      uuidIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'uuid', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'uuid',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
-  uuidIsNotEmpty() {
+      uuidIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'uuid', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'uuid',
+        value: '',
+      ));
     });
   }
 }
@@ -1750,7 +1690,7 @@ extension WatchlistItemQuerySortBy
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
-  sortByCompanyNameDesc() {
+      sortByCompanyNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'companyName', Sort.desc);
     });
@@ -1763,7 +1703,7 @@ extension WatchlistItemQuerySortBy
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
-  sortByCreatedAtDesc() {
+      sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
@@ -1776,7 +1716,7 @@ extension WatchlistItemQuerySortBy
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
-  sortByDeletedAtDesc() {
+      sortByDeletedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'deletedAt', Sort.desc);
     });
@@ -1789,7 +1729,7 @@ extension WatchlistItemQuerySortBy
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
-  sortByIsDeletedDesc() {
+      sortByIsDeletedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isDeleted', Sort.desc);
     });
@@ -1838,7 +1778,7 @@ extension WatchlistItemQuerySortBy
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
-  sortByTargetPriceDesc() {
+      sortByTargetPriceDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'targetPrice', Sort.desc);
     });
@@ -1851,7 +1791,7 @@ extension WatchlistItemQuerySortBy
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
-  sortByUpdatedAtDesc() {
+      sortByUpdatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.desc);
     });
@@ -1879,7 +1819,7 @@ extension WatchlistItemQuerySortThenBy
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
-  thenByCompanyNameDesc() {
+      thenByCompanyNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'companyName', Sort.desc);
     });
@@ -1892,7 +1832,7 @@ extension WatchlistItemQuerySortThenBy
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
-  thenByCreatedAtDesc() {
+      thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
@@ -1905,7 +1845,7 @@ extension WatchlistItemQuerySortThenBy
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
-  thenByDeletedAtDesc() {
+      thenByDeletedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'deletedAt', Sort.desc);
     });
@@ -1930,7 +1870,7 @@ extension WatchlistItemQuerySortThenBy
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
-  thenByIsDeletedDesc() {
+      thenByIsDeletedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isDeleted', Sort.desc);
     });
@@ -1979,7 +1919,7 @@ extension WatchlistItemQuerySortThenBy
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
-  thenByTargetPriceDesc() {
+      thenByTargetPriceDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'targetPrice', Sort.desc);
     });
@@ -1992,7 +1932,7 @@ extension WatchlistItemQuerySortThenBy
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
-  thenByUpdatedAtDesc() {
+      thenByUpdatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.desc);
     });
@@ -2013,9 +1953,8 @@ extension WatchlistItemQuerySortThenBy
 
 extension WatchlistItemQueryWhereDistinct
     on QueryBuilder<WatchlistItem, WatchlistItem, QDistinct> {
-  QueryBuilder<WatchlistItem, WatchlistItem, QDistinct> distinctByCompanyName({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<WatchlistItem, WatchlistItem, QDistinct> distinctByCompanyName(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'companyName', caseSensitive: caseSensitive);
     });
@@ -2039,32 +1978,29 @@ extension WatchlistItemQueryWhereDistinct
     });
   }
 
-  QueryBuilder<WatchlistItem, WatchlistItem, QDistinct> distinctByMarket({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<WatchlistItem, WatchlistItem, QDistinct> distinctByMarket(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'market', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<WatchlistItem, WatchlistItem, QDistinct> distinctByNote({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<WatchlistItem, WatchlistItem, QDistinct> distinctByNote(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'note', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<WatchlistItem, WatchlistItem, QDistinct> distinctBySymbol({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<WatchlistItem, WatchlistItem, QDistinct> distinctBySymbol(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'symbol', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QDistinct>
-  distinctByTargetPrice() {
+      distinctByTargetPrice() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'targetPrice');
     });
@@ -2076,9 +2012,8 @@ extension WatchlistItemQueryWhereDistinct
     });
   }
 
-  QueryBuilder<WatchlistItem, WatchlistItem, QDistinct> distinctByUuid({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<WatchlistItem, WatchlistItem, QDistinct> distinctByUuid(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'uuid', caseSensitive: caseSensitive);
     });

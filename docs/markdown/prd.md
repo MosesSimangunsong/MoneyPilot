@@ -302,12 +302,13 @@ Aplikasi harus mendukung sinkronisasi dua arah antara local database Isar dan Go
 
 #### Data yang Disinkronkan
 
-- MoneyTransaction
-- Category
-- StockTransaction
-- Dividend
-- WatchlistItem
-- SyncLog
+- Aktif di Flutter saat ini:
+  - MoneyTransaction
+  - Category
+- Sudah didukung Apps Script dan struktur sheet:
+  - StockTransaction
+  - Dividend
+  - WatchlistItem
 
 #### Aturan Upsert
 
@@ -326,6 +327,7 @@ Aplikasi harus mendukung sinkronisasi dua arah antara local database Isar dan Go
 - Given internet mati, when transaksi disimpan, then transaksi tetap tersimpan lokal dan masuk sync queue.
 - Given internet kembali tersedia, when sync berjalan, then data pending terkirim.
 - Given konflik data terjadi, when salah satu data memiliki `updatedAt` lebih baru, then data terbaru yang dipakai.
+- Given Google Apps Script mengembalikan redirect Web App, when sync berjalan, then Flutter tetap mengikuti redirect sampai menerima JSON akhir.
 
 ---
 
@@ -700,8 +702,10 @@ Sheet utama:
 - Stock_Transactions
 - Dividends
 - Watchlist
-- Monthly_Summary
-- Sync_Log
+
+Catatan:
+- Flutter saat ini aktif sync untuk `Transactions` dan `Categories`.
+- Entity lain sudah didukung di Apps Script dan dokumentasi sheet, tetapi belum aktif di repository sync Flutter saat ini.
 
 ### 11.3 Backend Flask / SQLite Cache
 

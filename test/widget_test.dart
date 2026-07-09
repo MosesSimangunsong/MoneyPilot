@@ -6,16 +6,15 @@ import 'package:app/data/services/biometric_service.dart';
 import 'package:app/features/onboarding/onboarding_screen.dart';
 
 void main() {
-  testWidgets('menampilkan onboarding ringkas dengan field nama panggilan',
-      (WidgetTester tester) async {
+  testWidgets('menampilkan onboarding ringkas dengan field nama panggilan', (
+    WidgetTester tester,
+  ) async {
     final AppSessionController sessionController = AppSessionController(
       biometricService: _FakeBiometricService(),
     );
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: OnboardingScreen(sessionController: sessionController),
-      ),
+      MaterialApp(home: OnboardingScreen(sessionController: sessionController)),
     );
 
     expect(find.text('Selamat datang di MoneyPilot'), findsOneWidget);

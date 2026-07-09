@@ -2,9 +2,12 @@ import 'package:isar/isar.dart';
 
 import '../../core/utils/date_time_utils.dart';
 import '../../core/utils/id_generator.dart';
+import '../models/category.dart';
 import '../models/dividend.dart';
+import '../models/money_transaction.dart';
 import '../models/stock_transaction.dart';
 import '../models/watchlist_item.dart';
+import 'category_repository.dart';
 
 class PortfolioRepository {
   PortfolioRepository(this._isar);
@@ -27,7 +30,7 @@ class PortfolioRepository {
       uuid: IdGenerator.newUuid(),
       symbol: symbol.trim().toUpperCase(),
       companyName: _normalizeNullable(companyName),
-      actionType: actionType,
+      actionType: _normalizeActionType(actionType),
       lot: lot,
       shares: shares,
       price: price,
@@ -46,20 +49,36 @@ class PortfolioRepository {
   }
 
   Future<StockTransaction> updateStockTransaction(
-    StockTransaction transaction,
-  ) async {
-    transaction.symbol = transaction.symbol.trim().toUpperCase();
-    transaction.companyName = _normalizeNullable(transaction.companyName);
-    transaction.note = _normalizeNullable(transaction.note);
-    transaction.transactionDate = DateTimeUtils.normalizeUtc(
-      transaction.transactionDate,
-    );
+    String uuid, {
+    required String symbol,
+    String? companyName,
+    required String actionType,
+    required int lot,
+    required int shares,
+    required double price,
+    required double fee,
+    required DateTime transactionDate,
+    String? note,
+  }) async {
+    final StockTransaction? transaction = await getStockTransactionByUuid(uuid);
+    if (transaction == null || transaction.isDeleted) {
+      throw StateError('Transaksi saham tidak ditemukan atau sudah dihapus.');
+    }
+
+    transaction.symbol = symbol.trim().toUpperCase();
+    transaction.companyName = _normalizeNullable(companyName);
+    transaction.actionType = _normalizeActionType(actionType);
+    transaction.lot = lot;
+    transaction.shares = shares;
+    transaction.price = price;
+    transaction.fee = fee;
+    transaction.note = _normalizeNullable(note);
+    transaction.transactionDate = DateTimeUtils.normalizeUtc(transactionDate);
     transaction.updatedAt = DateTimeUtils.utcNow();
-    transaction.deletedAt = transaction.isDeleted
-        ? (transaction.deletedAt == null
-              ? transaction.updatedAt
-              : DateTimeUtils.normalizeUtc(transaction.deletedAt!))
-        : null;
+    transaction.syncStatus = 'pending';
+    transaction.syncErrorMessage = null;
+    transaction.isDeleted = false;
+    transaction.deletedAt = null;
 
     await _isar.writeTxn(() async {
       await _isar.stockTransactions.put(transaction);
@@ -120,6 +139,63 @@ class PortfolioRepository {
     return dividend;
   }
 
+  Future<DividendWithIncomeResult> createDividendWithIncomeTransaction({
+    required String symbol,
+    String? companyName,
+    double? grossAmount,
+    double tax = 0,
+    required double netAmount,
+    required DateTime receivedDate,
+    String? note,
+  }) async {
+    final DateTime now = DateTimeUtils.utcNow();
+    final Category dividendCategory = await _resolveDividendCategory();
+    final String normalizedSymbol = symbol.trim().toUpperCase();
+    final double normalizedGrossAmount = grossAmount ?? (netAmount + tax);
+    final String? normalizedCompanyName = _normalizeNullable(companyName);
+    final String? normalizedNote = _normalizeNullable(note);
+    final MoneyTransaction moneyTransaction = MoneyTransaction(
+      uuid: IdGenerator.newUuid(),
+      type: 'income',
+      title: 'Dividen $normalizedSymbol',
+      amount: netAmount,
+      categoryUuid: dividendCategory.uuid,
+      categoryNameSnapshot: dividendCategory.name,
+      paymentMethod: 'Tidak Dicatat',
+      note: normalizedNote,
+      source: 'portfolio_dividend',
+      syncStatus: 'pending',
+      transactionDate: DateTimeUtils.normalizeUtc(receivedDate),
+      createdAt: now,
+      updatedAt: now,
+    );
+    final Dividend dividend = Dividend(
+      uuid: IdGenerator.newUuid(),
+      symbol: normalizedSymbol,
+      companyName: normalizedCompanyName,
+      grossAmount: normalizedGrossAmount,
+      tax: tax,
+      netAmount: netAmount,
+      receivedDate: DateTimeUtils.normalizeUtc(receivedDate),
+      linkedTransactionUuid: moneyTransaction.uuid,
+      note: normalizedNote,
+      syncStatus: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    await _isar.writeTxn(() async {
+      await _isar.categorys.put(dividendCategory);
+      await _isar.moneyTransactions.put(moneyTransaction);
+      await _isar.dividends.put(dividend);
+    });
+
+    return DividendWithIncomeResult(
+      dividend: dividend,
+      incomeTransaction: moneyTransaction,
+    );
+  }
+
   Future<Dividend> updateDividend(Dividend dividend) async {
     dividend.symbol = dividend.symbol.trim().toUpperCase();
     dividend.companyName = _normalizeNullable(dividend.companyName);
@@ -167,6 +243,25 @@ class PortfolioRepository {
         .filter()
         .isDeletedEqualTo(false)
         .sortByTransactionDateDesc()
+        .thenByUpdatedAtDesc()
+        .findAll();
+  }
+
+  Future<StockTransaction?> getStockTransactionByUuid(String uuid) {
+    return _isar.stockTransactions.filter().uuidEqualTo(uuid).findFirst();
+  }
+
+  Future<List<StockTransaction>> getActiveStockTransactionsBySymbol(
+    String symbol,
+  ) {
+    final String normalizedSymbol = symbol.trim().toUpperCase();
+    return _isar.stockTransactions
+        .filter()
+        .symbolEqualTo(normalizedSymbol)
+        .and()
+        .isDeletedEqualTo(false)
+        .sortByTransactionDateDesc()
+        .thenByUpdatedAtDesc()
         .findAll();
   }
 
@@ -176,6 +271,106 @@ class PortfolioRepository {
         .isDeletedEqualTo(false)
         .sortByReceivedDateDesc()
         .findAll();
+  }
+
+  Future<PortfolioOverview> getPortfolioOverview({
+    int recentTransactionLimit = 10,
+  }) async {
+    final List<StockTransaction> transactions =
+        await getActiveStockTransactions();
+    final List<Dividend> dividends = await getActiveDividends();
+    final List<PortfolioPositionSummary> positions = calculatePortfolioSummary(
+      transactions,
+    );
+    final double totalModal = positions.fold<double>(
+      0,
+      (double value, PortfolioPositionSummary item) => value + item.totalCost,
+    );
+    final double totalDividen = dividends.fold<double>(
+      0,
+      (double value, Dividend item) => value + item.netAmount,
+    );
+
+    return PortfolioOverview(
+      totalOwnedStocks: positions.where((item) => item.totalShares > 0).length,
+      totalModal: totalModal,
+      totalDividen: totalDividen,
+      positions: positions,
+      recentTransactions: transactions.take(recentTransactionLimit).toList(),
+      dividends: dividends,
+    );
+  }
+
+  List<PortfolioPositionSummary> calculatePortfolioSummary(
+    List<StockTransaction> transactions,
+  ) {
+    final List<StockTransaction> sortedTransactions =
+        <StockTransaction>[...transactions]
+          ..sort((StockTransaction a, StockTransaction b) {
+            final int transactionDateComparison = a.transactionDate.compareTo(
+              b.transactionDate,
+            );
+            if (transactionDateComparison != 0) {
+              return transactionDateComparison;
+            }
+            return a.createdAt.compareTo(b.createdAt);
+          });
+
+    final Map<String, _PortfolioAccumulator> positions =
+        <String, _PortfolioAccumulator>{};
+
+    for (final StockTransaction transaction in sortedTransactions) {
+      final String symbol = transaction.symbol.trim().toUpperCase();
+      final _PortfolioAccumulator accumulator = positions.putIfAbsent(
+        symbol,
+        _PortfolioAccumulator.new,
+      );
+      accumulator.symbol = symbol;
+      if ((transaction.companyName ?? '').trim().isNotEmpty) {
+        accumulator.companyName = transaction.companyName!.trim();
+      }
+
+      if (transaction.actionType == 'buy') {
+        accumulator.totalShares += transaction.shares;
+        accumulator.totalCost +=
+            (transaction.shares * transaction.price) + transaction.fee;
+        continue;
+      }
+
+      final int soldShares = transaction.shares > accumulator.totalShares
+          ? accumulator.totalShares
+          : transaction.shares;
+      if (soldShares <= 0) {
+        continue;
+      }
+
+      final double averageBeforeSell = accumulator.totalShares <= 0
+          ? 0
+          : accumulator.totalCost / accumulator.totalShares;
+      accumulator.realizedProfit +=
+          (soldShares * transaction.price) -
+          transaction.fee -
+          (averageBeforeSell * soldShares);
+      accumulator.totalShares -= soldShares;
+      accumulator.totalCost -= averageBeforeSell * soldShares;
+
+      if (accumulator.totalShares <= 0) {
+        accumulator.totalShares = 0;
+        accumulator.totalCost = 0;
+      }
+    }
+
+    final List<PortfolioPositionSummary> summaries =
+        positions.values
+            .map((item) => item.toSummary())
+            .where((PortfolioPositionSummary item) => item.totalShares > 0)
+            .toList(growable: false)
+          ..sort(
+            (PortfolioPositionSummary a, PortfolioPositionSummary b) =>
+                b.totalCost.compareTo(a.totalCost),
+          );
+
+    return summaries;
   }
 
   Future<List<WatchlistItem>> getWatchlist() {
@@ -232,5 +427,124 @@ class PortfolioRepository {
       return null;
     }
     return trimmed;
+  }
+
+  String _normalizeActionType(String value) {
+    final String normalized = value.trim().toLowerCase();
+    if (normalized != 'buy' && normalized != 'sell') {
+      throw StateError('Tipe aksi saham hanya boleh buy atau sell.');
+    }
+    return normalized;
+  }
+
+  Future<Category> _resolveDividendCategory() async {
+    final Category? existingByName = await _isar.categorys
+        .filter()
+        .nameEqualTo('Dividen', caseSensitive: false)
+        .and()
+        .typeEqualTo('income')
+        .and()
+        .isDeletedEqualTo(false)
+        .findFirst();
+    if (existingByName != null) {
+      return existingByName;
+    }
+
+    final Category? existingByUuid = await _isar.categorys
+        .filter()
+        .uuidEqualTo(CategoryRepository.defaultDividendCategoryUuid)
+        .findFirst();
+    if (existingByUuid != null) {
+      existingByUuid.isDeleted = false;
+      existingByUuid.updatedAt = DateTimeUtils.utcNow();
+      existingByUuid.deletedAt = null;
+      existingByUuid.syncStatus = 'pending';
+      existingByUuid.syncErrorMessage = null;
+      existingByUuid.type = 'income';
+      existingByUuid.name = 'Dividen';
+      return existingByUuid;
+    }
+
+    final DateTime now = DateTimeUtils.utcNow();
+    return Category(
+      uuid: CategoryRepository.defaultDividendCategoryUuid,
+      name: 'Dividen',
+      type: 'income',
+      iconName: 'landmark',
+      colorHex: '#3B82F6',
+      isDefault: true,
+      syncStatus: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+}
+
+class PortfolioOverview {
+  const PortfolioOverview({
+    required this.totalOwnedStocks,
+    required this.totalModal,
+    required this.totalDividen,
+    required this.positions,
+    required this.recentTransactions,
+    required this.dividends,
+  });
+
+  final int totalOwnedStocks;
+  final double totalModal;
+  final double totalDividen;
+  final List<PortfolioPositionSummary> positions;
+  final List<StockTransaction> recentTransactions;
+  final List<Dividend> dividends;
+}
+
+class PortfolioPositionSummary {
+  const PortfolioPositionSummary({
+    required this.symbol,
+    required this.companyName,
+    required this.totalLot,
+    required this.totalShares,
+    required this.averageBuyPrice,
+    required this.totalCost,
+    required this.realizedProfit,
+  });
+
+  final String symbol;
+  final String? companyName;
+  final double totalLot;
+  final int totalShares;
+  final double averageBuyPrice;
+  final double totalCost;
+  final double realizedProfit;
+}
+
+class DividendWithIncomeResult {
+  const DividendWithIncomeResult({
+    required this.dividend,
+    required this.incomeTransaction,
+  });
+
+  final Dividend dividend;
+  final MoneyTransaction incomeTransaction;
+}
+
+class _PortfolioAccumulator {
+  String symbol = '';
+  String? companyName;
+  int totalShares = 0;
+  double totalCost = 0;
+  double realizedProfit = 0;
+
+  PortfolioPositionSummary toSummary() {
+    final double normalizedCost = totalCost < 0 ? 0 : totalCost;
+    return PortfolioPositionSummary(
+      symbol: symbol,
+      companyName: companyName,
+      totalLot: totalShares / 100,
+      totalShares: totalShares,
+      averageBuyPrice: totalShares == 0 ? 0 : normalizedCost / totalShares,
+      totalCost: normalizedCost,
+      realizedProfit: realizedProfit,
+    );
   }
 }

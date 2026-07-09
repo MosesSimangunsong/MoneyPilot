@@ -4,10 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 
 class MainShellScreen extends StatelessWidget {
-  const MainShellScreen({
-    super.key,
-    required this.navigationShell,
-  });
+  const MainShellScreen({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
@@ -17,9 +14,7 @@ class MainShellScreen extends StatelessWidget {
       body: navigationShell,
       bottomNavigationBar: DecoratedBox(
         decoration: const BoxDecoration(
-          border: Border(
-            top: BorderSide(color: AppColors.border),
-          ),
+          border: Border(top: BorderSide(color: AppColors.border)),
         ),
         child: BottomNavigationBar(
           currentIndex: navigationShell.currentIndex,

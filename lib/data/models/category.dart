@@ -12,6 +12,8 @@ class Category {
     required this.iconName,
     required this.colorHex,
     this.isDefault = false,
+    this.syncStatus = 'pending',
+    this.syncErrorMessage,
     this.isDeleted = false,
     required this.createdAt,
     required this.updatedAt,
@@ -33,6 +35,11 @@ class Category {
   late String colorHex;
 
   bool isDefault;
+
+  @Index()
+  late String syncStatus;
+
+  String? syncErrorMessage;
 
   @Index()
   bool isDeleted;

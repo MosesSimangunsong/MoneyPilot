@@ -47,13 +47,21 @@ const VoiceTranscriptSchema = CollectionSchema(
       name: r'parsedType',
       type: IsarType.string,
     ),
-    r'rawText': PropertySchema(id: 6, name: r'rawText', type: IsarType.string),
+    r'rawText': PropertySchema(
+      id: 6,
+      name: r'rawText',
+      type: IsarType.string,
+    ),
     r'transactionUuid': PropertySchema(
       id: 7,
       name: r'transactionUuid',
       type: IsarType.string,
     ),
-    r'uuid': PropertySchema(id: 8, name: r'uuid', type: IsarType.string),
+    r'uuid': PropertySchema(
+      id: 8,
+      name: r'uuid',
+      type: IsarType.string,
+    )
   },
   estimateSize: _voiceTranscriptEstimateSize,
   serialize: _voiceTranscriptSerialize,
@@ -71,7 +79,7 @@ const VoiceTranscriptSchema = CollectionSchema(
           name: r'uuid',
           type: IndexType.hash,
           caseSensitive: true,
-        ),
+        )
       ],
     ),
     r'createdAt': IndexSchema(
@@ -84,9 +92,9 @@ const VoiceTranscriptSchema = CollectionSchema(
           name: r'createdAt',
           type: IndexType.value,
           caseSensitive: false,
-        ),
+        )
       ],
-    ),
+    )
   },
   links: {},
   embeddedSchemas: {},
@@ -202,10 +210,7 @@ List<IsarLinkBase<dynamic>> _voiceTranscriptGetLinks(VoiceTranscript object) {
 }
 
 void _voiceTranscriptAttach(
-  IsarCollection<dynamic> col,
-  Id id,
-  VoiceTranscript object,
-) {
+    IsarCollection<dynamic> col, Id id, VoiceTranscript object) {
   object.id = id;
 }
 
@@ -258,10 +263,8 @@ extension VoiceTranscriptByIndex on IsarCollection<VoiceTranscript> {
     return putAllByIndex(r'uuid', objects);
   }
 
-  List<Id> putAllByUuidSync(
-    List<VoiceTranscript> objects, {
-    bool saveLinks = true,
-  }) {
+  List<Id> putAllByUuidSync(List<VoiceTranscript> objects,
+      {bool saveLinks = true}) {
     return putAllByIndexSync(r'uuid', objects, saveLinks: saveLinks);
   }
 }
@@ -286,15 +289,17 @@ extension VoiceTranscriptQueryWhereSort
 extension VoiceTranscriptQueryWhere
     on QueryBuilder<VoiceTranscript, VoiceTranscript, QWhereClause> {
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterWhereClause> idEqualTo(
-    Id id,
-  ) {
+      Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
+      return query.addWhereClause(IdWhereClause.between(
+        lower: id,
+        upper: id,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterWhereClause>
-  idNotEqualTo(Id id) {
+      idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -317,7 +322,7 @@ extension VoiceTranscriptQueryWhere
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterWhereClause>
-  idGreaterThan(Id id, {bool include = false}) {
+      idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -326,9 +331,8 @@ extension VoiceTranscriptQueryWhere
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterWhereClause> idLessThan(
-    Id id, {
-    bool include = false,
-  }) {
+      Id id,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -343,167 +347,150 @@ extension VoiceTranscriptQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.between(
-          lower: lowerId,
-          includeLower: includeLower,
-          upper: upperId,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addWhereClause(IdWhereClause.between(
+        lower: lowerId,
+        includeLower: includeLower,
+        upper: upperId,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterWhereClause> uuidEqualTo(
-    String uuid,
-  ) {
+      String uuid) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'uuid', value: [uuid]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'uuid',
+        value: [uuid],
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterWhereClause>
-  uuidNotEqualTo(String uuid) {
+      uuidNotEqualTo(String uuid) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'uuid',
-                lower: [],
-                upper: [uuid],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'uuid',
-                lower: [uuid],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [],
+              upper: [uuid],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [uuid],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'uuid',
-                lower: [uuid],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'uuid',
-                lower: [],
-                upper: [uuid],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [uuid],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [],
+              upper: [uuid],
+              includeUpper: false,
+            ));
       }
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterWhereClause>
-  createdAtEqualTo(DateTime createdAt) {
+      createdAtEqualTo(DateTime createdAt) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'createdAt', value: [createdAt]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'createdAt',
+        value: [createdAt],
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterWhereClause>
-  createdAtNotEqualTo(DateTime createdAt) {
+      createdAtNotEqualTo(DateTime createdAt) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'createdAt',
-                lower: [],
-                upper: [createdAt],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'createdAt',
-                lower: [createdAt],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [],
+              upper: [createdAt],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [createdAt],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'createdAt',
-                lower: [createdAt],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'createdAt',
-                lower: [],
-                upper: [createdAt],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [createdAt],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [],
+              upper: [createdAt],
+              includeUpper: false,
+            ));
       }
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterWhereClause>
-  createdAtGreaterThan(DateTime createdAt, {bool include = false}) {
+      createdAtGreaterThan(
+    DateTime createdAt, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'createdAt',
-          lower: [createdAt],
-          includeLower: include,
-          upper: [],
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [createdAt],
+        includeLower: include,
+        upper: [],
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterWhereClause>
-  createdAtLessThan(DateTime createdAt, {bool include = false}) {
+      createdAtLessThan(
+    DateTime createdAt, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'createdAt',
-          lower: [],
-          upper: [createdAt],
-          includeUpper: include,
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [],
+        upper: [createdAt],
+        includeUpper: include,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterWhereClause>
-  createdAtBetween(
+      createdAtBetween(
     DateTime lowerCreatedAt,
     DateTime upperCreatedAt, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'createdAt',
-          lower: [lowerCreatedAt],
-          includeLower: includeLower,
-          upper: [upperCreatedAt],
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [lowerCreatedAt],
+        includeLower: includeLower,
+        upper: [upperCreatedAt],
+        includeUpper: includeUpper,
+      ));
     });
   }
 }
@@ -511,56 +498,53 @@ extension VoiceTranscriptQueryWhere
 extension VoiceTranscriptQueryFilter
     on QueryBuilder<VoiceTranscript, VoiceTranscript, QFilterCondition> {
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  confidenceScoreEqualTo(double value, {double epsilon = Query.epsilon}) {
+      confidenceScoreEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'confidenceScore',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'confidenceScore',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  confidenceScoreGreaterThan(
+      confidenceScoreGreaterThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'confidenceScore',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'confidenceScore',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  confidenceScoreLessThan(
+      confidenceScoreLessThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'confidenceScore',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'confidenceScore',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  confidenceScoreBetween(
+      confidenceScoreBetween(
     double lower,
     double upper, {
     bool includeLower = true,
@@ -568,210 +552,205 @@ extension VoiceTranscriptQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'confidenceScore',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'confidenceScore',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  convertedToTransactionEqualTo(bool value) {
+      convertedToTransactionEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'convertedToTransaction',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'convertedToTransaction',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  createdAtEqualTo(DateTime value) {
+      createdAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'createdAt', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'createdAt',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  createdAtGreaterThan(DateTime value, {bool include = false}) {
+      createdAtGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'createdAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'createdAt',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  createdAtLessThan(DateTime value, {bool include = false}) {
+      createdAtLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'createdAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'createdAt',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  createdAtBetween(
+      createdAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'createdAt',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'createdAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  idEqualTo(Id value) {
+      idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'id', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  idGreaterThan(Id value, {bool include = false}) {
+      idGreaterThan(
+    Id value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  idLessThan(Id value, {bool include = false}) {
+      idLessThan(
+    Id value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  idBetween(
+      idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'id',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedAmountIsNull() {
+      parsedAmountIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'parsedAmount'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'parsedAmount',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedAmountIsNotNull() {
+      parsedAmountIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'parsedAmount'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'parsedAmount',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedAmountEqualTo(double? value, {double epsilon = Query.epsilon}) {
+      parsedAmountEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'parsedAmount',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'parsedAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedAmountGreaterThan(
+      parsedAmountGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'parsedAmount',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'parsedAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedAmountLessThan(
+      parsedAmountLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'parsedAmount',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'parsedAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedAmountBetween(
+      parsedAmountBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -779,88 +758,83 @@ extension VoiceTranscriptQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'parsedAmount',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'parsedAmount',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedCategoryUuidIsNull() {
+      parsedCategoryUuidIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'parsedCategoryUuid'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'parsedCategoryUuid',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedCategoryUuidIsNotNull() {
+      parsedCategoryUuidIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'parsedCategoryUuid'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'parsedCategoryUuid',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedCategoryUuidEqualTo(String? value, {bool caseSensitive = true}) {
+      parsedCategoryUuidEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'parsedCategoryUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'parsedCategoryUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedCategoryUuidGreaterThan(
+      parsedCategoryUuidGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'parsedCategoryUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'parsedCategoryUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedCategoryUuidLessThan(
+      parsedCategoryUuidLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'parsedCategoryUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'parsedCategoryUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedCategoryUuidBetween(
+      parsedCategoryUuidBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -868,158 +842,153 @@ extension VoiceTranscriptQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'parsedCategoryUuid',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'parsedCategoryUuid',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedCategoryUuidStartsWith(String value, {bool caseSensitive = true}) {
+      parsedCategoryUuidStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'parsedCategoryUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'parsedCategoryUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedCategoryUuidEndsWith(String value, {bool caseSensitive = true}) {
+      parsedCategoryUuidEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'parsedCategoryUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'parsedCategoryUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedCategoryUuidContains(String value, {bool caseSensitive = true}) {
+      parsedCategoryUuidContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'parsedCategoryUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'parsedCategoryUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedCategoryUuidMatches(String pattern, {bool caseSensitive = true}) {
+      parsedCategoryUuidMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'parsedCategoryUuid',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'parsedCategoryUuid',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedCategoryUuidIsEmpty() {
+      parsedCategoryUuidIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'parsedCategoryUuid', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'parsedCategoryUuid',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedCategoryUuidIsNotEmpty() {
+      parsedCategoryUuidIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'parsedCategoryUuid', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'parsedCategoryUuid',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedTypeIsNull() {
+      parsedTypeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'parsedType'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'parsedType',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedTypeIsNotNull() {
+      parsedTypeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'parsedType'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'parsedType',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedTypeEqualTo(String? value, {bool caseSensitive = true}) {
+      parsedTypeEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'parsedType',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'parsedType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedTypeGreaterThan(
+      parsedTypeGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'parsedType',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'parsedType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedTypeLessThan(
+      parsedTypeLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'parsedType',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'parsedType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedTypeBetween(
+      parsedTypeBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -1027,140 +996,135 @@ extension VoiceTranscriptQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'parsedType',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'parsedType',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedTypeStartsWith(String value, {bool caseSensitive = true}) {
+      parsedTypeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'parsedType',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'parsedType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedTypeEndsWith(String value, {bool caseSensitive = true}) {
+      parsedTypeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'parsedType',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'parsedType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedTypeContains(String value, {bool caseSensitive = true}) {
+      parsedTypeContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'parsedType',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'parsedType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedTypeMatches(String pattern, {bool caseSensitive = true}) {
+      parsedTypeMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'parsedType',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'parsedType',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedTypeIsEmpty() {
+      parsedTypeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'parsedType', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'parsedType',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  parsedTypeIsNotEmpty() {
+      parsedTypeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'parsedType', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'parsedType',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  rawTextEqualTo(String value, {bool caseSensitive = true}) {
+      rawTextEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'rawText',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'rawText',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  rawTextGreaterThan(
+      rawTextGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'rawText',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'rawText',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  rawTextLessThan(
+      rawTextLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'rawText',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'rawText',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  rawTextBetween(
+      rawTextBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1168,158 +1132,153 @@ extension VoiceTranscriptQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'rawText',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'rawText',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  rawTextStartsWith(String value, {bool caseSensitive = true}) {
+      rawTextStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'rawText',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'rawText',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  rawTextEndsWith(String value, {bool caseSensitive = true}) {
+      rawTextEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'rawText',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'rawText',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  rawTextContains(String value, {bool caseSensitive = true}) {
+      rawTextContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'rawText',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'rawText',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  rawTextMatches(String pattern, {bool caseSensitive = true}) {
+      rawTextMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'rawText',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'rawText',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  rawTextIsEmpty() {
+      rawTextIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'rawText', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'rawText',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  rawTextIsNotEmpty() {
+      rawTextIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'rawText', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'rawText',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  transactionUuidIsNull() {
+      transactionUuidIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'transactionUuid'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'transactionUuid',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  transactionUuidIsNotNull() {
+      transactionUuidIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'transactionUuid'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'transactionUuid',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  transactionUuidEqualTo(String? value, {bool caseSensitive = true}) {
+      transactionUuidEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'transactionUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'transactionUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  transactionUuidGreaterThan(
+      transactionUuidGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'transactionUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'transactionUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  transactionUuidLessThan(
+      transactionUuidLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'transactionUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'transactionUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  transactionUuidBetween(
+      transactionUuidBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -1327,140 +1286,135 @@ extension VoiceTranscriptQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'transactionUuid',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'transactionUuid',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  transactionUuidStartsWith(String value, {bool caseSensitive = true}) {
+      transactionUuidStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'transactionUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'transactionUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  transactionUuidEndsWith(String value, {bool caseSensitive = true}) {
+      transactionUuidEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'transactionUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'transactionUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  transactionUuidContains(String value, {bool caseSensitive = true}) {
+      transactionUuidContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'transactionUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'transactionUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  transactionUuidMatches(String pattern, {bool caseSensitive = true}) {
+      transactionUuidMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'transactionUuid',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'transactionUuid',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  transactionUuidIsEmpty() {
+      transactionUuidIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'transactionUuid', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'transactionUuid',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  transactionUuidIsNotEmpty() {
+      transactionUuidIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'transactionUuid', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'transactionUuid',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  uuidEqualTo(String value, {bool caseSensitive = true}) {
+      uuidEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  uuidGreaterThan(
+      uuidGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  uuidLessThan(
+      uuidLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  uuidBetween(
+      uuidBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1468,86 +1422,84 @@ extension VoiceTranscriptQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'uuid',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'uuid',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  uuidStartsWith(String value, {bool caseSensitive = true}) {
+      uuidStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  uuidEndsWith(String value, {bool caseSensitive = true}) {
+      uuidEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  uuidContains(String value, {bool caseSensitive = true}) {
+      uuidContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  uuidMatches(String pattern, {bool caseSensitive = true}) {
+      uuidMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'uuid',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'uuid',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  uuidIsEmpty() {
+      uuidIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'uuid', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'uuid',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterFilterCondition>
-  uuidIsNotEmpty() {
+      uuidIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'uuid', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'uuid',
+        value: '',
+      ));
     });
   }
 }
@@ -1561,84 +1513,84 @@ extension VoiceTranscriptQueryLinks
 extension VoiceTranscriptQuerySortBy
     on QueryBuilder<VoiceTranscript, VoiceTranscript, QSortBy> {
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByConfidenceScore() {
+      sortByConfidenceScore() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'confidenceScore', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByConfidenceScoreDesc() {
+      sortByConfidenceScoreDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'confidenceScore', Sort.desc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByConvertedToTransaction() {
+      sortByConvertedToTransaction() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'convertedToTransaction', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByConvertedToTransactionDesc() {
+      sortByConvertedToTransactionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'convertedToTransaction', Sort.desc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByCreatedAt() {
+      sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByCreatedAtDesc() {
+      sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByParsedAmount() {
+      sortByParsedAmount() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parsedAmount', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByParsedAmountDesc() {
+      sortByParsedAmountDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parsedAmount', Sort.desc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByParsedCategoryUuid() {
+      sortByParsedCategoryUuid() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parsedCategoryUuid', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByParsedCategoryUuidDesc() {
+      sortByParsedCategoryUuidDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parsedCategoryUuid', Sort.desc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByParsedType() {
+      sortByParsedType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parsedType', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByParsedTypeDesc() {
+      sortByParsedTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parsedType', Sort.desc);
     });
@@ -1651,21 +1603,21 @@ extension VoiceTranscriptQuerySortBy
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByRawTextDesc() {
+      sortByRawTextDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'rawText', Sort.desc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByTransactionUuid() {
+      sortByTransactionUuid() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'transactionUuid', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByTransactionUuidDesc() {
+      sortByTransactionUuidDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'transactionUuid', Sort.desc);
     });
@@ -1678,7 +1630,7 @@ extension VoiceTranscriptQuerySortBy
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  sortByUuidDesc() {
+      sortByUuidDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'uuid', Sort.desc);
     });
@@ -1688,42 +1640,42 @@ extension VoiceTranscriptQuerySortBy
 extension VoiceTranscriptQuerySortThenBy
     on QueryBuilder<VoiceTranscript, VoiceTranscript, QSortThenBy> {
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByConfidenceScore() {
+      thenByConfidenceScore() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'confidenceScore', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByConfidenceScoreDesc() {
+      thenByConfidenceScoreDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'confidenceScore', Sort.desc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByConvertedToTransaction() {
+      thenByConvertedToTransaction() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'convertedToTransaction', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByConvertedToTransactionDesc() {
+      thenByConvertedToTransactionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'convertedToTransaction', Sort.desc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByCreatedAt() {
+      thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByCreatedAtDesc() {
+      thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
@@ -1742,42 +1694,42 @@ extension VoiceTranscriptQuerySortThenBy
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByParsedAmount() {
+      thenByParsedAmount() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parsedAmount', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByParsedAmountDesc() {
+      thenByParsedAmountDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parsedAmount', Sort.desc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByParsedCategoryUuid() {
+      thenByParsedCategoryUuid() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parsedCategoryUuid', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByParsedCategoryUuidDesc() {
+      thenByParsedCategoryUuidDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parsedCategoryUuid', Sort.desc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByParsedType() {
+      thenByParsedType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parsedType', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByParsedTypeDesc() {
+      thenByParsedTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'parsedType', Sort.desc);
     });
@@ -1790,21 +1742,21 @@ extension VoiceTranscriptQuerySortThenBy
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByRawTextDesc() {
+      thenByRawTextDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'rawText', Sort.desc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByTransactionUuid() {
+      thenByTransactionUuid() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'transactionUuid', Sort.asc);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByTransactionUuidDesc() {
+      thenByTransactionUuidDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'transactionUuid', Sort.desc);
     });
@@ -1817,7 +1769,7 @@ extension VoiceTranscriptQuerySortThenBy
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QAfterSortBy>
-  thenByUuidDesc() {
+      thenByUuidDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'uuid', Sort.desc);
     });
@@ -1827,71 +1779,65 @@ extension VoiceTranscriptQuerySortThenBy
 extension VoiceTranscriptQueryWhereDistinct
     on QueryBuilder<VoiceTranscript, VoiceTranscript, QDistinct> {
   QueryBuilder<VoiceTranscript, VoiceTranscript, QDistinct>
-  distinctByConfidenceScore() {
+      distinctByConfidenceScore() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'confidenceScore');
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QDistinct>
-  distinctByConvertedToTransaction() {
+      distinctByConvertedToTransaction() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'convertedToTransaction');
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QDistinct>
-  distinctByCreatedAt() {
+      distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'createdAt');
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QDistinct>
-  distinctByParsedAmount() {
+      distinctByParsedAmount() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'parsedAmount');
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QDistinct>
-  distinctByParsedCategoryUuid({bool caseSensitive = true}) {
+      distinctByParsedCategoryUuid({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(
-        r'parsedCategoryUuid',
-        caseSensitive: caseSensitive,
-      );
+      return query.addDistinctBy(r'parsedCategoryUuid',
+          caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QDistinct>
-  distinctByParsedType({bool caseSensitive = true}) {
+      distinctByParsedType({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'parsedType', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<VoiceTranscript, VoiceTranscript, QDistinct> distinctByRawText({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<VoiceTranscript, VoiceTranscript, QDistinct> distinctByRawText(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'rawText', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<VoiceTranscript, VoiceTranscript, QDistinct>
-  distinctByTransactionUuid({bool caseSensitive = true}) {
+      distinctByTransactionUuid({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(
-        r'transactionUuid',
-        caseSensitive: caseSensitive,
-      );
+      return query.addDistinctBy(r'transactionUuid',
+          caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<VoiceTranscript, VoiceTranscript, QDistinct> distinctByUuid({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<VoiceTranscript, VoiceTranscript, QDistinct> distinctByUuid(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'uuid', caseSensitive: caseSensitive);
     });
@@ -1907,42 +1853,42 @@ extension VoiceTranscriptQueryProperty
   }
 
   QueryBuilder<VoiceTranscript, double, QQueryOperations>
-  confidenceScoreProperty() {
+      confidenceScoreProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'confidenceScore');
     });
   }
 
   QueryBuilder<VoiceTranscript, bool, QQueryOperations>
-  convertedToTransactionProperty() {
+      convertedToTransactionProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'convertedToTransaction');
     });
   }
 
   QueryBuilder<VoiceTranscript, DateTime, QQueryOperations>
-  createdAtProperty() {
+      createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
     });
   }
 
   QueryBuilder<VoiceTranscript, double?, QQueryOperations>
-  parsedAmountProperty() {
+      parsedAmountProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'parsedAmount');
     });
   }
 
   QueryBuilder<VoiceTranscript, String?, QQueryOperations>
-  parsedCategoryUuidProperty() {
+      parsedCategoryUuidProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'parsedCategoryUuid');
     });
   }
 
   QueryBuilder<VoiceTranscript, String?, QQueryOperations>
-  parsedTypeProperty() {
+      parsedTypeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'parsedType');
     });
@@ -1955,7 +1901,7 @@ extension VoiceTranscriptQueryProperty
   }
 
   QueryBuilder<VoiceTranscript, String?, QQueryOperations>
-  transactionUuidProperty() {
+      transactionUuidProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'transactionUuid');
     });

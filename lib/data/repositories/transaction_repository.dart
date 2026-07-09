@@ -162,7 +162,10 @@ class TransactionRepository {
   Future<List<MoneyTransaction>> getPendingSyncTransactions() {
     return _isar.moneyTransactions
         .filter()
-        .syncStatusEqualTo('pending')
+        .group(
+          (q) =>
+              q.syncStatusEqualTo('pending').or().syncStatusEqualTo('failed'),
+        )
         .sortByUpdatedAt()
         .findAll()
         .then(_normalizeTransactionList);

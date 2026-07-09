@@ -1,80 +1,54 @@
-# Manual Testing Tahap 5 — Google Spreadsheet Sync
+# Manual Testing Tahap 5 - Spreadsheet Sync Dasar
 
 ## Persiapan
 
 - [ ] Spreadsheet sudah dibuat.
-- [ ] Semua sheet sudah dibuat.
-- [ ] Header setiap sheet sudah benar.
-- [ ] Google Apps Script sudah deploy sebagai Web App.
-- [ ] Web App URL sudah dicatat.
-- [ ] Secret token sudah dicatat.
-- [ ] URL dan token sudah dimasukkan ke aplikasi.
+- [ ] Sheet `Categories` dan `Transactions` sudah ada.
+- [ ] Header row pertama sudah benar.
+- [ ] Apps Script final sudah dipaste.
+- [ ] Script Property `MONEYPILOT_SYNC_TOKEN` sudah ada.
+- [ ] Web App sudah di-deploy ulang.
+- [ ] URL `/exec` dan token sudah dimasukkan ke halaman `Settings`.
 
-## Push Transaksi Baru
+## Simpan Konfigurasi
 
-- [ ] Tambah transaksi manual di aplikasi.
-- [ ] Pastikan syncStatus transaksi = pending.
-- [ ] Jalankan sync.
-- [ ] Row muncul di sheet Transactions.
-- [ ] syncStatus lokal berubah menjadi synced.
-- [ ] Tidak ada row duplikat.
+- [ ] Isi URL `/exec` di Settings.
+- [ ] Isi secret token.
+- [ ] Klik `Simpan konfigurasi`.
+- [ ] Tutup dan buka ulang Settings.
+- [ ] Pastikan URL dan token yang tersimpan tetap benar.
 
-## Update Row yang Sudah Ada
+## Push Categories
 
-- [ ] Edit transaksi yang sudah pernah sync.
-- [ ] Pastikan syncStatus berubah menjadi pending.
-- [ ] Jalankan sync.
-- [ ] Row lama di spreadsheet berubah.
-- [ ] Tidak muncul row baru dengan UUID yang sama.
+- [ ] Pastikan ada kategori dengan `syncStatus = pending` atau `failed`.
+- [ ] Klik `Jalankan sync manual`.
+- [ ] Jika gagal, pesan menyebut tahap `push Categories`.
+- [ ] Jika sukses, kategori berubah menjadi `synced`.
 
-## Pull dari Spreadsheet
+## Push Transactions
 
-- [ ] Edit row di spreadsheet.
-- [ ] Ubah updatedAt menjadi lebih baru dari data lokal.
-- [ ] Jalankan sync pull.
-- [ ] Data lokal ikut berubah.
-- [ ] Beranda dan Keuangan ikut menampilkan data terbaru.
+- [ ] Tambah transaksi manual baru.
+- [ ] Pastikan transaksi memiliki `syncStatus = pending`.
+- [ ] Klik `Jalankan sync manual`.
+- [ ] Pastikan row masuk ke sheet `Transactions`.
+- [ ] Pastikan tidak ada row duplikat dengan `uuid` yang sama.
 
-## Conflict Resolution
+## Pull Transactions
 
-- [ ] Edit transaksi di aplikasi.
-- [ ] Edit row yang sama di spreadsheet.
-- [ ] Buat salah satu updatedAt lebih baru.
-- [ ] Jalankan sync.
-- [ ] Data dengan updatedAt terbaru menang.
-- [ ] Data yang lebih lama tidak menimpa data terbaru.
+- [ ] Edit row transaksi di spreadsheet.
+- [ ] Ubah `updatedAt` menjadi lebih baru dari lokal.
+- [ ] Klik `Jalankan sync manual`.
+- [ ] Pastikan data lokal ikut berubah.
 
-## Soft Delete
+## Error Diagnostics
 
-- [ ] Hapus transaksi di aplikasi.
-- [ ] Jalankan sync.
-- [ ] Row spreadsheet tetap ada.
-- [ ] isDeleted berubah menjadi true.
-- [ ] deletedAt terisi.
-- [ ] Data tidak muncul lagi di daftar transaksi aktif.
+- [ ] Jika sync gagal, pesan memuat tahap gagal.
+- [ ] Jika response bukan JSON, pesan memuat `statusCode`.
+- [ ] Jika response bukan JSON, pesan memuat `content-type`.
+- [ ] Jika response bukan JSON, pesan memuat `bodyPreview` maksimal 300 karakter.
+- [ ] Token tidak pernah muncul di pesan error.
 
-## Offline / Failed Sync
+## Redirect Google Apps Script
 
-- [ ] Matikan internet.
-- [ ] Tambah transaksi.
-- [ ] Pastikan transaksi tetap tersimpan lokal.
-- [ ] Pastikan syncStatus = pending atau failed sesuai kondisi.
-- [ ] Nyalakan internet.
-- [ ] Jalankan sync ulang.
-- [ ] Data terkirim ke spreadsheet.
-
-## Token Salah
-
-- [ ] Masukkan token salah.
-- [ ] Jalankan sync.
-- [ ] Aplikasi menampilkan pesan gagal yang jelas.
-- [ ] Data lokal tidak hilang.
-- [ ] syncErrorMessage terisi.
-
-## Apps Script Error
-
-- [ ] Simulasikan Web App URL salah.
-- [ ] Jalankan sync.
-- [ ] Aplikasi menampilkan pesan gagal.
-- [ ] Data lokal tetap aman.
-- [ ] syncStatus menjadi failed.
+- [ ] Jika Google mengembalikan `302` atau `303`, sync tetap lanjut.
+- [ ] Jika response akhir valid, aplikasi tidak lagi berhenti di HTML `Moved Temporarily`.

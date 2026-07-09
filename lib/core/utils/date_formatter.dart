@@ -25,4 +25,11 @@ class DateFormatter {
     final DateTime local = value.toLocal();
     return '${_monthNames[local.month - 1]} ${local.year}';
   }
+
+  static String formatDateTime(DateTime value) {
+    final DateTime local = value.toLocal();
+    final String hour = local.hour.toString().padLeft(2, '0');
+    final String minute = local.minute.toString().padLeft(2, '0');
+    return '${local.day} ${_monthNames[local.month - 1]} ${local.year}, $hour:$minute';
+  }
 }

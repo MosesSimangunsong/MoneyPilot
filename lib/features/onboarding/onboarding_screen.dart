@@ -9,10 +9,7 @@ import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/secondary_button.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({
-    super.key,
-    required this.sessionController,
-  });
+  const OnboardingScreen({super.key, required this.sessionController});
 
   final AppSessionController sessionController;
 
@@ -56,7 +53,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('Selamat datang di MoneyPilot', style: textTheme.headlineLarge),
+              Text(
+                'Selamat datang di MoneyPilot',
+                style: textTheme.headlineLarge,
+              ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Kita siapkan alur awal yang ringkas supaya kamu bisa cepat masuk ke aplikasi.',

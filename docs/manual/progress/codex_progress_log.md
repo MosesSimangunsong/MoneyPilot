@@ -50,3 +50,24 @@ Persiapan manual:
 - [ ] Implementasi Flutter sync
 - [ ] Implementasi Google Apps Script sync
 - [ ] Verifikasi analyze/test
+
+## Tahap 6 — Google Spreadsheet Sync Dua Arah
+
+Status: Persiapan manual sedang/selesai, menunggu Tahap 5 Voice Input valid.
+
+Persiapan manual:
+- [ ] Spreadsheet dibuat
+- [ ] Sheet dan header dibuat
+- [ ] Secret token dibuat
+- [ ] Apps Script Web App aktif
+- [ ] Sync rules dibuat
+- [ ] Payload examples dibuat
+- [ ] Testing checklist dibuat
+- [ ] Placeholder file sync dibuat
+
+Implementasi:
+- [ ] Implementasi Flutter sync
+- [ ] Implementasi Google Apps Script sync
+- [ ] Verifikasi flutter analyze
+- [ ] Verifikasi flutter test
+- [ ] Manual test sync spreadsheet

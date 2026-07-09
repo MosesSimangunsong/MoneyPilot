@@ -1,30 +1,512 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../core/constants/route_constants.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/utils/currency_formatter.dart';
+import '../../core/utils/date_formatter.dart';
+import '../../data/models/dividend.dart';
+import '../../data/models/stock_transaction.dart';
+import '../../data/repositories/portfolio_repository.dart';
 import '../../shared/layouts/app_page.dart';
 import '../../shared/widgets/info_card.dart';
 
-class PortofolioScreen extends StatelessWidget {
-  const PortofolioScreen({super.key});
+class PortofolioScreen extends StatefulWidget {
+  const PortofolioScreen({super.key, required this.portfolioRepository});
+
+  final PortfolioRepository portfolioRepository;
+
+  @override
+  State<PortofolioScreen> createState() => _PortofolioScreenState();
+}
+
+class _PortofolioScreenState extends State<PortofolioScreen> {
+  int _refreshNonce = 0;
 
   @override
   Widget build(BuildContext context) {
-    return const AppPage(
-      title: 'Portofolio',
-      description: 'Pantau posisi investasimu dengan tampilan yang tenang.',
-      children: <Widget>[
-        InfoCard(
-          title: 'Portofolio saham manual akan dibangun bertahap',
+    return FutureBuilder<PortfolioOverview>(
+      key: ValueKey<int>(_refreshNonce),
+      future: widget.portfolioRepository.getPortfolioOverview(),
+      builder: (BuildContext context, AsyncSnapshot<PortfolioOverview> snapshot) {
+        final PortfolioOverview? data = snapshot.data;
+
+        return AppPage(
+          title: 'Portofolio',
           description:
-              'Tahap 1 menyiapkan shell, theme, dan ruang layar yang nanti diisi transaksi saham, dividen, serta ringkasan P/L.',
-        ),
-        SizedBox(height: AppSpacing.lg),
-        InfoCard(
-          title: 'Prinsip yang sudah dikunci',
-          description:
-              'Metode moving average, input manual, update harga via backend, dan fallback harga terakhir/manual sementara.',
-        ),
-      ],
+              'Catat transaksi saham dan dividen manual, lalu pantau posisi yang masih kamu pegang.',
+          children: <Widget>[
+            _PortfolioSummaryCard(data: data),
+            const SizedBox(height: AppSpacing.lg),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => _openStockTransactionForm(),
+                    icon: const Icon(LucideIcons.plus),
+                    label: const Text('Tambah Transaksi Saham'),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _openDividendForm(),
+                    icon: const Icon(LucideIcons.wallet),
+                    label: const Text('Catat Dividen'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            const InfoCard(
+              title: 'Sync saham dan dividen belum diaktifkan',
+              description:
+                  'Tahap ini memprioritaskan penyimpanan lokal yang stabil. Data portofolio sudah memakai UUID, timestamp UTC, syncStatus, dan soft delete agar siap diaktifkan ke spreadsheet pada tahap berikutnya.',
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            Text(
+              'Posisi saham',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                data == null)
+              const Center(child: CircularProgressIndicator())
+            else if (snapshot.hasError)
+              const _SectionMessage(
+                title: 'Portofolio belum bisa dimuat',
+                description:
+                    'Coba buka kembali halaman ini. Jika masalah berlanjut, periksa data lokal aplikasi.',
+              )
+            else if (data == null || data.positions.isEmpty)
+              const _SectionMessage(
+                title: 'Belum ada posisi aktif',
+                description:
+                    'Tambahkan transaksi beli saham agar ringkasan posisi mulai terisi.',
+              )
+            else
+              ...data.positions.map(
+                (PortfolioPositionSummary position) =>
+                    _PositionCard(position: position),
+              ),
+            const SizedBox(height: AppSpacing.xl),
+            Text(
+              'Transaksi saham terbaru',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            if (data == null || data.recentTransactions.isEmpty)
+              const _SectionMessage(
+                title: 'Belum ada transaksi saham',
+                description:
+                    'Transaksi beli dan jual yang kamu catat akan muncul di sini.',
+              )
+            else
+              ..._buildTransactionList(data.recentTransactions),
+          ],
+        );
+      },
     );
   }
+
+  List<Widget> _buildTransactionList(List<StockTransaction> transactions) {
+    return <Widget>[
+      for (int index = 0; index < transactions.length; index++) ...<Widget>[
+        _StockTransactionTile(
+          transaction: transactions[index],
+          onEdit: () => _openEditStockTransaction(transactions[index].uuid),
+          onDelete: () => _confirmDelete(transactions[index]),
+        ),
+        if (index < transactions.length - 1) const Divider(height: 1),
+      ],
+    ];
+  }
+
+  Future<void> _openStockTransactionForm() async {
+    final Object? result = await context.push(
+      RouteConstants.transaksiSahamBaru,
+    );
+    if (result == true && mounted) {
+      setState(() {
+        _refreshNonce++;
+      });
+    }
+  }
+
+  Future<void> _openEditStockTransaction(String uuid) async {
+    final Object? result = await context.push(
+      '${RouteConstants.portofolio}/$uuid/edit',
+    );
+    if (result == true && mounted) {
+      setState(() {
+        _refreshNonce++;
+      });
+    }
+  }
+
+  Future<void> _openDividendForm() async {
+    final Object? result = await context.push(RouteConstants.catatDividen);
+    if (result == true && mounted) {
+      setState(() {
+        _refreshNonce++;
+      });
+    }
+  }
+
+  Future<void> _confirmDelete(StockTransaction transaction) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Hapus transaksi saham?'),
+          content: Text(
+            'Transaksi ${transaction.symbol} akan disembunyikan dari daftar aktif, tetapi tetap disimpan untuk riwayat lokal.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    await widget.portfolioRepository.softDeleteStockTransaction(
+      transaction.uuid,
+    );
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _refreshNonce++;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Transaksi saham dipindahkan dari daftar aktif.'),
+      ),
+    );
+  }
+}
+
+class _PortfolioSummaryCard extends StatelessWidget {
+  const _PortfolioSummaryCard({required this.data});
+
+  final PortfolioOverview? data;
+
+  @override
+  Widget build(BuildContext context) {
+    final PortfolioOverview overview =
+        data ??
+        PortfolioOverview(
+          totalOwnedStocks: 0,
+          totalModal: 0,
+          totalDividen: 0,
+          positions: const <PortfolioPositionSummary>[],
+          recentTransactions: const <StockTransaction>[],
+          dividends: const <Dividend>[],
+        );
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Wrap(
+        spacing: AppSpacing.xl,
+        runSpacing: AppSpacing.lg,
+        children: <Widget>[
+          _SummaryMetric(
+            label: 'Saham dimiliki',
+            value: '${overview.totalOwnedStocks}',
+            color: AppColors.textPrimary,
+          ),
+          _SummaryMetric(
+            label: 'Total modal',
+            value: CurrencyFormatter.formatRupiah(overview.totalModal),
+            color: AppColors.primaryDark,
+          ),
+          _SummaryMetric(
+            label: 'Total dividen',
+            value: CurrencyFormatter.formatRupiah(overview.totalDividen),
+            color: AppColors.success,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryMetric extends StatelessWidget {
+  const _SummaryMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 150,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PositionCard extends StatelessWidget {
+  const _PositionCard({required this.position});
+
+  final PortfolioPositionSummary position;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    position.symbol,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                Text(
+                  CurrencyFormatter.formatRupiah(position.totalCost),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppColors.primaryDark,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            if ((position.companyName ?? '').isNotEmpty) ...<Widget>[
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                position.companyName!,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.lg,
+              runSpacing: AppSpacing.sm,
+              children: <Widget>[
+                _PositionMeta(
+                  label: 'Lot',
+                  value: _formatLot(position.totalLot),
+                ),
+                _PositionMeta(
+                  label: 'Lembar',
+                  value: '${position.totalShares}',
+                ),
+                _PositionMeta(
+                  label: 'Harga rata-rata',
+                  value: CurrencyFormatter.formatRupiah(
+                    position.averageBuyPrice,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PositionMeta extends StatelessWidget {
+  const _PositionMeta({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 120,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(value, style: Theme.of(context).textTheme.titleSmall),
+        ],
+      ),
+    );
+  }
+}
+
+class _StockTransactionTile extends StatelessWidget {
+  const _StockTransactionTile({
+    required this.transaction,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final StockTransaction transaction;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isBuy = transaction.actionType == 'buy';
+    final Color toneColor = isBuy ? AppColors.primaryDark : AppColors.warning;
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      onTap: onEdit,
+      title: Text(
+        '${isBuy ? 'Beli' : 'Jual'} ${transaction.symbol}',
+        style: Theme.of(
+          context,
+        ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.xs),
+        child: Text(
+          '${_formatLot(transaction.lot.toDouble())} lot • ${transaction.shares} lembar • ${DateFormatter.formatShortDate(transaction.transactionDate)}',
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+        ),
+      ),
+      trailing: PopupMenuButton<String>(
+        onSelected: (String value) {
+          if (value == 'edit') {
+            onEdit();
+            return;
+          }
+          if (value == 'delete') {
+            onDelete();
+          }
+        },
+        itemBuilder: (BuildContext context) {
+          return <PopupMenuEntry<String>>[
+            PopupMenuItem<String>(
+              value: 'price',
+              enabled: false,
+              child: Text(
+                CurrencyFormatter.formatRupiah(transaction.price),
+                style: TextStyle(color: toneColor, fontWeight: FontWeight.w700),
+              ),
+            ),
+            const PopupMenuDivider(),
+            const PopupMenuItem<String>(
+              value: 'edit',
+              child: Text('Edit transaksi'),
+            ),
+            const PopupMenuItem<String>(
+              value: 'delete',
+              child: Text('Hapus dari daftar aktif'),
+            ),
+          ];
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            Text(
+              CurrencyFormatter.formatRupiah(transaction.price),
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: toneColor,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            const Icon(Icons.more_horiz),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionMessage extends StatelessWidget {
+  const _SectionMessage({required this.title, required this.description});
+
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            description,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _formatLot(double lot) {
+  if (lot == lot.roundToDouble()) {
+    return lot.toStringAsFixed(0);
+  }
+  return lot.toStringAsFixed(2);
 }

@@ -52,13 +52,21 @@ const DividendSchema = CollectionSchema(
       name: r'netAmount',
       type: IsarType.double,
     ),
-    r'note': PropertySchema(id: 7, name: r'note', type: IsarType.string),
+    r'note': PropertySchema(
+      id: 7,
+      name: r'note',
+      type: IsarType.string,
+    ),
     r'receivedDate': PropertySchema(
       id: 8,
       name: r'receivedDate',
       type: IsarType.dateTime,
     ),
-    r'symbol': PropertySchema(id: 9, name: r'symbol', type: IsarType.string),
+    r'symbol': PropertySchema(
+      id: 9,
+      name: r'symbol',
+      type: IsarType.string,
+    ),
     r'syncErrorMessage': PropertySchema(
       id: 10,
       name: r'syncErrorMessage',
@@ -69,13 +77,21 @@ const DividendSchema = CollectionSchema(
       name: r'syncStatus',
       type: IsarType.string,
     ),
-    r'tax': PropertySchema(id: 12, name: r'tax', type: IsarType.double),
+    r'tax': PropertySchema(
+      id: 12,
+      name: r'tax',
+      type: IsarType.double,
+    ),
     r'updatedAt': PropertySchema(
       id: 13,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
-    r'uuid': PropertySchema(id: 14, name: r'uuid', type: IsarType.string),
+    r'uuid': PropertySchema(
+      id: 14,
+      name: r'uuid',
+      type: IsarType.string,
+    )
   },
   estimateSize: _dividendEstimateSize,
   serialize: _dividendSerialize,
@@ -93,7 +109,7 @@ const DividendSchema = CollectionSchema(
           name: r'uuid',
           type: IndexType.hash,
           caseSensitive: true,
-        ),
+        )
       ],
     ),
     r'symbol': IndexSchema(
@@ -106,7 +122,7 @@ const DividendSchema = CollectionSchema(
           name: r'symbol',
           type: IndexType.hash,
           caseSensitive: false,
-        ),
+        )
       ],
     ),
     r'receivedDate': IndexSchema(
@@ -119,7 +135,7 @@ const DividendSchema = CollectionSchema(
           name: r'receivedDate',
           type: IndexType.value,
           caseSensitive: false,
-        ),
+        )
       ],
     ),
     r'syncStatus': IndexSchema(
@@ -132,7 +148,7 @@ const DividendSchema = CollectionSchema(
           name: r'syncStatus',
           type: IndexType.hash,
           caseSensitive: true,
-        ),
+        )
       ],
     ),
     r'isDeleted': IndexSchema(
@@ -145,7 +161,7 @@ const DividendSchema = CollectionSchema(
           name: r'isDeleted',
           type: IndexType.value,
           caseSensitive: false,
-        ),
+        )
       ],
     ),
     r'updatedAt': IndexSchema(
@@ -158,9 +174,9 @@ const DividendSchema = CollectionSchema(
           name: r'updatedAt',
           type: IndexType.value,
           caseSensitive: false,
-        ),
+        )
       ],
-    ),
+    )
   },
   links: {},
   embeddedSchemas: {},
@@ -399,7 +415,10 @@ extension DividendQueryWhereSort on QueryBuilder<Dividend, Dividend, QWhere> {
 extension DividendQueryWhere on QueryBuilder<Dividend, Dividend, QWhereClause> {
   QueryBuilder<Dividend, Dividend, QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
+      return query.addWhereClause(IdWhereClause.between(
+        lower: id,
+        upper: id,
+      ));
     });
   }
 
@@ -425,10 +444,8 @@ extension DividendQueryWhere on QueryBuilder<Dividend, Dividend, QWhereClause> {
     });
   }
 
-  QueryBuilder<Dividend, Dividend, QAfterWhereClause> idGreaterThan(
-    Id id, {
-    bool include = false,
-  }) {
+  QueryBuilder<Dividend, Dividend, QAfterWhereClause> idGreaterThan(Id id,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -436,10 +453,8 @@ extension DividendQueryWhere on QueryBuilder<Dividend, Dividend, QWhereClause> {
     });
   }
 
-  QueryBuilder<Dividend, Dividend, QAfterWhereClause> idLessThan(
-    Id id, {
-    bool include = false,
-  }) {
+  QueryBuilder<Dividend, Dividend, QAfterWhereClause> idLessThan(Id id,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -454,176 +469,145 @@ extension DividendQueryWhere on QueryBuilder<Dividend, Dividend, QWhereClause> {
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.between(
-          lower: lowerId,
-          includeLower: includeLower,
-          upper: upperId,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addWhereClause(IdWhereClause.between(
+        lower: lowerId,
+        includeLower: includeLower,
+        upper: upperId,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterWhereClause> uuidEqualTo(String uuid) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'uuid', value: [uuid]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'uuid',
+        value: [uuid],
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterWhereClause> uuidNotEqualTo(
-    String uuid,
-  ) {
+      String uuid) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'uuid',
-                lower: [],
-                upper: [uuid],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'uuid',
-                lower: [uuid],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [],
+              upper: [uuid],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [uuid],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'uuid',
-                lower: [uuid],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'uuid',
-                lower: [],
-                upper: [uuid],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [uuid],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [],
+              upper: [uuid],
+              includeUpper: false,
+            ));
       }
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterWhereClause> symbolEqualTo(
-    String symbol,
-  ) {
+      String symbol) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'symbol', value: [symbol]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'symbol',
+        value: [symbol],
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterWhereClause> symbolNotEqualTo(
-    String symbol,
-  ) {
+      String symbol) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'symbol',
-                lower: [],
-                upper: [symbol],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'symbol',
-                lower: [symbol],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'symbol',
+              lower: [],
+              upper: [symbol],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'symbol',
+              lower: [symbol],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'symbol',
-                lower: [symbol],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'symbol',
-                lower: [],
-                upper: [symbol],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'symbol',
+              lower: [symbol],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'symbol',
+              lower: [],
+              upper: [symbol],
+              includeUpper: false,
+            ));
       }
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterWhereClause> receivedDateEqualTo(
-    DateTime receivedDate,
-  ) {
+      DateTime receivedDate) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(
-          indexName: r'receivedDate',
-          value: [receivedDate],
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'receivedDate',
+        value: [receivedDate],
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterWhereClause> receivedDateNotEqualTo(
-    DateTime receivedDate,
-  ) {
+      DateTime receivedDate) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'receivedDate',
-                lower: [],
-                upper: [receivedDate],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'receivedDate',
-                lower: [receivedDate],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'receivedDate',
+              lower: [],
+              upper: [receivedDate],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'receivedDate',
+              lower: [receivedDate],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'receivedDate',
-                lower: [receivedDate],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'receivedDate',
-                lower: [],
-                upper: [receivedDate],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'receivedDate',
+              lower: [receivedDate],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'receivedDate',
+              lower: [],
+              upper: [receivedDate],
+              includeUpper: false,
+            ));
       }
     });
   }
@@ -633,14 +617,12 @@ extension DividendQueryWhere on QueryBuilder<Dividend, Dividend, QWhereClause> {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'receivedDate',
-          lower: [receivedDate],
-          includeLower: include,
-          upper: [],
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'receivedDate',
+        lower: [receivedDate],
+        includeLower: include,
+        upper: [],
+      ));
     });
   }
 
@@ -649,14 +631,12 @@ extension DividendQueryWhere on QueryBuilder<Dividend, Dividend, QWhereClause> {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'receivedDate',
-          lower: [],
-          upper: [receivedDate],
-          includeUpper: include,
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'receivedDate',
+        lower: [],
+        upper: [receivedDate],
+        includeUpper: include,
+      ));
     });
   }
 
@@ -667,176 +647,147 @@ extension DividendQueryWhere on QueryBuilder<Dividend, Dividend, QWhereClause> {
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'receivedDate',
-          lower: [lowerReceivedDate],
-          includeLower: includeLower,
-          upper: [upperReceivedDate],
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'receivedDate',
+        lower: [lowerReceivedDate],
+        includeLower: includeLower,
+        upper: [upperReceivedDate],
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterWhereClause> syncStatusEqualTo(
-    String syncStatus,
-  ) {
+      String syncStatus) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'syncStatus', value: [syncStatus]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'syncStatus',
+        value: [syncStatus],
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterWhereClause> syncStatusNotEqualTo(
-    String syncStatus,
-  ) {
+      String syncStatus) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'syncStatus',
-                lower: [],
-                upper: [syncStatus],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'syncStatus',
-                lower: [syncStatus],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncStatus',
+              lower: [],
+              upper: [syncStatus],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncStatus',
+              lower: [syncStatus],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'syncStatus',
-                lower: [syncStatus],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'syncStatus',
-                lower: [],
-                upper: [syncStatus],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncStatus',
+              lower: [syncStatus],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncStatus',
+              lower: [],
+              upper: [syncStatus],
+              includeUpper: false,
+            ));
       }
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterWhereClause> isDeletedEqualTo(
-    bool isDeleted,
-  ) {
+      bool isDeleted) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'isDeleted', value: [isDeleted]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'isDeleted',
+        value: [isDeleted],
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterWhereClause> isDeletedNotEqualTo(
-    bool isDeleted,
-  ) {
+      bool isDeleted) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'isDeleted',
-                lower: [],
-                upper: [isDeleted],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'isDeleted',
-                lower: [isDeleted],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isDeleted',
+              lower: [],
+              upper: [isDeleted],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isDeleted',
+              lower: [isDeleted],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'isDeleted',
-                lower: [isDeleted],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'isDeleted',
-                lower: [],
-                upper: [isDeleted],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isDeleted',
+              lower: [isDeleted],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isDeleted',
+              lower: [],
+              upper: [isDeleted],
+              includeUpper: false,
+            ));
       }
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterWhereClause> updatedAtEqualTo(
-    DateTime updatedAt,
-  ) {
+      DateTime updatedAt) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'updatedAt', value: [updatedAt]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'updatedAt',
+        value: [updatedAt],
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterWhereClause> updatedAtNotEqualTo(
-    DateTime updatedAt,
-  ) {
+      DateTime updatedAt) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'updatedAt',
-                lower: [],
-                upper: [updatedAt],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'updatedAt',
-                lower: [updatedAt],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [],
+              upper: [updatedAt],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [updatedAt],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'updatedAt',
-                lower: [updatedAt],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'updatedAt',
-                lower: [],
-                upper: [updatedAt],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [updatedAt],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [],
+              upper: [updatedAt],
+              includeUpper: false,
+            ));
       }
     });
   }
@@ -846,14 +797,12 @@ extension DividendQueryWhere on QueryBuilder<Dividend, Dividend, QWhereClause> {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'updatedAt',
-          lower: [updatedAt],
-          includeLower: include,
-          upper: [],
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [updatedAt],
+        includeLower: include,
+        upper: [],
+      ));
     });
   }
 
@@ -862,14 +811,12 @@ extension DividendQueryWhere on QueryBuilder<Dividend, Dividend, QWhereClause> {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'updatedAt',
-          lower: [],
-          upper: [updatedAt],
-          includeUpper: include,
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [],
+        upper: [updatedAt],
+        includeUpper: include,
+      ));
     });
   }
 
@@ -880,15 +827,13 @@ extension DividendQueryWhere on QueryBuilder<Dividend, Dividend, QWhereClause> {
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'updatedAt',
-          lower: [lowerUpdatedAt],
-          includeLower: includeLower,
-          upper: [upperUpdatedAt],
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [lowerUpdatedAt],
+        includeLower: includeLower,
+        upper: [upperUpdatedAt],
+        includeUpper: includeUpper,
+      ));
     });
   }
 }
@@ -897,18 +842,18 @@ extension DividendQueryFilter
     on QueryBuilder<Dividend, Dividend, QFilterCondition> {
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> companyNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'companyName'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'companyName',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  companyNameIsNotNull() {
+      companyNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'companyName'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'companyName',
+      ));
     });
   }
 
@@ -917,31 +862,27 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'companyName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'companyName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  companyNameGreaterThan(
+      companyNameGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'companyName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'companyName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -951,14 +892,12 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'companyName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'companyName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -970,16 +909,14 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'companyName',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'companyName',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -988,13 +925,11 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'companyName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'companyName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1003,70 +938,64 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'companyName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'companyName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> companyNameContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'companyName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'companyName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> companyNameMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'companyName',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'companyName',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> companyNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'companyName', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'companyName',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  companyNameIsNotEmpty() {
+      companyNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'companyName', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'companyName',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> createdAtEqualTo(
-    DateTime value,
-  ) {
+      DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'createdAt', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'createdAt',
+        value: value,
+      ));
     });
   }
 
@@ -1075,13 +1004,11 @@ extension DividendQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'createdAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'createdAt',
+        value: value,
+      ));
     });
   }
 
@@ -1090,13 +1017,11 @@ extension DividendQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'createdAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'createdAt',
+        value: value,
+      ));
     });
   }
 
@@ -1107,41 +1032,39 @@ extension DividendQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'createdAt',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'createdAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> deletedAtIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'deletedAt'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'deletedAt',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> deletedAtIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'deletedAt'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'deletedAt',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> deletedAtEqualTo(
-    DateTime? value,
-  ) {
+      DateTime? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'deletedAt', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'deletedAt',
+        value: value,
+      ));
     });
   }
 
@@ -1150,13 +1073,11 @@ extension DividendQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'deletedAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'deletedAt',
+        value: value,
+      ));
     });
   }
 
@@ -1165,13 +1086,11 @@ extension DividendQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'deletedAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'deletedAt',
+        value: value,
+      ));
     });
   }
 
@@ -1182,15 +1101,13 @@ extension DividendQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'deletedAt',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'deletedAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
@@ -1199,31 +1116,27 @@ extension DividendQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'grossAmount',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'grossAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  grossAmountGreaterThan(
+      grossAmountGreaterThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'grossAmount',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'grossAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
@@ -1233,14 +1146,12 @@ extension DividendQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'grossAmount',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'grossAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
@@ -1252,24 +1163,23 @@ extension DividendQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'grossAmount',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'grossAmount',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'id', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
@@ -1278,13 +1188,11 @@ extension DividendQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
@@ -1293,13 +1201,11 @@ extension DividendQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
@@ -1310,97 +1216,92 @@ extension DividendQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'id',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> isDeletedEqualTo(
-    bool value,
-  ) {
+      bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'isDeleted', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isDeleted',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  linkedTransactionUuidIsNull() {
+      linkedTransactionUuidIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'linkedTransactionUuid'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'linkedTransactionUuid',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  linkedTransactionUuidIsNotNull() {
+      linkedTransactionUuidIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'linkedTransactionUuid'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'linkedTransactionUuid',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  linkedTransactionUuidEqualTo(String? value, {bool caseSensitive = true}) {
+      linkedTransactionUuidEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'linkedTransactionUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'linkedTransactionUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  linkedTransactionUuidGreaterThan(
+      linkedTransactionUuidGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'linkedTransactionUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'linkedTransactionUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  linkedTransactionUuidLessThan(
+      linkedTransactionUuidLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'linkedTransactionUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'linkedTransactionUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  linkedTransactionUuidBetween(
+      linkedTransactionUuidBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -1408,89 +1309,85 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'linkedTransactionUuid',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'linkedTransactionUuid',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  linkedTransactionUuidStartsWith(String value, {bool caseSensitive = true}) {
+      linkedTransactionUuidStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'linkedTransactionUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'linkedTransactionUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  linkedTransactionUuidEndsWith(String value, {bool caseSensitive = true}) {
+      linkedTransactionUuidEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'linkedTransactionUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'linkedTransactionUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  linkedTransactionUuidContains(String value, {bool caseSensitive = true}) {
+      linkedTransactionUuidContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'linkedTransactionUuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'linkedTransactionUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  linkedTransactionUuidMatches(String pattern, {bool caseSensitive = true}) {
+      linkedTransactionUuidMatches(String pattern,
+          {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'linkedTransactionUuid',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'linkedTransactionUuid',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  linkedTransactionUuidIsEmpty() {
+      linkedTransactionUuidIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'linkedTransactionUuid', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'linkedTransactionUuid',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  linkedTransactionUuidIsNotEmpty() {
+      linkedTransactionUuidIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          property: r'linkedTransactionUuid',
-          value: '',
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'linkedTransactionUuid',
+        value: '',
+      ));
     });
   }
 
@@ -1499,13 +1396,11 @@ extension DividendQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'netAmount',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'netAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
@@ -1515,14 +1410,12 @@ extension DividendQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'netAmount',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'netAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
@@ -1532,14 +1425,12 @@ extension DividendQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'netAmount',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'netAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
@@ -1551,32 +1442,30 @@ extension DividendQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'netAmount',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'netAmount',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> noteIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'note'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'note',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> noteIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'note'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'note',
+      ));
     });
   }
 
@@ -1585,13 +1474,11 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'note',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'note',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1601,14 +1488,12 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'note',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'note',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1618,14 +1503,12 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'note',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'note',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1637,16 +1520,14 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'note',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'note',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1655,13 +1536,11 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'note',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'note',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1670,82 +1549,77 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'note',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'note',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> noteContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'note',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'note',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> noteMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'note',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'note',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> noteIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'note', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'note',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> noteIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'note', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'note',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> receivedDateEqualTo(
-    DateTime value,
-  ) {
+      DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'receivedDate', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'receivedDate',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  receivedDateGreaterThan(DateTime value, {bool include = false}) {
+      receivedDateGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'receivedDate',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'receivedDate',
+        value: value,
+      ));
     });
   }
 
@@ -1754,13 +1628,11 @@ extension DividendQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'receivedDate',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'receivedDate',
+        value: value,
+      ));
     });
   }
 
@@ -1771,15 +1643,13 @@ extension DividendQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'receivedDate',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'receivedDate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
@@ -1788,13 +1658,11 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'symbol',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'symbol',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1804,14 +1672,12 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'symbol',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'symbol',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1821,14 +1687,12 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'symbol',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'symbol',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1840,16 +1704,14 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'symbol',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'symbol',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1858,13 +1720,11 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'symbol',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'symbol',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1873,131 +1733,122 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'symbol',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'symbol',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> symbolContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'symbol',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'symbol',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> symbolMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'symbol',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'symbol',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> symbolIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'symbol', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'symbol',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> symbolIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'symbol', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'symbol',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  syncErrorMessageIsNull() {
+      syncErrorMessageIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'syncErrorMessage'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'syncErrorMessage',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  syncErrorMessageIsNotNull() {
+      syncErrorMessageIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'syncErrorMessage'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'syncErrorMessage',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  syncErrorMessageEqualTo(String? value, {bool caseSensitive = true}) {
+      syncErrorMessageEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'syncErrorMessage',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'syncErrorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  syncErrorMessageGreaterThan(
+      syncErrorMessageGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'syncErrorMessage',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'syncErrorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  syncErrorMessageLessThan(
+      syncErrorMessageLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'syncErrorMessage',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'syncErrorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  syncErrorMessageBetween(
+      syncErrorMessageBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2005,86 +1856,84 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'syncErrorMessage',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'syncErrorMessage',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  syncErrorMessageStartsWith(String value, {bool caseSensitive = true}) {
+      syncErrorMessageStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'syncErrorMessage',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'syncErrorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  syncErrorMessageEndsWith(String value, {bool caseSensitive = true}) {
+      syncErrorMessageEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'syncErrorMessage',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'syncErrorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  syncErrorMessageContains(String value, {bool caseSensitive = true}) {
+      syncErrorMessageContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'syncErrorMessage',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'syncErrorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  syncErrorMessageMatches(String pattern, {bool caseSensitive = true}) {
+      syncErrorMessageMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'syncErrorMessage',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'syncErrorMessage',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  syncErrorMessageIsEmpty() {
+      syncErrorMessageIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'syncErrorMessage', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'syncErrorMessage',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  syncErrorMessageIsNotEmpty() {
+      syncErrorMessageIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'syncErrorMessage', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'syncErrorMessage',
+        value: '',
+      ));
     });
   }
 
@@ -2093,13 +1942,11 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'syncStatus',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'syncStatus',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2109,14 +1956,12 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'syncStatus',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'syncStatus',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2126,14 +1971,12 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'syncStatus',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'syncStatus',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2145,16 +1988,14 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'syncStatus',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'syncStatus',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2163,13 +2004,11 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'syncStatus',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'syncStatus',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2178,60 +2017,54 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'syncStatus',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'syncStatus',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> syncStatusContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'syncStatus',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'syncStatus',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> syncStatusMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'syncStatus',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'syncStatus',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> syncStatusIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'syncStatus', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'syncStatus',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition>
-  syncStatusIsNotEmpty() {
+      syncStatusIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'syncStatus', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'syncStatus',
+        value: '',
+      ));
     });
   }
 
@@ -2240,13 +2073,11 @@ extension DividendQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'tax',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'tax',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
@@ -2256,14 +2087,12 @@ extension DividendQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'tax',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'tax',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
@@ -2273,14 +2102,12 @@ extension DividendQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'tax',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'tax',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
@@ -2292,26 +2119,24 @@ extension DividendQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'tax',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'tax',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> updatedAtEqualTo(
-    DateTime value,
-  ) {
+      DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'updatedAt', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'updatedAt',
+        value: value,
+      ));
     });
   }
 
@@ -2320,13 +2145,11 @@ extension DividendQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'updatedAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'updatedAt',
+        value: value,
+      ));
     });
   }
 
@@ -2335,13 +2158,11 @@ extension DividendQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'updatedAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'updatedAt',
+        value: value,
+      ));
     });
   }
 
@@ -2352,15 +2173,13 @@ extension DividendQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'updatedAt',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'updatedAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
@@ -2369,13 +2188,11 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2385,14 +2202,12 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2402,14 +2217,12 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2421,16 +2234,14 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'uuid',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'uuid',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2439,13 +2250,11 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2454,59 +2263,53 @@ extension DividendQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> uuidContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> uuidMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'uuid',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'uuid',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> uuidIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'uuid', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'uuid',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<Dividend, Dividend, QAfterFilterCondition> uuidIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'uuid', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'uuid',
+        value: '',
+      ));
     });
   }
 }
@@ -2585,7 +2388,7 @@ extension DividendQuerySortBy on QueryBuilder<Dividend, Dividend, QSortBy> {
   }
 
   QueryBuilder<Dividend, Dividend, QAfterSortBy>
-  sortByLinkedTransactionUuidDesc() {
+      sortByLinkedTransactionUuidDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'linkedTransactionUuid', Sort.desc);
     });
@@ -2781,7 +2584,7 @@ extension DividendQuerySortThenBy
   }
 
   QueryBuilder<Dividend, Dividend, QAfterSortBy>
-  thenByLinkedTransactionUuidDesc() {
+      thenByLinkedTransactionUuidDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'linkedTransactionUuid', Sort.desc);
     });
@@ -2898,9 +2701,8 @@ extension DividendQuerySortThenBy
 
 extension DividendQueryWhereDistinct
     on QueryBuilder<Dividend, Dividend, QDistinct> {
-  QueryBuilder<Dividend, Dividend, QDistinct> distinctByCompanyName({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Dividend, Dividend, QDistinct> distinctByCompanyName(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'companyName', caseSensitive: caseSensitive);
     });
@@ -2930,14 +2732,11 @@ extension DividendQueryWhereDistinct
     });
   }
 
-  QueryBuilder<Dividend, Dividend, QDistinct> distinctByLinkedTransactionUuid({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Dividend, Dividend, QDistinct> distinctByLinkedTransactionUuid(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(
-        r'linkedTransactionUuid',
-        caseSensitive: caseSensitive,
-      );
+      return query.addDistinctBy(r'linkedTransactionUuid',
+          caseSensitive: caseSensitive);
     });
   }
 
@@ -2947,9 +2746,8 @@ extension DividendQueryWhereDistinct
     });
   }
 
-  QueryBuilder<Dividend, Dividend, QDistinct> distinctByNote({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Dividend, Dividend, QDistinct> distinctByNote(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'note', caseSensitive: caseSensitive);
     });
@@ -2961,28 +2759,23 @@ extension DividendQueryWhereDistinct
     });
   }
 
-  QueryBuilder<Dividend, Dividend, QDistinct> distinctBySymbol({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Dividend, Dividend, QDistinct> distinctBySymbol(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'symbol', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<Dividend, Dividend, QDistinct> distinctBySyncErrorMessage({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Dividend, Dividend, QDistinct> distinctBySyncErrorMessage(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(
-        r'syncErrorMessage',
-        caseSensitive: caseSensitive,
-      );
+      return query.addDistinctBy(r'syncErrorMessage',
+          caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<Dividend, Dividend, QDistinct> distinctBySyncStatus({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Dividend, Dividend, QDistinct> distinctBySyncStatus(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'syncStatus', caseSensitive: caseSensitive);
     });
@@ -3000,9 +2793,8 @@ extension DividendQueryWhereDistinct
     });
   }
 
-  QueryBuilder<Dividend, Dividend, QDistinct> distinctByUuid({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Dividend, Dividend, QDistinct> distinctByUuid(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'uuid', caseSensitive: caseSensitive);
     });
@@ -3048,7 +2840,7 @@ extension DividendQueryProperty
   }
 
   QueryBuilder<Dividend, String?, QQueryOperations>
-  linkedTransactionUuidProperty() {
+      linkedTransactionUuidProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'linkedTransactionUuid');
     });

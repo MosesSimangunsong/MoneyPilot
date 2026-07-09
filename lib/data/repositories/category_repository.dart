@@ -7,6 +7,8 @@ class CategoryRepository {
   CategoryRepository(this._isar);
 
   final Isar _isar;
+  static const String defaultDividendCategoryUuid =
+      '17f520c4-593f-44d7-abd8-6909b83a8198';
 
   static const List<_DefaultCategorySeed> _defaultSeeds =
       <_DefaultCategorySeed>[
@@ -144,7 +146,8 @@ class CategoryRepository {
         .isDeletedEqualTo(false)
         .sortByType()
         .thenByName()
-        .findAll();
+        .findAll()
+        .then(_normalizeCategoryList);
   }
 
   Future<List<Category>> getByType(String type) {
@@ -154,7 +157,8 @@ class CategoryRepository {
         .and()
         .isDeletedEqualTo(false)
         .sortByName()
-        .findAll();
+        .findAll()
+        .then(_normalizeCategoryList);
   }
 
   Future<void> seedDefaultCategoriesIfNeeded() async {
@@ -174,6 +178,7 @@ class CategoryRepository {
             iconName: seed.iconName,
             colorHex: seed.colorHex,
             isDefault: true,
+            syncStatus: 'pending',
             createdAt: now,
             updatedAt: now,
           ),
@@ -192,6 +197,8 @@ class CategoryRepository {
   Future<Category> upsertCategory(Category category) async {
     final DateTime now = DateTimeUtils.utcNow();
     category.updatedAt = now;
+    category.syncStatus = 'pending';
+    category.syncErrorMessage = null;
     category.createdAt = DateTimeUtils.normalizeUtc(category.createdAt);
     if (category.createdAt.isAfter(now)) {
       category.createdAt = now;
@@ -206,7 +213,7 @@ class CategoryRepository {
       await _isar.categorys.put(category);
     });
 
-    return category;
+    return _normalizeCategoryDates(category);
   }
 
   Future<void> softDeleteCategory(String uuid) async {
@@ -222,6 +229,8 @@ class CategoryRepository {
     category.isDeleted = true;
     category.deletedAt = now;
     category.updatedAt = now;
+    category.syncStatus = 'pending';
+    category.syncErrorMessage = null;
 
     await _isar.writeTxn(() async {
       await _isar.categorys.put(category);
@@ -229,11 +238,43 @@ class CategoryRepository {
   }
 
   Future<Category?> getByUuid(String uuid) {
-    return _isar.categorys.filter().uuidEqualTo(uuid).findFirst();
+    return _isar.categorys.filter().uuidEqualTo(uuid).findFirst().then((
+      Category? item,
+    ) {
+      if (item == null) {
+        return null;
+      }
+      return _normalizeCategoryDates(item);
+    });
+  }
+
+  Future<List<Category>> getPendingSyncCategories() {
+    return _isar.categorys
+        .filter()
+        .group(
+          (q) =>
+              q.syncStatusEqualTo('pending').or().syncStatusEqualTo('failed'),
+        )
+        .sortByUpdatedAt()
+        .findAll()
+        .then(_normalizeCategoryList);
   }
 
   Future<int> countActiveCategories() {
     return _isar.categorys.filter().isDeletedEqualTo(false).count();
+  }
+
+  List<Category> _normalizeCategoryList(List<Category> items) {
+    return items.map(_normalizeCategoryDates).toList(growable: false);
+  }
+
+  Category _normalizeCategoryDates(Category category) {
+    category.createdAt = DateTimeUtils.normalizeUtc(category.createdAt);
+    category.updatedAt = DateTimeUtils.normalizeUtc(category.updatedAt);
+    if (category.deletedAt != null) {
+      category.deletedAt = DateTimeUtils.normalizeUtc(category.deletedAt!);
+    }
+    return category;
   }
 }
 

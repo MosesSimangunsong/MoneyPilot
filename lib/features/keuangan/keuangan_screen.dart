@@ -6,13 +6,24 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/date_formatter.dart';
+import '../../data/models/app_setting.dart';
+import '../../data/repositories/app_setting_repository.dart';
+import '../../data/repositories/sync_repository.dart';
 import '../../data/models/money_transaction.dart';
 import '../../data/repositories/transaction_repository.dart';
 import '../../shared/layouts/app_page.dart';
+import '../../shared/widgets/sync_status_indicator.dart';
 
 class KeuanganScreen extends StatefulWidget {
-  const KeuanganScreen({super.key, required this.transactionRepository});
+  const KeuanganScreen({
+    super.key,
+    required this.appSettingRepository,
+    required this.syncRepository,
+    required this.transactionRepository,
+  });
 
+  final AppSettingRepository appSettingRepository;
+  final SyncRepository syncRepository;
   final TransactionRepository transactionRepository;
 
   @override
@@ -26,7 +37,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
   Widget build(BuildContext context) {
     return StreamBuilder<void>(
       stream: widget.transactionRepository.watchTransactions(),
-      builder: (BuildContext context, AsyncSnapshot<void> _) {
+      builder: (BuildContext context, AsyncSnapshot<void> transactionSnapshot) {
         return FutureBuilder<_KeuanganViewData>(
           future: _loadViewData(),
           builder: (BuildContext context, AsyncSnapshot<_KeuanganViewData> snapshot) {
@@ -41,6 +52,57 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   'Catat transaksi harianmu secara manual dan lihat arus kas bulan ini.',
               children: <Widget>[
                 _SummaryStrip(summary: data?.summary),
+                const SizedBox(height: AppSpacing.lg),
+                StreamBuilder<void>(
+                  stream: widget.appSettingRepository.watchSettings(),
+                  builder:
+                      (
+                        BuildContext context,
+                        AsyncSnapshot<void> settingsSnapshot,
+                      ) {
+                        return FutureBuilder<_SyncBannerData>(
+                          future: _loadSyncBanner(),
+                          builder:
+                              (
+                                BuildContext context,
+                                AsyncSnapshot<_SyncBannerData> snapshot,
+                              ) {
+                                final _SyncBannerData? syncData = snapshot.data;
+                                if (syncData == null) {
+                                  return const SizedBox.shrink();
+                                }
+                                return Container(
+                                  padding: const EdgeInsets.all(AppSpacing.md),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: AppColors.border),
+                                  ),
+                                  child: Row(
+                                    children: <Widget>[
+                                      Expanded(
+                                        child: Text(
+                                          syncData.description,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color: AppColors.textSecondary,
+                                              ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: AppSpacing.md),
+                                      SyncStatusIndicator(
+                                        status: syncData.status,
+                                        pendingCount: syncData.pendingCount,
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                        );
+                      },
+                ),
                 const SizedBox(height: AppSpacing.xl),
                 Row(
                   children: <Widget>[
@@ -76,9 +138,11 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                         (_FilterOption option) => ChoiceChip(
                           label: Text(option.label),
                           selected: _selectedFilter == option.value,
-                          onSelected: (_) {
+                          onSelected: (bool isSelected) {
                             setState(() {
-                              _selectedFilter = option.value;
+                              if (isSelected) {
+                                _selectedFilter = option.value;
+                              }
                             });
                           },
                         ),
@@ -122,6 +186,26 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
         );
 
     return _KeuanganViewData(summary: summary, transactions: transactions);
+  }
+
+  Future<_SyncBannerData> _loadSyncBanner() async {
+    final AppSetting settings = await widget.appSettingRepository
+        .getOrCreateSettings();
+    final int pendingCount = await widget.syncRepository.countUnsyncedItems();
+    final String status =
+        settings.lastSpreadsheetSyncStatus?.trim().isNotEmpty == true
+        ? settings.lastSpreadsheetSyncStatus!.trim()
+        : (pendingCount > 0 ? 'pending' : 'belum');
+    final String description = pendingCount > 0
+        ? '$pendingCount perubahan lokal siap disinkronkan.'
+        : settings.lastSpreadsheetSyncAt == null
+        ? 'Belum ada riwayat sync spreadsheet.'
+        : 'Spreadsheet terakhir sinkron ${DateFormatter.formatDateTime(settings.lastSpreadsheetSyncAt!)}.';
+    return _SyncBannerData(
+      status: status,
+      pendingCount: pendingCount,
+      description: description,
+    );
   }
 
   List<Widget> _buildTransactionList(List<MoneyTransaction> transactions) {
@@ -405,6 +489,18 @@ class _FilterOption {
 
   final String value;
   final String label;
+}
+
+class _SyncBannerData {
+  const _SyncBannerData({
+    required this.status,
+    required this.pendingCount,
+    required this.description,
+  });
+
+  final String status;
+  final int pendingCount;
+  final String description;
 }
 
 const List<_FilterOption> _transactionFilters = <_FilterOption>[

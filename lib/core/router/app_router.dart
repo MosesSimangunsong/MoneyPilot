@@ -10,10 +10,16 @@ import '../../features/keuangan/konfirmasi_suara_screen.dart';
 import '../../features/keuangan/tambah_transaksi_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/portofolio/portofolio_screen.dart';
+import '../../features/portofolio/tambah_dividen_screen.dart';
+import '../../features/portofolio/tambah_transaksi_saham_screen.dart';
+import '../../features/settings/settings_screen.dart';
 import '../../features/shell/main_shell_screen.dart';
 import '../../features/startup/biometric_lock_screen.dart';
 import '../../features/startup/splash_screen.dart';
+import '../../data/repositories/app_setting_repository.dart';
 import '../../data/repositories/category_repository.dart';
+import '../../data/repositories/portfolio_repository.dart';
+import '../../data/repositories/sync_repository.dart';
 import '../../data/repositories/transaction_repository.dart';
 import '../../data/repositories/voice_transcript_repository.dart';
 import '../../data/services/speech_service.dart';
@@ -24,15 +30,24 @@ import '../session/app_session_controller.dart';
 class AppRouter {
   AppRouter(
     this._sessionController, {
+    required AppSettingRepository appSettingRepository,
     required CategoryRepository categoryRepository,
+    required PortfolioRepository portfolioRepository,
+    required SyncRepository syncRepository,
     required TransactionRepository transactionRepository,
     required VoiceTranscriptRepository voiceTranscriptRepository,
-  }) : _categoryRepository = categoryRepository,
+  }) : _appSettingRepository = appSettingRepository,
+       _categoryRepository = categoryRepository,
+       _portfolioRepository = portfolioRepository,
+       _syncRepository = syncRepository,
        _transactionRepository = transactionRepository,
        _voiceTranscriptRepository = voiceTranscriptRepository;
 
   final AppSessionController _sessionController;
+  final AppSettingRepository _appSettingRepository;
   final CategoryRepository _categoryRepository;
+  final PortfolioRepository _portfolioRepository;
+  final SyncRepository _syncRepository;
   final TransactionRepository _transactionRepository;
   final VoiceTranscriptRepository _voiceTranscriptRepository;
   final SpeechService _speechService = SpeechService();
@@ -62,6 +77,15 @@ class AppRouter {
           return BiometricLockScreen(sessionController: _sessionController);
         },
       ),
+      GoRoute(
+        path: RouteConstants.settings,
+        builder: (BuildContext context, GoRouterState state) {
+          return SettingsScreen(
+            appSettingRepository: _appSettingRepository,
+            syncRepository: _syncRepository,
+          );
+        },
+      ),
       StatefulShellRoute.indexedStack(
         builder:
             (
@@ -79,7 +103,9 @@ class AppRouter {
                 builder: (BuildContext context, GoRouterState state) {
                   return BerandaScreen(
                     sessionController: _sessionController,
+                    appSettingRepository: _appSettingRepository,
                     categoryRepository: _categoryRepository,
+                    syncRepository: _syncRepository,
                     transactionRepository: _transactionRepository,
                   );
                 },
@@ -102,6 +128,8 @@ class AppRouter {
                 path: RouteConstants.keuangan,
                 builder: (BuildContext context, GoRouterState state) {
                   return KeuanganScreen(
+                    appSettingRepository: _appSettingRepository,
+                    syncRepository: _syncRepository,
                     transactionRepository: _transactionRepository,
                   );
                 },
@@ -166,8 +194,37 @@ class AppRouter {
               GoRoute(
                 path: RouteConstants.portofolio,
                 builder: (BuildContext context, GoRouterState state) {
-                  return const PortofolioScreen();
+                  return PortofolioScreen(
+                    portfolioRepository: _portfolioRepository,
+                  );
                 },
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'transaksi-saham-baru',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return TambahTransaksiSahamScreen(
+                        portfolioRepository: _portfolioRepository,
+                      );
+                    },
+                  ),
+                  GoRoute(
+                    path: 'catat-dividen',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return TambahDividenScreen(
+                        portfolioRepository: _portfolioRepository,
+                      );
+                    },
+                  ),
+                  GoRoute(
+                    path: ':uuid/edit',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return TambahTransaksiSahamScreen(
+                        portfolioRepository: _portfolioRepository,
+                        transactionUuid: state.pathParameters['uuid'],
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),

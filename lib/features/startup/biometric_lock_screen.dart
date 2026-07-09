@@ -7,10 +7,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../shared/widgets/primary_button.dart';
 
 class BiometricLockScreen extends StatefulWidget {
-  const BiometricLockScreen({
-    super.key,
-    required this.sessionController,
-  });
+  const BiometricLockScreen({super.key, required this.sessionController});
 
   final AppSessionController sessionController;
 
@@ -50,7 +47,10 @@ class _BiometricLockScreenState extends State<BiometricLockScreen> {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xl),
-                    Text('Verifikasi sidik jari', style: textTheme.headlineMedium),
+                    Text(
+                      'Verifikasi sidik jari',
+                      style: textTheme.headlineMedium,
+                    ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
                       'Gunakan fingerprint perangkatmu untuk membuka MoneyPilot.',

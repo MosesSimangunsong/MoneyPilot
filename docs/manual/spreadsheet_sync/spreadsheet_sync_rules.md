@@ -1,95 +1,107 @@
-# Spreadsheet Sync Rules — MoneyPilot
+# Spreadsheet Sync Rules - MoneyPilot
 
 ## Prinsip Utama
 
-- Isar tetap menjadi sumber utama aplikasi.
-- Google Spreadsheet berfungsi sebagai backup dan tempat edit ringan.
-- Semua entity yang disync wajib memakai UUID.
-- Operasi spreadsheet wajib upsert berdasarkan UUID.
-- Jangan append row tanpa mengecek UUID.
-- Delete memakai soft delete, bukan menghapus row permanen.
-- Conflict resolution memakai latest updatedAt wins.
-- Semua timestamp memakai UTC ISO 8601.
+- Isar tetap menjadi sumber data utama aplikasi.
+- Google Spreadsheet dipakai untuk backup dan edit ringan.
+- Semua entity sync wajib memakai `uuid`.
+- Spreadsheet wajib upsert berdasarkan `uuid`, bukan append buta.
+- Delete memakai soft delete, bukan hard delete row.
+- Conflict resolution memakai `latest updatedAt wins`.
+- Semua timestamp dikirim dalam UTC ISO 8601.
 
-## Entity MVP yang Disync
+## Scope Sync Flutter Saat Ini
 
-1. Categories
-2. Transactions
-3. Stock_Transactions
-4. Dividends
-5. Watchlist
+Flutter saat ini baru mengaktifkan sync dua arah untuk:
 
-## Entity Lokal Saja
+1. `Categories`
+2. `Transactions`
 
-1. VoiceTranscript
-2. SyncLog lokal Isar
+Tahap sync manual yang berjalan:
+
+1. `push Categories`
+2. `push Transactions`
+3. `pull Categories`
+4. `pull Transactions`
+
+## Scope Apps Script
+
+Kode Apps Script final saat ini sudah menerima entity:
+
+1. `Categories`
+2. `Transactions`
+3. `Stock_Transactions`
+4. `Dividends`
+5. `Watchlist`
 
 ## Push Flow
 
-1. Ambil data lokal dengan syncStatus pending atau failed.
-2. Kirim data ke Google Apps Script.
-3. Google Apps Script validasi token.
-4. Google Apps Script membaca header sheet.
-5. Google Apps Script mencari row berdasarkan uuid.
-6. Jika uuid ditemukan, update row.
-7. Jika uuid tidak ditemukan, insert row baru.
-8. Jika push sukses, ubah syncStatus lokal menjadi synced.
-9. Jika push gagal, ubah syncStatus lokal menjadi failed dan simpan syncErrorMessage.
+1. Flutter membaca konfigurasi terbaru dari `AppSetting`.
+2. Flutter mengirim `POST` JSON ke Web App URL `/exec`.
+3. Jika Google mengembalikan redirect:
+   - `301`, `302`, `303` diikuti dengan `GET`.
+   - `307`, `308` diikuti dengan `POST` yang sama.
+4. Apps Script memvalidasi token dari Script Property.
+5. Apps Script membaca header row pertama.
+6. Apps Script mencari row berdasarkan `uuid`.
+7. Jika `uuid` sudah ada, row di-update.
+8. Jika `uuid` belum ada, row baru di-insert.
+9. Jika push sukses, status lokal diubah menjadi `synced`.
+10. Jika push gagal, status lokal diubah menjadi `failed` dan `syncErrorMessage` diisi.
 
 ## Pull Flow
 
-1. Aplikasi meminta data spreadsheet yang berubah sejak lastPulledAt.
-2. Google Apps Script mengembalikan rows yang updatedAt lebih baru dari since.
-3. Untuk setiap item:
-   - Jika uuid belum ada di lokal, insert.
-   - Jika uuid sudah ada di lokal, bandingkan updatedAt.
-   - Data dengan updatedAt terbaru menang.
-4. Jika item isDeleted true, data lokal ikut soft delete.
-5. Jika pull sukses, update lastPulledAt.
+1. Flutter mengirim request `pull` dengan `since` dari `lastSpreadsheetPullAt`.
+2. Apps Script membaca sheet berdasarkan entity.
+3. Apps Script hanya mengembalikan item dengan `updatedAt > since`.
+4. Flutter membandingkan `updatedAt` remote dan lokal.
+5. Data yang `updatedAt`-nya lebih baru menang.
+6. Jika `isDeleted = true`, data lokal ikut soft delete.
 
-## Conflict Rule
+## Redirect Rule di Flutter
 
-Jika data lokal dan spreadsheet sama-sama berubah:
+- Request pertama ke `/exec` selalu `POST`.
+- Redirect `301`, `302`, `303` diikuti dengan `GET` ke header `location`.
+- Redirect `307`, `308` menjaga method `POST` dan body JSON.
+- Relative redirect URL harus di-resolve.
+- Redirect maksimum 3 hop.
 
-1. Bandingkan updatedAt UTC.
-2. Data dengan updatedAt terbaru menang.
-3. Jangan membuat duplikat row.
-4. Jangan overwrite data yang lebih baru dengan data lama.
+## Error Handling Rule di Flutter
 
-## Soft Delete Rule
+Jika response akhir bukan JSON valid, error minimal harus memuat:
 
-- Delete dari aplikasi mengubah isDeleted menjadi true.
-- deletedAt wajib terisi UTC ISO 8601.
-- Row spreadsheet tetap ada.
-- Pull data dengan isDeleted true akan membuat data lokal ikut soft delete.
+- nama tahap sync yang gagal,
+- `statusCode`,
+- `content-type`,
+- `bodyPreview` maksimal 300 karakter.
 
-## Google Apps Script Rule
+Token tidak boleh pernah muncul di log atau pesan error.
 
-Apps Script wajib:
-
-1. Menerima request JSON.
-2. Validasi token.
-3. Membaca sheet berdasarkan entity.
-4. Membaca header dari row pertama.
-5. Mencari kolom uuid.
-6. Melakukan upsert berdasarkan uuid.
-7. Mengembalikan response JSON konsisten.
-
-## Response Sukses Minimal
+## Response JSON Sukses Minimal
 
 ```json
 {
   "status": "success",
+  "message": "Push berhasil diproses.",
   "inserted": 1,
   "updated": 0,
   "failed": 0,
   "serverTime": "2026-07-09T10:00:00.000Z",
   "items": []
 }
+```
 
-## Response Error Minimal
+## Response JSON Error Minimal
+
+```json
 {
   "status": "error",
   "message": "Token tidak valid.",
-  "code": "INVALID_TOKEN"
+  "code": "INVALID_TOKEN",
+  "inserted": 0,
+  "updated": 0,
+  "failed": 1,
+  "serverTime": "2026-07-09T10:00:00.000Z",
+  "items": []
 }
+```

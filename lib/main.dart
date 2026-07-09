@@ -5,8 +5,11 @@ import 'core/session/app_session_controller.dart';
 import 'data/local/local_database_service.dart';
 import 'data/repositories/app_setting_repository.dart';
 import 'data/repositories/category_repository.dart';
+import 'data/repositories/portfolio_repository.dart';
+import 'data/repositories/sync_repository.dart';
 import 'data/repositories/transaction_repository.dart';
 import 'data/repositories/voice_transcript_repository.dart';
+import 'data/services/spreadsheet_sync_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +28,14 @@ Future<void> main() async {
   final TransactionRepository transactionRepository = TransactionRepository(
     databaseService.isar,
   );
+  final PortfolioRepository portfolioRepository = PortfolioRepository(
+    databaseService.isar,
+  );
+  final SyncRepository syncRepository = SyncRepository(
+    databaseService.isar,
+    appSettingRepository: appSettingRepository,
+    spreadsheetSyncService: SpreadsheetSyncService(),
+  );
   final VoiceTranscriptRepository voiceTranscriptRepository =
       VoiceTranscriptRepository(databaseService.isar);
 
@@ -37,7 +48,10 @@ Future<void> main() async {
     MoneyPilotApp(
       sessionController: sessionController,
       databaseService: databaseService,
+      appSettingRepository: appSettingRepository,
       categoryRepository: categoryRepository,
+      portfolioRepository: portfolioRepository,
+      syncRepository: syncRepository,
       transactionRepository: transactionRepository,
       voiceTranscriptRepository: voiceTranscriptRepository,
     ),
