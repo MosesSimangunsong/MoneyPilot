@@ -33,3 +33,20 @@ Verifikasi:
 
 ## Tahap 4 — Voice Input dan Parser Bahasa Indonesia
 Status: selesai
+
+
+## Tahap 5 — Google Spreadsheet Sync Dua Arah
+Status: Persiapan manual
+
+Persiapan manual:
+- [x] Spreadsheet dibuat
+- [x] Sheet dan header dibuat
+- [x] Secret token dibuat
+- [x] Apps Script Web App aktif
+- [x] Sync rules dibuat
+- [x] Payload examples dibuat
+- [x] Testing checklist dibuat
+- [ ] Placeholder file sync dibuat
+- [ ] Implementasi Flutter sync
+- [ ] Implementasi Google Apps Script sync
+- [ ] Verifikasi analyze/test

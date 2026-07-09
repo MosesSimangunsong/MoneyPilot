@@ -1,0 +1,1 @@
+// Placeholder test untuk Tahap 5 — Google Spreadsheet Sync.
