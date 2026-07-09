@@ -39,13 +39,29 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
               title: 'Keuangan',
               description:
                   'Catat transaksi harianmu secara manual dan lihat arus kas bulan ini.',
-              floatingActionButton: FloatingActionButton.extended(
-                onPressed: () => context.push('/keuangan/transaksi-baru'),
-                icon: const Icon(LucideIcons.plus),
-                label: const Text('Tambah transaksi'),
-              ),
               children: <Widget>[
                 _SummaryStrip(summary: data?.summary),
+                const SizedBox(height: AppSpacing.xl),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => context.push('/keuangan/suara'),
+                        icon: const Icon(LucideIcons.mic),
+                        label: const Text('Catat suara'),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () =>
+                            context.push('/keuangan/transaksi-baru'),
+                        icon: const Icon(LucideIcons.plus),
+                        label: const Text('Tambah manual'),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: AppSpacing.xl),
                 Text(
                   'Filter tipe',

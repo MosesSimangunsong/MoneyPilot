@@ -40,6 +40,7 @@ dependencies:
   lucide_icons: ^0.257.0
   path_provider: ^2.1.5
   shared_preferences: ^2.5.3
+  speech_to_text: ^7.3.0
   uuid: ^4.5.1
 
 dev_dependencies:

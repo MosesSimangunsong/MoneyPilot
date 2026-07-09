@@ -8,6 +8,8 @@ class RouteConstants {
   static const String berita = '/berita';
   static const String keuangan = '/keuangan';
   static const String transaksiBaru = '/keuangan/transaksi-baru';
+  static const String transaksiSuara = '/keuangan/suara';
+  static const String konfirmasiSuara = '/keuangan/suara/konfirmasi';
   static const String portofolio = '/portofolio';
   static const String analisis = '/analisis';
 }

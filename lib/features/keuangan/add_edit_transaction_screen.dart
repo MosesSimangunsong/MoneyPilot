@@ -7,17 +7,46 @@ import '../../data/models/category.dart';
 import '../../data/models/money_transaction.dart';
 import '../../data/repositories/category_repository.dart';
 import '../../data/repositories/transaction_repository.dart';
+import '../../data/repositories/voice_transcript_repository.dart';
+
+class AddEditTransactionArguments {
+  const AddEditTransactionArguments({
+    this.source = 'manual',
+    this.transcriptUuid,
+    this.initialType,
+    this.initialTitle,
+    this.initialAmount,
+    this.initialCategoryUuid,
+    this.initialPaymentMethod,
+    this.initialNote,
+    this.initialTransactionDate,
+  });
+
+  final String source;
+  final String? transcriptUuid;
+  final String? initialType;
+  final String? initialTitle;
+  final double? initialAmount;
+  final String? initialCategoryUuid;
+  final String? initialPaymentMethod;
+  final String? initialNote;
+  final DateTime? initialTransactionDate;
+}
 
 class AddEditTransactionScreen extends StatefulWidget {
   const AddEditTransactionScreen({
     super.key,
     required this.categoryRepository,
     required this.transactionRepository,
+    this.voiceTranscriptRepository,
+    this.arguments,
     this.transactionUuid,
   });
 
   final CategoryRepository categoryRepository;
   final TransactionRepository transactionRepository;
+  final VoiceTranscriptRepository? voiceTranscriptRepository;
+  final AddEditTransactionArguments? arguments;
   final String? transactionUuid;
 
   bool get isEditing => transactionUuid != null && transactionUuid!.isNotEmpty;
@@ -276,7 +305,17 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
           : transaction.paymentMethod;
       _selectedCategoryUuid = transaction.categoryUuid;
     } else {
-      _selectedDate = DateTime.now().toUtc();
+      final AddEditTransactionArguments? arguments = widget.arguments;
+      _transactionType = arguments?.initialType ?? 'expense';
+      _titleController.text = arguments?.initialTitle ?? '';
+      if (arguments?.initialAmount != null) {
+        _amountController.text = _formatAmountInput(arguments!.initialAmount!);
+      }
+      _noteController.text = arguments?.initialNote ?? '';
+      _selectedDate =
+          arguments?.initialTransactionDate?.toUtc() ?? DateTime.now().toUtc();
+      _paymentMethod = arguments?.initialPaymentMethod ?? 'Tidak Dicatat';
+      _selectedCategoryUuid = arguments?.initialCategoryUuid;
     }
 
     await _loadCategories();
@@ -394,16 +433,23 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
           note: _noteController.text,
         );
       } else {
-        await widget.transactionRepository.createTransaction(
+        final created = await widget.transactionRepository.createTransaction(
           type: _transactionType,
           title: _titleController.text,
           amount: amount,
           categoryUuid: _selectedCategoryUuid!,
           paymentMethod: _paymentMethod,
           note: _noteController.text,
-          source: 'manual',
+          source: widget.arguments?.source ?? 'manual',
           transactionDate: _selectedDate!,
         );
+        if (widget.arguments?.transcriptUuid != null &&
+            widget.voiceTranscriptRepository != null) {
+          await widget.voiceTranscriptRepository!.markConverted(
+            transcriptUuid: widget.arguments!.transcriptUuid!,
+            transactionUuid: created.uuid,
+          );
+        }
       }
 
       if (!mounted) {

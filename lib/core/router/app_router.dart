@@ -6,6 +6,8 @@ import '../../features/beranda/beranda_screen.dart';
 import '../../features/berita/berita_screen.dart';
 import '../../features/keuangan/add_edit_transaction_screen.dart';
 import '../../features/keuangan/keuangan_screen.dart';
+import '../../features/keuangan/konfirmasi_suara_screen.dart';
+import '../../features/keuangan/tambah_transaksi_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/portofolio/portofolio_screen.dart';
 import '../../features/shell/main_shell_screen.dart';
@@ -13,6 +15,9 @@ import '../../features/startup/biometric_lock_screen.dart';
 import '../../features/startup/splash_screen.dart';
 import '../../data/repositories/category_repository.dart';
 import '../../data/repositories/transaction_repository.dart';
+import '../../data/repositories/voice_transcript_repository.dart';
+import '../../data/services/speech_service.dart';
+import '../../data/services/transaction_parser_service.dart';
 import '../constants/route_constants.dart';
 import '../session/app_session_controller.dart';
 
@@ -21,12 +26,18 @@ class AppRouter {
     this._sessionController, {
     required CategoryRepository categoryRepository,
     required TransactionRepository transactionRepository,
+    required VoiceTranscriptRepository voiceTranscriptRepository,
   }) : _categoryRepository = categoryRepository,
-       _transactionRepository = transactionRepository;
+       _transactionRepository = transactionRepository,
+       _voiceTranscriptRepository = voiceTranscriptRepository;
 
   final AppSessionController _sessionController;
   final CategoryRepository _categoryRepository;
   final TransactionRepository _transactionRepository;
+  final VoiceTranscriptRepository _voiceTranscriptRepository;
+  final SpeechService _speechService = SpeechService();
+  final TransactionParserService _parserService =
+      const TransactionParserService();
 
   late final GoRouter router = GoRouter(
     initialLocation: RouteConstants.splash,
@@ -98,9 +109,13 @@ class AppRouter {
                   GoRoute(
                     path: 'transaksi-baru',
                     builder: (BuildContext context, GoRouterState state) {
+                      final AddEditTransactionArguments? arguments =
+                          state.extra as AddEditTransactionArguments?;
                       return AddEditTransactionScreen(
                         categoryRepository: _categoryRepository,
                         transactionRepository: _transactionRepository,
+                        arguments: arguments,
+                        voiceTranscriptRepository: _voiceTranscriptRepository,
                       );
                     },
                   ),
@@ -111,8 +126,36 @@ class AppRouter {
                         categoryRepository: _categoryRepository,
                         transactionRepository: _transactionRepository,
                         transactionUuid: state.pathParameters['uuid'],
+                        voiceTranscriptRepository: _voiceTranscriptRepository,
                       );
                     },
+                  ),
+                  GoRoute(
+                    path: 'suara',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return VoiceInputScreen(
+                        speechService: _speechService,
+                        parserService: _parserService,
+                        categoryRepository: _categoryRepository,
+                        voiceTranscriptRepository: _voiceTranscriptRepository,
+                      );
+                    },
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: 'konfirmasi',
+                        builder: (BuildContext context, GoRouterState state) {
+                          final VoiceConfirmationArguments arguments =
+                              state.extra! as VoiceConfirmationArguments;
+                          return VoiceConfirmationScreen(
+                            arguments: arguments,
+                            categoryRepository: _categoryRepository,
+                            transactionRepository: _transactionRepository,
+                            voiceTranscriptRepository:
+                                _voiceTranscriptRepository,
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),

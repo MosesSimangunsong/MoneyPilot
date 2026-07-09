@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'data/local/local_database_service.dart';
 import 'data/repositories/category_repository.dart';
 import 'data/repositories/transaction_repository.dart';
+import 'data/repositories/voice_transcript_repository.dart';
 
 class MoneyPilotApp extends StatefulWidget {
   const MoneyPilotApp({
@@ -14,12 +15,14 @@ class MoneyPilotApp extends StatefulWidget {
     required this.databaseService,
     required this.categoryRepository,
     required this.transactionRepository,
+    required this.voiceTranscriptRepository,
   });
 
   final AppSessionController sessionController;
   final LocalDatabaseService databaseService;
   final CategoryRepository categoryRepository;
   final TransactionRepository transactionRepository;
+  final VoiceTranscriptRepository voiceTranscriptRepository;
 
   @override
   State<MoneyPilotApp> createState() => _MoneyPilotAppState();
@@ -39,6 +42,7 @@ class _MoneyPilotAppState extends State<MoneyPilotApp>
       _sessionController,
       categoryRepository: widget.categoryRepository,
       transactionRepository: widget.transactionRepository,
+      voiceTranscriptRepository: widget.voiceTranscriptRepository,
     );
   }
 

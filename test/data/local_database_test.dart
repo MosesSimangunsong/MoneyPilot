@@ -10,6 +10,7 @@ import 'package:app/data/models/watchlist_item.dart';
 import 'package:app/data/repositories/category_repository.dart';
 import 'package:app/data/repositories/portfolio_repository.dart';
 import 'package:app/data/repositories/transaction_repository.dart';
+import 'package:app/data/repositories/voice_transcript_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar/isar.dart';
 
@@ -21,6 +22,7 @@ void main() {
   late CategoryRepository categoryRepository;
   late TransactionRepository transactionRepository;
   late PortfolioRepository portfolioRepository;
+  late VoiceTranscriptRepository voiceTranscriptRepository;
 
   setUpAll(() async {
     final File packageConfigFile = File('.dart_tool/package_config.json');
@@ -58,6 +60,7 @@ void main() {
     categoryRepository = CategoryRepository(databaseService.isar);
     transactionRepository = TransactionRepository(databaseService.isar);
     portfolioRepository = PortfolioRepository(databaseService.isar);
+    voiceTranscriptRepository = VoiceTranscriptRepository(databaseService.isar);
   });
 
   tearDown(() async {
@@ -350,4 +353,28 @@ void main() {
     expect(watchlist.single.symbol, 'BBRI.JK');
     expect(watchlist.single.targetPrice, 4500);
   });
+
+  test(
+    'VoiceTranscript bisa disimpan dan ditandai menjadi transaksi',
+    () async {
+      final transcript = await voiceTranscriptRepository.createTranscript(
+        rawText: 'Saya beli kopi 15 ribu',
+        parsedType: 'expense',
+        parsedAmount: 15000,
+        parsedCategoryUuid: 'expense-food',
+        confidenceScore: 0.9,
+      );
+
+      await voiceTranscriptRepository.markConverted(
+        transcriptUuid: transcript.uuid,
+        transactionUuid: 'trx-voice-1',
+      );
+
+      final saved = await voiceTranscriptRepository.getByUuid(transcript.uuid);
+      expect(saved, isNotNull);
+      expect(saved?.convertedToTransaction, isTrue);
+      expect(saved?.transactionUuid, 'trx-voice-1');
+      expect(saved?.createdAt.isUtc, isTrue);
+    },
+  );
 }
