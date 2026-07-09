@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/analisis/analisis_screen.dart';
 import '../../features/beranda/beranda_screen.dart';
 import '../../features/berita/berita_screen.dart';
+import '../../features/keuangan/add_edit_transaction_screen.dart';
 import '../../features/keuangan/keuangan_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/portofolio/portofolio_screen.dart';
@@ -11,6 +12,7 @@ import '../../features/shell/main_shell_screen.dart';
 import '../../features/startup/biometric_lock_screen.dart';
 import '../../features/startup/splash_screen.dart';
 import '../../data/repositories/category_repository.dart';
+import '../../data/repositories/transaction_repository.dart';
 import '../constants/route_constants.dart';
 import '../session/app_session_controller.dart';
 
@@ -18,10 +20,13 @@ class AppRouter {
   AppRouter(
     this._sessionController, {
     required CategoryRepository categoryRepository,
-  }) : _categoryRepository = categoryRepository;
+    required TransactionRepository transactionRepository,
+  }) : _categoryRepository = categoryRepository,
+       _transactionRepository = transactionRepository;
 
   final AppSessionController _sessionController;
   final CategoryRepository _categoryRepository;
+  final TransactionRepository _transactionRepository;
 
   late final GoRouter router = GoRouter(
     initialLocation: RouteConstants.splash,
@@ -64,6 +69,7 @@ class AppRouter {
                   return BerandaScreen(
                     sessionController: _sessionController,
                     categoryRepository: _categoryRepository,
+                    transactionRepository: _transactionRepository,
                   );
                 },
               ),
@@ -84,8 +90,31 @@ class AppRouter {
               GoRoute(
                 path: RouteConstants.keuangan,
                 builder: (BuildContext context, GoRouterState state) {
-                  return const KeuanganScreen();
+                  return KeuanganScreen(
+                    transactionRepository: _transactionRepository,
+                  );
                 },
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'transaksi-baru',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return AddEditTransactionScreen(
+                        categoryRepository: _categoryRepository,
+                        transactionRepository: _transactionRepository,
+                      );
+                    },
+                  ),
+                  GoRoute(
+                    path: ':uuid/edit',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return AddEditTransactionScreen(
+                        categoryRepository: _categoryRepository,
+                        transactionRepository: _transactionRepository,
+                        transactionUuid: state.pathParameters['uuid'],
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),

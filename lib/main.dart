@@ -5,6 +5,7 @@ import 'core/session/app_session_controller.dart';
 import 'data/local/local_database_service.dart';
 import 'data/repositories/app_setting_repository.dart';
 import 'data/repositories/category_repository.dart';
+import 'data/repositories/transaction_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,9 @@ Future<void> main() async {
     databaseService.isar,
   );
   await categoryRepository.seedDefaultCategoriesIfNeeded();
+  final TransactionRepository transactionRepository = TransactionRepository(
+    databaseService.isar,
+  );
 
   final AppSessionController sessionController = AppSessionController(
     appSettingRepository: appSettingRepository,
@@ -31,6 +35,7 @@ Future<void> main() async {
       sessionController: sessionController,
       databaseService: databaseService,
       categoryRepository: categoryRepository,
+      transactionRepository: transactionRepository,
     ),
   );
 }

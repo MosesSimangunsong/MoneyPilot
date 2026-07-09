@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:app/core/utils/date_time_utils.dart';
 import 'package:app/core/utils/id_generator.dart';
 import 'package:app/data/local/local_database_service.dart';
+import 'package:app/data/models/money_transaction.dart';
 import 'package:app/data/models/watchlist_item.dart';
 import 'package:app/data/repositories/category_repository.dart';
 import 'package:app/data/repositories/portfolio_repository.dart';
@@ -93,6 +94,66 @@ void main() {
     expect(transaction.categoryNameSnapshot, category.name);
   });
 
+  test('create transaction manual berhasil', () async {
+    await categoryRepository.seedDefaultCategoriesIfNeeded();
+    final category = (await categoryRepository.getByType('income')).first;
+
+    final transaction = await transactionRepository.createTransaction(
+      type: 'income',
+      title: 'Honor freelance',
+      amount: 500000,
+      categoryUuid: category.uuid,
+      paymentMethod: 'Transfer',
+      note: 'Proyek landing page',
+      source: 'manual',
+      transactionDate: DateTime.utc(2026, 7, 1),
+    );
+
+    final saved = await transactionRepository.getByUuid(transaction.uuid);
+    expect(saved, isNotNull);
+    expect(saved?.title, 'Honor freelance');
+    expect(saved?.syncStatus, 'pending');
+    expect(saved?.paymentMethod, 'Transfer');
+    expect(saved?.createdAt.isUtc, isTrue);
+    expect(saved?.updatedAt.isUtc, isTrue);
+    expect(saved?.transactionDate.isUtc, isTrue);
+  });
+
+  test('update transaction mengubah syncStatus menjadi pending', () async {
+    await categoryRepository.seedDefaultCategoriesIfNeeded();
+    final category = (await categoryRepository.getByType('expense')).first;
+
+    final transaction = await transactionRepository.createTransaction(
+      type: 'expense',
+      title: 'Makan malam',
+      amount: 30000,
+      categoryUuid: category.uuid,
+      source: 'manual',
+      transactionDate: DateTime.utc(2026, 7, 2),
+    );
+
+    transaction.syncStatus = 'synced';
+    await databaseService.isar.writeTxn(() async {
+      await databaseService.isar.moneyTransactions.put(transaction);
+    });
+
+    final updated = await transactionRepository.updateTransaction(
+      uuid: transaction.uuid,
+      type: 'expense',
+      title: 'Makan malam revisi',
+      amount: 45000,
+      categoryUuid: category.uuid,
+      transactionDate: DateTime.utc(2026, 7, 2),
+      paymentMethod: 'Tunai',
+      note: 'Tambah minum',
+    );
+
+    expect(updated.title, 'Makan malam revisi');
+    expect(updated.amount, 45000);
+    expect(updated.syncStatus, 'pending');
+    expect(updated.updatedAt.isUtc, isTrue);
+  });
+
   test('soft delete category tidak menghapus transaksi lama', () async {
     await categoryRepository.seedDefaultCategoriesIfNeeded();
     final category = (await categoryRepository.getByType('expense')).first;
@@ -116,6 +177,141 @@ void main() {
     expect(savedTransaction, isNotNull);
     expect(savedTransaction?.categoryNameSnapshot, category.name);
     expect(deletedCategory?.isDeleted, isTrue);
+  });
+
+  test('soft delete transaction tidak muncul di daftar aktif', () async {
+    await categoryRepository.seedDefaultCategoriesIfNeeded();
+    final category = (await categoryRepository.getByType('expense')).first;
+
+    final transaction = await transactionRepository.createTransaction(
+      type: 'expense',
+      title: 'Transport online',
+      amount: 22000,
+      categoryUuid: category.uuid,
+      source: 'manual',
+      transactionDate: DateTime.utc(2026, 7, 3),
+    );
+
+    await transactionRepository.softDeleteTransaction(transaction.uuid);
+
+    final activeTransactions = await transactionRepository
+        .getActiveTransactions();
+    final deleted = await transactionRepository.getByUuid(transaction.uuid);
+
+    expect(activeTransactions, isEmpty);
+    expect(deleted?.isDeleted, isTrue);
+    expect(deleted?.deletedAt, isNotNull);
+    expect(deleted?.syncStatus, 'pending');
+  });
+
+  test('getTransactionsByMonth mengembalikan data sesuai bulan', () async {
+    await categoryRepository.seedDefaultCategoriesIfNeeded();
+    final expenseCategory = (await categoryRepository.getByType(
+      'expense',
+    )).first;
+
+    await transactionRepository.createTransaction(
+      type: 'expense',
+      title: 'Belanja Juli',
+      amount: 90000,
+      categoryUuid: expenseCategory.uuid,
+      source: 'manual',
+      transactionDate: DateTime.utc(2026, 7, 4),
+    );
+    await transactionRepository.createTransaction(
+      type: 'expense',
+      title: 'Belanja Agustus',
+      amount: 120000,
+      categoryUuid: expenseCategory.uuid,
+      source: 'manual',
+      transactionDate: DateTime.utc(2026, 8, 1),
+    );
+
+    final julyTransactions = await transactionRepository.getTransactionsByMonth(
+      DateTime.utc(2026, 7, 1),
+    );
+
+    expect(julyTransactions, hasLength(1));
+    expect(julyTransactions.single.title, 'Belanja Juli');
+  });
+
+  test(
+    'categoryNameSnapshot tetap sama walaupun nama kategori berubah',
+    () async {
+      await categoryRepository.seedDefaultCategoriesIfNeeded();
+      final category = (await categoryRepository.getByType('expense')).first;
+      final String originalName = category.name;
+
+      final transaction = await transactionRepository.createTransaction(
+        type: 'expense',
+        title: 'Kopi pagi',
+        amount: 20000,
+        categoryUuid: category.uuid,
+        source: 'manual',
+        transactionDate: DateTime.utc(2026, 7, 5),
+      );
+
+      category.name = 'Nama kategori baru';
+      await categoryRepository.upsertCategory(category);
+
+      final savedTransaction = await transactionRepository.getByUuid(
+        transaction.uuid,
+      );
+
+      expect(savedTransaction?.categoryNameSnapshot, originalName);
+    },
+  );
+
+  test('perhitungan ringkasan bulanan benar', () async {
+    await categoryRepository.seedDefaultCategoriesIfNeeded();
+    final incomeCategory = (await categoryRepository.getByType('income')).first;
+    final expenseCategory = (await categoryRepository.getByType(
+      'expense',
+    )).first;
+
+    await transactionRepository.createTransaction(
+      type: 'income',
+      title: 'Gaji paruh waktu',
+      amount: 1500000,
+      categoryUuid: incomeCategory.uuid,
+      source: 'manual',
+      transactionDate: DateTime.utc(2026, 7, 1),
+    );
+    await transactionRepository.createTransaction(
+      type: 'expense',
+      title: 'Sewa kos',
+      amount: 600000,
+      categoryUuid: expenseCategory.uuid,
+      source: 'manual',
+      transactionDate: DateTime.utc(2026, 7, 2),
+    );
+    await transactionRepository.createTransaction(
+      type: 'expense',
+      title: 'Makan',
+      amount: 120000,
+      categoryUuid: expenseCategory.uuid,
+      source: 'manual',
+      transactionDate: DateTime.utc(2026, 7, 3),
+    );
+    await transactionRepository.createTransaction(
+      type: 'income',
+      title: 'Pemasukan Agustus',
+      amount: 100000,
+      categoryUuid: incomeCategory.uuid,
+      source: 'manual',
+      transactionDate: DateTime.utc(2026, 8, 1),
+    );
+
+    final summary = await transactionRepository.getMonthlySummary(
+      DateTime.utc(2026, 7, 1),
+    );
+
+    expect(summary.incomeTotal, 1500000);
+    expect(summary.expenseTotal, 720000);
+    expect(summary.cashflow, 780000);
+    expect(summary.transactionCount, 3);
+    expect(summary.recentTransactions, hasLength(3));
+    expect(summary.recentTransactions.first.title, 'Makan');
   });
 
   test('Dividend model dapat menyimpan linkedTransactionUuid', () async {

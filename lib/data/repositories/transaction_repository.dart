@@ -10,6 +10,10 @@ class TransactionRepository {
 
   final Isar _isar;
 
+  Stream<void> watchTransactions() {
+    return _isar.moneyTransactions.watchLazy(fireImmediately: true);
+  }
+
   Future<MoneyTransaction> createTransaction({
     required String type,
     required String title,
@@ -20,7 +24,7 @@ class TransactionRepository {
     required String source,
     required DateTime transactionDate,
   }) async {
-    final Category category = await _requireCategory(categoryUuid);
+    final Category category = await _requireCategoryForType(categoryUuid, type);
     final DateTime now = DateTimeUtils.utcNow();
     final MoneyTransaction transaction = MoneyTransaction(
       uuid: IdGenerator.newUuid(),
@@ -44,34 +48,50 @@ class TransactionRepository {
       await _isar.moneyTransactions.put(transaction);
     });
 
-    return transaction;
+    return _normalizeTransactionDates(transaction);
   }
 
-  Future<MoneyTransaction> updateTransaction(
-    MoneyTransaction transaction,
-  ) async {
-    final Category category = await _requireCategory(transaction.categoryUuid);
-    transaction.title = transaction.title.trim();
-    transaction.note = _normalizeNullable(transaction.note);
-    transaction.paymentMethod = transaction.paymentMethod.trim().isEmpty
+  Future<MoneyTransaction> updateTransaction({
+    required String uuid,
+    required String type,
+    required String title,
+    required double amount,
+    required String categoryUuid,
+    required DateTime transactionDate,
+    String paymentMethod = 'Tidak Dicatat',
+    String? note,
+  }) async {
+    final MoneyTransaction? transaction = await getByUuid(uuid);
+    if (transaction == null || transaction.isDeleted) {
+      throw StateError('Transaksi tidak ditemukan atau sudah dihapus.');
+    }
+
+    final Category category = await _requireCategoryForType(categoryUuid, type);
+    final bool categoryChanged = transaction.categoryUuid != categoryUuid;
+
+    transaction.type = type;
+    transaction.title = title.trim();
+    transaction.amount = amount;
+    transaction.categoryUuid = categoryUuid;
+    transaction.note = _normalizeNullable(note);
+    transaction.paymentMethod = paymentMethod.trim().isEmpty
         ? 'Tidak Dicatat'
-        : transaction.paymentMethod.trim();
-    transaction.categoryNameSnapshot = category.name;
-    transaction.transactionDate = DateTimeUtils.normalizeUtc(
-      transaction.transactionDate,
-    );
+        : paymentMethod.trim();
+    if (categoryChanged || transaction.categoryNameSnapshot.trim().isEmpty) {
+      transaction.categoryNameSnapshot = category.name;
+    }
+    transaction.transactionDate = DateTimeUtils.normalizeUtc(transactionDate);
     transaction.updatedAt = DateTimeUtils.utcNow();
-    transaction.deletedAt = transaction.isDeleted
-        ? (transaction.deletedAt == null
-              ? transaction.updatedAt
-              : DateTimeUtils.normalizeUtc(transaction.deletedAt!))
-        : null;
+    transaction.syncStatus = 'pending';
+    transaction.syncErrorMessage = null;
+    transaction.isDeleted = false;
+    transaction.deletedAt = null;
 
     await _isar.writeTxn(() async {
       await _isar.moneyTransactions.put(transaction);
     });
 
-    return transaction;
+    return _normalizeTransactionDates(transaction);
   }
 
   Future<void> softDeleteTransaction(String uuid) async {
@@ -95,13 +115,32 @@ class TransactionRepository {
   }
 
   Future<List<MoneyTransaction>> getRecentTransactions({int limit = 10}) {
-    return _isar.moneyTransactions
-        .filter()
-        .isDeletedEqualTo(false)
+    return getActiveTransactions(limit: limit);
+  }
+
+  Future<List<MoneyTransaction>> getActiveTransactions({
+    String? type,
+    int? limit,
+  }) {
+    var query = _isar.moneyTransactions.filter().isDeletedEqualTo(false);
+    if (type != null) {
+      query = query.and().typeEqualTo(type);
+    }
+
+    if (limit != null) {
+      return query
+          .sortByTransactionDateDesc()
+          .thenByUpdatedAtDesc()
+          .limit(limit)
+          .findAll()
+          .then(_normalizeTransactionList);
+    }
+
+    return query
         .sortByTransactionDateDesc()
         .thenByUpdatedAtDesc()
-        .limit(limit)
-        .findAll();
+        .findAll()
+        .then(_normalizeTransactionList);
   }
 
   Future<List<MoneyTransaction>> getTransactionsByMonth(DateTime month) {
@@ -116,24 +155,61 @@ class TransactionRepository {
         .and()
         .transactionDateLessThan(nextMonth, include: false)
         .sortByTransactionDateDesc()
-        .findAll();
+        .findAll()
+        .then(_normalizeTransactionList);
   }
 
   Future<List<MoneyTransaction>> getPendingSyncTransactions() {
     return _isar.moneyTransactions
         .filter()
-        .isDeletedEqualTo(false)
-        .and()
         .syncStatusEqualTo('pending')
         .sortByUpdatedAt()
-        .findAll();
+        .findAll()
+        .then(_normalizeTransactionList);
+  }
+
+  Future<MonthlyTransactionSummary> getMonthlySummary(
+    DateTime month, {
+    int recentLimit = 5,
+  }) async {
+    final List<MoneyTransaction> transactions = await getTransactionsByMonth(
+      month,
+    );
+    double incomeTotal = 0;
+    double expenseTotal = 0;
+
+    for (final MoneyTransaction transaction in transactions) {
+      if (transaction.type == 'income') {
+        incomeTotal += transaction.amount;
+      } else if (transaction.type == 'expense') {
+        expenseTotal += transaction.amount;
+      }
+    }
+
+    return MonthlyTransactionSummary(
+      month: DateTime.utc(month.year, month.month),
+      incomeTotal: incomeTotal,
+      expenseTotal: expenseTotal,
+      transactionCount: transactions.length,
+      recentTransactions: transactions.take(recentLimit).toList(),
+    );
   }
 
   Future<MoneyTransaction?> getByUuid(String uuid) {
-    return _isar.moneyTransactions.filter().uuidEqualTo(uuid).findFirst();
+    return _isar.moneyTransactions.filter().uuidEqualTo(uuid).findFirst().then((
+      MoneyTransaction? item,
+    ) {
+      if (item == null) {
+        return null;
+      }
+      return _normalizeTransactionDates(item);
+    });
   }
 
-  Future<Category> _requireCategory(String categoryUuid) async {
+  Future<Category> _requireCategoryForType(
+    String categoryUuid,
+    String type,
+  ) async {
     final Category? category = await _isar.categorys
         .filter()
         .uuidEqualTo(categoryUuid)
@@ -142,6 +218,9 @@ class TransactionRepository {
         .findFirst();
     if (category == null) {
       throw StateError('Kategori tidak ditemukan atau sudah dihapus.');
+    }
+    if (category.type != type) {
+      throw StateError('Kategori tidak sesuai dengan tipe transaksi.');
     }
     return category;
   }
@@ -153,4 +232,44 @@ class TransactionRepository {
     }
     return trimmed;
   }
+
+  List<MoneyTransaction> _normalizeTransactionList(
+    List<MoneyTransaction> items,
+  ) {
+    return items.map(_normalizeTransactionDates).toList(growable: false);
+  }
+
+  MoneyTransaction _normalizeTransactionDates(MoneyTransaction transaction) {
+    transaction.transactionDate = DateTimeUtils.normalizeUtc(
+      transaction.transactionDate,
+    );
+    transaction.createdAt = DateTimeUtils.normalizeUtc(transaction.createdAt);
+    transaction.updatedAt = DateTimeUtils.normalizeUtc(transaction.updatedAt);
+    if (transaction.deletedAt != null) {
+      transaction.deletedAt = DateTimeUtils.normalizeUtc(
+        transaction.deletedAt!,
+      );
+    }
+    return transaction;
+  }
+}
+
+class MonthlyTransactionSummary {
+  const MonthlyTransactionSummary({
+    required this.month,
+    required this.incomeTotal,
+    required this.expenseTotal,
+    required this.transactionCount,
+    required this.recentTransactions,
+  });
+
+  final DateTime month;
+  final double incomeTotal;
+  final double expenseTotal;
+  final int transactionCount;
+  final List<MoneyTransaction> recentTransactions;
+
+  double get cashflow => incomeTotal - expenseTotal;
+
+  bool get isEmpty => transactionCount == 0;
 }

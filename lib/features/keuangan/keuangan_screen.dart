@@ -1,36 +1,405 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/utils/currency_formatter.dart';
+import '../../core/utils/date_formatter.dart';
+import '../../data/models/money_transaction.dart';
+import '../../data/repositories/transaction_repository.dart';
 import '../../shared/layouts/app_page.dart';
-import '../../shared/widgets/info_card.dart';
 
-class KeuanganScreen extends StatelessWidget {
-  const KeuanganScreen({super.key});
+class KeuanganScreen extends StatefulWidget {
+  const KeuanganScreen({super.key, required this.transactionRepository});
+
+  final TransactionRepository transactionRepository;
+
+  @override
+  State<KeuanganScreen> createState() => _KeuanganScreenState();
+}
+
+class _KeuanganScreenState extends State<KeuanganScreen> {
+  String _selectedFilter = 'all';
 
   @override
   Widget build(BuildContext context) {
-    return AppPage(
-      title: 'Keuangan',
-      description: 'Catat pemasukan dan pengeluaranmu dengan cepat.',
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
-        icon: const Icon(LucideIcons.mic),
-        label: const Text('Catat Suara'),
-      ),
-      children: const <Widget>[
-        InfoCard(
-          title: 'Transaksi manual dan suara belum aktif',
-          description:
-              'Tahap berikutnya akan membangun daftar transaksi, form tambah transaksi, dan voice confirmation flow.',
+    return StreamBuilder<void>(
+      stream: widget.transactionRepository.watchTransactions(),
+      builder: (BuildContext context, AsyncSnapshot<void> _) {
+        return FutureBuilder<_KeuanganViewData>(
+          future: _loadViewData(),
+          builder: (BuildContext context, AsyncSnapshot<_KeuanganViewData> snapshot) {
+            final _KeuanganViewData? data = snapshot.data;
+            final bool isLoading =
+                snapshot.connectionState == ConnectionState.waiting &&
+                data == null;
+
+            return AppPage(
+              title: 'Keuangan',
+              description:
+                  'Catat transaksi harianmu secara manual dan lihat arus kas bulan ini.',
+              floatingActionButton: FloatingActionButton.extended(
+                onPressed: () => context.push('/keuangan/transaksi-baru'),
+                icon: const Icon(LucideIcons.plus),
+                label: const Text('Tambah transaksi'),
+              ),
+              children: <Widget>[
+                _SummaryStrip(summary: data?.summary),
+                const SizedBox(height: AppSpacing.xl),
+                Text(
+                  'Filter tipe',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: _transactionFilters
+                      .map(
+                        (_FilterOption option) => ChoiceChip(
+                          label: Text(option.label),
+                          selected: _selectedFilter == option.value,
+                          onSelected: (_) {
+                            setState(() {
+                              _selectedFilter = option.value;
+                            });
+                          },
+                        ),
+                      )
+                      .toList(),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                if (isLoading)
+                  const Center(child: CircularProgressIndicator())
+                else if (snapshot.hasError)
+                  _SectionMessage(
+                    title: 'Data transaksi belum bisa ditampilkan',
+                    description:
+                        'Coba buka kembali halaman ini. Jika masalah berlanjut, periksa data lokal aplikasi.',
+                  )
+                else if (data == null || data.transactions.isEmpty)
+                  _SectionMessage(
+                    title: 'Belum ada transaksi',
+                    description: _selectedFilter == 'all'
+                        ? 'Tambahkan pemasukan atau pengeluaran pertamamu agar ringkasan mulai terisi.'
+                        : 'Belum ada transaksi untuk filter ini.',
+                  )
+                else
+                  ..._buildTransactionList(data.transactions),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<_KeuanganViewData> _loadViewData() async {
+    final DateTime month = DateTime.now().toUtc();
+    final MonthlyTransactionSummary summary = await widget.transactionRepository
+        .getMonthlySummary(month);
+    final List<MoneyTransaction> transactions = await widget
+        .transactionRepository
+        .getActiveTransactions(
+          type: _selectedFilter == 'all' ? null : _selectedFilter,
+        );
+
+    return _KeuanganViewData(summary: summary, transactions: transactions);
+  }
+
+  List<Widget> _buildTransactionList(List<MoneyTransaction> transactions) {
+    return <Widget>[
+      for (int index = 0; index < transactions.length; index++) ...<Widget>[
+        _TransactionListItem(
+          transaction: transactions[index],
+          onEdit: () => _openEditForm(transactions[index].uuid),
+          onDelete: () => _confirmDelete(transactions[index]),
         ),
-        SizedBox(height: AppSpacing.lg),
-        InfoCard(
-          title: 'Arah implementasi',
-          description:
-              'Modul ini akan menjadi rumah untuk cashflow, kategori, laporan sederhana, dan antrean sinkronisasi.',
+        if (index < transactions.length - 1) const Divider(height: 1),
+      ],
+    ];
+  }
+
+  Future<void> _openEditForm(String transactionUuid) async {
+    await context.push('/keuangan/$transactionUuid/edit');
+  }
+
+  Future<void> _confirmDelete(MoneyTransaction transaction) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Hapus transaksi?'),
+          content: Text(
+            'Transaksi "${transaction.title}" akan disembunyikan dari daftar aktif, tetapi tetap tersimpan untuk riwayat sinkronisasi.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    await widget.transactionRepository.softDeleteTransaction(transaction.uuid);
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Transaksi dipindahkan dari daftar aktif.')),
+    );
+  }
+}
+
+class _SummaryStrip extends StatelessWidget {
+  const _SummaryStrip({required this.summary});
+
+  final MonthlyTransactionSummary? summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final MonthlyTransactionSummary data =
+        summary ??
+        MonthlyTransactionSummary(
+          month: DateTime.now().toUtc(),
+          incomeTotal: 0,
+          expenseTotal: 0,
+          transactionCount: 0,
+          recentTransactions: const <MoneyTransaction>[],
+        );
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            'Ringkasan ${DateFormatter.formatMonthYear(data.month)}',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: _SummaryValue(
+                  label: 'Pemasukan',
+                  value: CurrencyFormatter.formatRupiah(data.incomeTotal),
+                  toneColor: AppColors.success,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.lg),
+              Expanded(
+                child: _SummaryValue(
+                  label: 'Pengeluaran',
+                  value: CurrencyFormatter.formatRupiah(data.expenseTotal),
+                  toneColor: AppColors.danger,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryValue extends StatelessWidget {
+  const _SummaryValue({
+    required this.label,
+    required this.value,
+    required this.toneColor,
+  });
+
+  final String label;
+  final String value;
+  final Color toneColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          label,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: toneColor,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ],
     );
   }
+}
+
+class _TransactionListItem extends StatelessWidget {
+  const _TransactionListItem({
+    required this.transaction,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final MoneyTransaction transaction;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isIncome = transaction.type == 'income';
+    final Color amountColor = isIncome ? AppColors.success : AppColors.danger;
+    final String signedAmount =
+        '${isIncome ? '+' : '-'}${CurrencyFormatter.formatRupiah(transaction.amount)}';
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      onTap: onEdit,
+      title: Text(
+        transaction.title,
+        style: Theme.of(
+          context,
+        ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.xs),
+        child: Text(
+          '${transaction.categoryNameSnapshot} - ${DateFormatter.formatShortDate(transaction.transactionDate)} - ${_paymentMethodLabel(transaction.paymentMethod)}',
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+        ),
+      ),
+      trailing: PopupMenuButton<String>(
+        onSelected: (String value) {
+          if (value == 'edit') {
+            onEdit();
+            return;
+          }
+
+          if (value == 'delete') {
+            onDelete();
+          }
+        },
+        itemBuilder: (BuildContext context) {
+          return <PopupMenuEntry<String>>[
+            PopupMenuItem<String>(
+              value: 'amount',
+              enabled: false,
+              child: Text(
+                signedAmount,
+                style: TextStyle(
+                  color: amountColor,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const PopupMenuDivider(),
+            const PopupMenuItem<String>(
+              value: 'edit',
+              child: Text('Edit transaksi'),
+            ),
+            const PopupMenuItem<String>(
+              value: 'delete',
+              child: Text('Hapus dari daftar aktif'),
+            ),
+          ];
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            Text(
+              signedAmount,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: amountColor,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            const Icon(Icons.more_horiz),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionMessage extends StatelessWidget {
+  const _SectionMessage({required this.title, required this.description});
+
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            description,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _KeuanganViewData {
+  const _KeuanganViewData({required this.summary, required this.transactions});
+
+  final MonthlyTransactionSummary summary;
+  final List<MoneyTransaction> transactions;
+}
+
+class _FilterOption {
+  const _FilterOption({required this.value, required this.label});
+
+  final String value;
+  final String label;
+}
+
+const List<_FilterOption> _transactionFilters = <_FilterOption>[
+  _FilterOption(value: 'all', label: 'Semua'),
+  _FilterOption(value: 'income', label: 'Pemasukan'),
+  _FilterOption(value: 'expense', label: 'Pengeluaran'),
+];
+
+String _paymentMethodLabel(String value) {
+  if (value.trim().isEmpty) {
+    return 'Tidak Dicatat';
+  }
+  return value;
 }

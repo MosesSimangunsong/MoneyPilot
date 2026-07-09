@@ -5,6 +5,7 @@ import 'core/session/app_session_controller.dart';
 import 'core/theme/app_theme.dart';
 import 'data/local/local_database_service.dart';
 import 'data/repositories/category_repository.dart';
+import 'data/repositories/transaction_repository.dart';
 
 class MoneyPilotApp extends StatefulWidget {
   const MoneyPilotApp({
@@ -12,11 +13,13 @@ class MoneyPilotApp extends StatefulWidget {
     required this.sessionController,
     required this.databaseService,
     required this.categoryRepository,
+    required this.transactionRepository,
   });
 
   final AppSessionController sessionController;
   final LocalDatabaseService databaseService;
   final CategoryRepository categoryRepository;
+  final TransactionRepository transactionRepository;
 
   @override
   State<MoneyPilotApp> createState() => _MoneyPilotAppState();
@@ -35,6 +38,7 @@ class _MoneyPilotAppState extends State<MoneyPilotApp>
     _appRouter = AppRouter(
       _sessionController,
       categoryRepository: widget.categoryRepository,
+      transactionRepository: widget.transactionRepository,
     );
   }
 
