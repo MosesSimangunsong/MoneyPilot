@@ -12,6 +12,8 @@ class WatchlistItem {
     required this.market,
     this.targetPrice,
     this.note,
+    this.syncStatus = 'pending',
+    this.syncErrorMessage,
     this.isDeleted = false,
     required this.createdAt,
     required this.updatedAt,
@@ -30,6 +32,11 @@ class WatchlistItem {
   late String market;
   double? targetPrice;
   String? note;
+
+  @Index()
+  late String syncStatus;
+
+  String? syncErrorMessage;
 
   @Index()
   bool isDeleted;

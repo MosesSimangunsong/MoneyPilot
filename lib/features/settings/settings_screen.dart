@@ -292,6 +292,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                             ),
                           ),
+                          const SizedBox(height: AppSpacing.md),
+                          Text(
+                            'Sync spreadsheet mencakup kategori, transaksi uang, transaksi saham, dividen, dan watchlist. Konflik diselesaikan memakai UUID dan perubahan dengan updatedAt terbaru.',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AppColors.textSecondary),
+                          ),
                         ],
                       ),
                     ),
@@ -547,7 +553,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       });
 
       final String summaryText =
-          'Push kategori ${summary.pushedCategories}, transaksi ${summary.pushedTransactions}. Pull kategori ${summary.pulledCategories}, transaksi ${summary.pulledTransactions}.';
+          'Push kategori ${summary.pushedCategories}, transaksi uang ${summary.pushedTransactions}, transaksi saham ${summary.pushedStockTransactions}, dividen ${summary.pushedDividends}, watchlist ${summary.pushedWatchlist}. Pull kategori ${summary.pulledCategories}, transaksi uang ${summary.pulledTransactions}, transaksi saham ${summary.pulledStockTransactions}, dividen ${summary.pulledDividends}, watchlist ${summary.pulledWatchlist}.';
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

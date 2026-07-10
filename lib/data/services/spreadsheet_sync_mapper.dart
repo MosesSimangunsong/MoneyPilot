@@ -3,6 +3,7 @@ import '../models/category.dart';
 import '../models/dividend.dart';
 import '../models/money_transaction.dart';
 import '../models/stock_transaction.dart';
+import '../models/watchlist_item.dart';
 
 class SpreadsheetSyncMapper {
   const SpreadsheetSyncMapper._();
@@ -173,6 +174,40 @@ class SpreadsheetSyncMapper {
     );
   }
 
+  static Map<String, dynamic> watchlistToPayload(WatchlistItem item) {
+    return <String, dynamic>{
+      'uuid': item.uuid,
+      'symbol': item.symbol,
+      'companyName': item.companyName ?? '',
+      'market': item.market,
+      'targetPrice': item.targetPrice ?? '',
+      'note': item.note ?? '',
+      'syncStatus': item.syncStatus,
+      'syncErrorMessage': item.syncErrorMessage ?? '',
+      'isDeleted': item.isDeleted,
+      'createdAt': _toIsoString(item.createdAt),
+      'updatedAt': _toIsoString(item.updatedAt),
+      'deletedAt': _toNullableIsoString(item.deletedAt),
+    };
+  }
+
+  static WatchlistItem watchlistFromPayload(Map<String, dynamic> payload) {
+    return WatchlistItem(
+      uuid: _readString(payload, 'uuid'),
+      symbol: _readString(payload, 'symbol'),
+      companyName: _readNullableString(payload['companyName']),
+      market: _readStringOrFallback(payload, 'market', 'IDX'),
+      targetPrice: _readNullableDouble(payload['targetPrice']),
+      note: _readNullableString(payload['note']),
+      syncStatus: _readStringOrFallback(payload, 'syncStatus', 'synced'),
+      syncErrorMessage: _readNullableString(payload['syncErrorMessage']),
+      isDeleted: _readBool(payload['isDeleted']),
+      createdAt: _readDateTime(payload, 'createdAt'),
+      updatedAt: _readDateTime(payload, 'updatedAt'),
+      deletedAt: _readNullableDateTime(payload['deletedAt']),
+    );
+  }
+
   static String _toIsoString(DateTime value) {
     return DateTimeUtils.normalizeUtc(value).toIso8601String();
   }
@@ -230,6 +265,14 @@ class SpreadsheetSyncMapper {
       throw FormatException('Nilai angka tidak valid: $value');
     }
     return parsed;
+  }
+
+  static double? _readNullableDouble(dynamic value) {
+    final String? normalized = _readNullableString(value);
+    if (normalized == null) {
+      return null;
+    }
+    return _readDouble(normalized);
   }
 
   static int _readInt(dynamic value) {

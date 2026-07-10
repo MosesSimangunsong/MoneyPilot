@@ -1,7 +1,10 @@
 import 'dart:convert';
 
 import 'package:app/data/models/category.dart';
+import 'package:app/data/models/dividend.dart';
 import 'package:app/data/models/money_transaction.dart';
+import 'package:app/data/models/stock_transaction.dart';
+import 'package:app/data/models/watchlist_item.dart';
 import 'package:app/data/services/spreadsheet_sync_mapper.dart';
 import 'package:app/data/services/spreadsheet_sync_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -108,6 +111,158 @@ void main() {
       expect(transaction.categoryNameSnapshot, 'Makanan & Minuman');
       expect(transaction.paymentMethod, 'QRIS');
       expect(transaction.transactionDate, DateTime.utc(2026, 7, 9, 3));
+    });
+  });
+
+  group('SpreadsheetSyncMapper stock transaction', () {
+    test('StockTransaction -> Map mempertahankan field penting', () {
+      final StockTransaction transaction = StockTransaction(
+        uuid: 'stock-001',
+        symbol: 'BBCA',
+        companyName: 'Bank Central Asia',
+        actionType: 'buy',
+        lot: 1,
+        shares: 100,
+        price: 9500,
+        fee: 500,
+        transactionDate: DateTime.utc(2026, 7, 9, 3),
+        note: 'Beli awal',
+        syncStatus: 'pending',
+        createdAt: DateTime.utc(2026, 7, 9, 3),
+        updatedAt: DateTime.utc(2026, 7, 9, 3),
+      );
+
+      final Map<String, dynamic> payload =
+          SpreadsheetSyncMapper.stockTransactionToPayload(transaction);
+
+      expect(payload['symbol'], 'BBCA');
+      expect(payload['actionType'], 'buy');
+      expect(payload['transactionDate'], '2026-07-09T03:00:00.000Z');
+    });
+
+    test('Map -> StockTransaction mempertahankan soft delete', () {
+      final StockTransaction transaction =
+          SpreadsheetSyncMapper.stockTransactionFromPayload(
+            <String, dynamic>{
+              'uuid': 'stock-001',
+              'symbol': 'BBCA',
+              'companyName': 'Bank Central Asia',
+              'actionType': 'sell',
+              'lot': 1,
+              'shares': 100,
+              'price': 10000,
+              'fee': 500,
+              'transactionDate': '2026-07-09T03:00:00.000Z',
+              'note': '',
+              'syncStatus': 'synced',
+              'syncErrorMessage': '',
+              'isDeleted': true,
+              'createdAt': '2026-07-09T03:00:00.000Z',
+              'updatedAt': '2026-07-09T04:00:00.000Z',
+              'deletedAt': '2026-07-09T04:00:00.000Z',
+            },
+          );
+
+      expect(transaction.actionType, 'sell');
+      expect(transaction.isDeleted, true);
+      expect(transaction.deletedAt, DateTime.utc(2026, 7, 9, 4));
+    });
+  });
+
+  group('SpreadsheetSyncMapper dividend', () {
+    test('Dividend -> Map mempertahankan linked transaction', () {
+      final Dividend dividend = Dividend(
+        uuid: 'div-001',
+        symbol: 'BBCA',
+        companyName: 'Bank Central Asia',
+        grossAmount: 100000,
+        tax: 10000,
+        netAmount: 90000,
+        receivedDate: DateTime.utc(2026, 7, 9, 3),
+        linkedTransactionUuid: 'tx-income-1',
+        note: 'Dividen tahunan',
+        syncStatus: 'pending',
+        createdAt: DateTime.utc(2026, 7, 9, 3),
+        updatedAt: DateTime.utc(2026, 7, 9, 3),
+      );
+
+      final Map<String, dynamic> payload =
+          SpreadsheetSyncMapper.dividendToPayload(dividend);
+
+      expect(payload['linkedTransactionUuid'], 'tx-income-1');
+      expect(payload['netAmount'], 90000);
+    });
+
+    test('Map -> Dividend mempertahankan field penting', () {
+      final Dividend dividend = SpreadsheetSyncMapper.dividendFromPayload(
+        <String, dynamic>{
+          'uuid': 'div-001',
+          'symbol': 'BBCA',
+          'companyName': 'Bank Central Asia',
+          'grossAmount': 100000,
+          'tax': 10000,
+          'netAmount': 90000,
+          'receivedDate': '2026-07-09T03:00:00.000Z',
+          'linkedTransactionUuid': 'tx-income-1',
+          'note': '',
+          'syncStatus': 'synced',
+          'syncErrorMessage': '',
+          'isDeleted': false,
+          'createdAt': '2026-07-09T03:00:00.000Z',
+          'updatedAt': '2026-07-09T04:00:00.000Z',
+          'deletedAt': '',
+        },
+      );
+
+      expect(dividend.linkedTransactionUuid, 'tx-income-1');
+      expect(dividend.netAmount, 90000);
+    });
+  });
+
+  group('SpreadsheetSyncMapper watchlist', () {
+    test('Watchlist -> Map mempertahankan sync field', () {
+      final WatchlistItem item = WatchlistItem(
+        uuid: 'watch-001',
+        symbol: 'BBCA',
+        companyName: 'Bank Central Asia',
+        market: 'IDX',
+        targetPrice: 10000,
+        note: 'Pantau',
+        syncStatus: 'pending',
+        syncErrorMessage: null,
+        createdAt: DateTime.utc(2026, 7, 9, 3),
+        updatedAt: DateTime.utc(2026, 7, 9, 3),
+      );
+
+      final Map<String, dynamic> payload =
+          SpreadsheetSyncMapper.watchlistToPayload(item);
+
+      expect(payload['market'], 'IDX');
+      expect(payload['syncStatus'], 'pending');
+      expect(payload['targetPrice'], 10000);
+    });
+
+    test('Map -> Watchlist mempertahankan targetPrice nullable', () {
+      final WatchlistItem item = SpreadsheetSyncMapper.watchlistFromPayload(
+        <String, dynamic>{
+          'uuid': 'watch-001',
+          'symbol': 'BBCA',
+          'companyName': 'Bank Central Asia',
+          'market': 'IDX',
+          'targetPrice': '',
+          'note': '',
+          'syncStatus': 'synced',
+          'syncErrorMessage': '',
+          'isDeleted': false,
+          'createdAt': '2026-07-09T03:00:00.000Z',
+          'updatedAt': '2026-07-09T04:00:00.000Z',
+          'deletedAt': '',
+        },
+      );
+
+      expect(item.symbol, 'BBCA');
+      expect(item.targetPrice, isNull);
+      expect(item.syncStatus, 'synced');
     });
   });
 

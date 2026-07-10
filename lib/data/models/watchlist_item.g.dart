@@ -52,18 +52,28 @@ const WatchlistItemSchema = CollectionSchema(
       name: r'symbol',
       type: IsarType.string,
     ),
-    r'targetPrice': PropertySchema(
+    r'syncErrorMessage': PropertySchema(
       id: 7,
+      name: r'syncErrorMessage',
+      type: IsarType.string,
+    ),
+    r'syncStatus': PropertySchema(
+      id: 8,
+      name: r'syncStatus',
+      type: IsarType.string,
+    ),
+    r'targetPrice': PropertySchema(
+      id: 9,
       name: r'targetPrice',
       type: IsarType.double,
     ),
     r'updatedAt': PropertySchema(
-      id: 8,
+      id: 10,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
     r'uuid': PropertySchema(
-      id: 9,
+      id: 11,
       name: r'uuid',
       type: IsarType.string,
     )
@@ -97,6 +107,19 @@ const WatchlistItemSchema = CollectionSchema(
           name: r'symbol',
           type: IndexType.hash,
           caseSensitive: false,
+        )
+      ],
+    ),
+    r'syncStatus': IndexSchema(
+      id: 8239539375045684509,
+      name: r'syncStatus',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'syncStatus',
+          type: IndexType.hash,
+          caseSensitive: true,
         )
       ],
     ),
@@ -155,6 +178,13 @@ int _watchlistItemEstimateSize(
     }
   }
   bytesCount += 3 + object.symbol.length * 3;
+  {
+    final value = object.syncErrorMessage;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  bytesCount += 3 + object.syncStatus.length * 3;
   bytesCount += 3 + object.uuid.length * 3;
   return bytesCount;
 }
@@ -172,9 +202,11 @@ void _watchlistItemSerialize(
   writer.writeString(offsets[4], object.market);
   writer.writeString(offsets[5], object.note);
   writer.writeString(offsets[6], object.symbol);
-  writer.writeDouble(offsets[7], object.targetPrice);
-  writer.writeDateTime(offsets[8], object.updatedAt);
-  writer.writeString(offsets[9], object.uuid);
+  writer.writeString(offsets[7], object.syncErrorMessage);
+  writer.writeString(offsets[8], object.syncStatus);
+  writer.writeDouble(offsets[9], object.targetPrice);
+  writer.writeDateTime(offsets[10], object.updatedAt);
+  writer.writeString(offsets[11], object.uuid);
 }
 
 WatchlistItem _watchlistItemDeserialize(
@@ -192,9 +224,11 @@ WatchlistItem _watchlistItemDeserialize(
     market: reader.readString(offsets[4]),
     note: reader.readStringOrNull(offsets[5]),
     symbol: reader.readString(offsets[6]),
-    targetPrice: reader.readDoubleOrNull(offsets[7]),
-    updatedAt: reader.readDateTime(offsets[8]),
-    uuid: reader.readString(offsets[9]),
+    syncErrorMessage: reader.readStringOrNull(offsets[7]),
+    syncStatus: reader.readStringOrNull(offsets[8]) ?? 'pending',
+    targetPrice: reader.readDoubleOrNull(offsets[9]),
+    updatedAt: reader.readDateTime(offsets[10]),
+    uuid: reader.readString(offsets[11]),
   );
   return object;
 }
@@ -221,10 +255,14 @@ P _watchlistItemDeserializeProp<P>(
     case 6:
       return (reader.readString(offset)) as P;
     case 7:
-      return (reader.readDoubleOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 8:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readStringOrNull(offset) ?? 'pending') as P;
     case 9:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 10:
+      return (reader.readDateTime(offset)) as P;
+    case 11:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -479,6 +517,51 @@ extension WatchlistItemQueryWhere
               indexName: r'symbol',
               lower: [],
               upper: [symbol],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause>
+      syncStatusEqualTo(String syncStatus) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'syncStatus',
+        value: [syncStatus],
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterWhereClause>
+      syncStatusNotEqualTo(String syncStatus) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncStatus',
+              lower: [],
+              upper: [syncStatus],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncStatus',
+              lower: [syncStatus],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncStatus',
+              lower: [syncStatus],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncStatus',
+              lower: [],
+              upper: [syncStatus],
               includeUpper: false,
             ));
       }
@@ -1400,6 +1483,296 @@ extension WatchlistItemQueryFilter
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncErrorMessageIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'syncErrorMessage',
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncErrorMessageIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'syncErrorMessage',
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncErrorMessageEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'syncErrorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncErrorMessageGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'syncErrorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncErrorMessageLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'syncErrorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncErrorMessageBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'syncErrorMessage',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncErrorMessageStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'syncErrorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncErrorMessageEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'syncErrorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncErrorMessageContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'syncErrorMessage',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncErrorMessageMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'syncErrorMessage',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncErrorMessageIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'syncErrorMessage',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncErrorMessageIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'syncErrorMessage',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncStatusEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'syncStatus',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncStatusGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'syncStatus',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncStatusLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'syncStatus',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncStatusBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'syncStatus',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncStatusStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'syncStatus',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncStatusEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'syncStatus',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncStatusContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'syncStatus',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncStatusMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'syncStatus',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncStatusIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'syncStatus',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
+      syncStatusIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'syncStatus',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterFilterCondition>
       targetPriceIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -1771,6 +2144,33 @@ extension WatchlistItemQuerySortBy
     });
   }
 
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
+      sortBySyncErrorMessage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'syncErrorMessage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
+      sortBySyncErrorMessageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'syncErrorMessage', Sort.desc);
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy> sortBySyncStatus() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'syncStatus', Sort.asc);
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
+      sortBySyncStatusDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'syncStatus', Sort.desc);
+    });
+  }
+
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy> sortByTargetPrice() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'targetPrice', Sort.asc);
@@ -1912,6 +2312,33 @@ extension WatchlistItemQuerySortThenBy
     });
   }
 
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
+      thenBySyncErrorMessage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'syncErrorMessage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
+      thenBySyncErrorMessageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'syncErrorMessage', Sort.desc);
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy> thenBySyncStatus() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'syncStatus', Sort.asc);
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy>
+      thenBySyncStatusDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'syncStatus', Sort.desc);
+    });
+  }
+
   QueryBuilder<WatchlistItem, WatchlistItem, QAfterSortBy> thenByTargetPrice() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'targetPrice', Sort.asc);
@@ -2000,6 +2427,21 @@ extension WatchlistItemQueryWhereDistinct
   }
 
   QueryBuilder<WatchlistItem, WatchlistItem, QDistinct>
+      distinctBySyncErrorMessage({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'syncErrorMessage',
+          caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QDistinct> distinctBySyncStatus(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'syncStatus', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<WatchlistItem, WatchlistItem, QDistinct>
       distinctByTargetPrice() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'targetPrice');
@@ -2067,6 +2509,19 @@ extension WatchlistItemQueryProperty
   QueryBuilder<WatchlistItem, String, QQueryOperations> symbolProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'symbol');
+    });
+  }
+
+  QueryBuilder<WatchlistItem, String?, QQueryOperations>
+      syncErrorMessageProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'syncErrorMessage');
+    });
+  }
+
+  QueryBuilder<WatchlistItem, String, QQueryOperations> syncStatusProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'syncStatus');
     });
   }
 

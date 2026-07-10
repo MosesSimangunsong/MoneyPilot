@@ -1,6 +1,6 @@
 # Final CV Claim Validation
 
-Dokumen ini merangkum status klaim CV MoneyPilot setelah Tahap 13.
+Dokumen ini merangkum status klaim CV MoneyPilot setelah Tahap 14.
 
 ## Status Klaim CV
 
@@ -25,10 +25,11 @@ Dokumen ini merangkum status klaim CV MoneyPilot setelah Tahap 13.
      pencegahan duplikasi aktif per tipe, dan soft delete
 
 5. Google Spreadsheet two-way sync
-   - Status: sebagian siap
-   - Bukti: categories dan transactions sudah tersinkron
-   - Gap tersisa: stock transactions, dividends, dan watchlist belum diperluas
-     pada Tahap 13
+   - Status: siap demo lebih kuat
+   - Bukti: categories, transactions, stock transactions, dividends, dan
+     watchlist sudah masuk sync dua arah
+   - Cakupan: UUID-based upsert, latest `updatedAt` wins, dan soft delete sync
+     untuk seluruh entity utama spreadsheet
 
 6. Portofolio, dividen, watchlist, berita, dan analisis edukatif
    - Status: fondasi tersedia
@@ -48,9 +49,8 @@ Dokumen ini merangkum status klaim CV MoneyPilot setelah Tahap 13.
 9. Pastikan transaksi lama yang pernah memakai kategori lama tetap aman.
 10. Coba hapus kategori bawaan dan pastikan aplikasi menolak dengan pesan aman.
 
-## Gap Yang Masih Tersisa Setelah Tahap 13
+## Gap Yang Masih Tersisa Setelah Tahap 14
 
-- Sinkronisasi spreadsheet belum mencakup seluruh domain portofolio utama
 - Provider market masih perlu hardening agar klaim market price data lebih kuat
 - AI news impact analysis masih perlu mode demo yang lebih eksplisit
 - Portfolio movement masih perlu ringkasan yang lebih kuat untuk demo CV final

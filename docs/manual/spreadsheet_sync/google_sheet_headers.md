@@ -27,7 +27,7 @@ uuid,symbol,companyName,grossAmount,tax,netAmount,receivedDate,linkedTransaction
 ## Watchlist
 
 ```text
-uuid,symbol,companyName,market,targetPrice,note,isDeleted,createdAt,updatedAt,deletedAt
+uuid,symbol,companyName,market,targetPrice,note,syncStatus,syncErrorMessage,isDeleted,createdAt,updatedAt,deletedAt
 ```
 
 ## Catatan
@@ -36,5 +36,5 @@ uuid,symbol,companyName,market,targetPrice,note,isDeleted,createdAt,updatedAt,de
 - Kolom `uuid` wajib ada di setiap sheet entity.
 - Semua timestamp wajib memakai UTC ISO 8601.
 - Operasi `push` harus melakukan upsert berdasarkan `uuid`, bukan append buta.
-- Flutter saat ini aktif sync dua arah untuk `Categories` dan `Transactions`.
-- Header `Stock_Transactions`, `Dividends`, dan `Watchlist` sudah disiapkan untuk aktivasi entity berikutnya.
+- Flutter saat ini aktif sync dua arah untuk `Categories`, `Transactions`, `Stock_Transactions`, `Dividends`, dan `Watchlist`.
+- Header setiap sheet harus konsisten dengan mapper Flutter agar UUID upsert, soft delete, dan conflict handling `updatedAt` berjalan aman.

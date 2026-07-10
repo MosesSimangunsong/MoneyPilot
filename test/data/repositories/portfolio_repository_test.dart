@@ -208,7 +208,7 @@ void main() {
 
   test('watchlist bisa ditambah dan symbol dinormalisasi', () async {
     final item = await portfolioRepository.createWatchlistItem(
-      symbol: 'bbca',
+      symbol: 'bbca.jk',
       companyName: 'Bank Central Asia',
       targetPrice: 10000,
       note: 'Pantau valuasi',
@@ -218,6 +218,7 @@ void main() {
 
     expect(item.symbol, 'BBCA');
     expect(item.market, 'IDX');
+    expect(item.syncStatus, 'pending');
     expect(item.createdAt.isUtc, isTrue);
     expect(item.updatedAt.isUtc, isTrue);
     expect(watchlist, hasLength(1));
@@ -235,6 +236,7 @@ void main() {
 
     expect(updated.targetPrice, 9800);
     expect(updated.note, 'Tunggu laporan kuartal');
+    expect(updated.syncStatus, 'pending');
     expect(updated.updatedAt.isUtc, isTrue);
   });
 
@@ -251,6 +253,7 @@ void main() {
     expect(activeWatchlist, isEmpty);
     expect(deletedItem?.isDeleted, isTrue);
     expect(deletedItem?.deletedAt, isNotNull);
+    expect(deletedItem?.syncStatus, 'pending');
   });
 
   test('watchlist deleted tidak muncul pada daftar aktif', () async {

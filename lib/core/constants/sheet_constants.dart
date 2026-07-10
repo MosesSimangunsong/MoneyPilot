@@ -87,6 +87,8 @@ class SheetConstants {
     'market',
     'targetPrice',
     'note',
+    'syncStatus',
+    'syncErrorMessage',
     'isDeleted',
     'createdAt',
     'updatedAt',
@@ -113,6 +115,9 @@ class SheetConstants {
   static const List<String> activeSyncEntities = <String>[
     categories,
     transactions,
+    stockTransactions,
+    dividends,
+    watchlist,
   ];
 
   static List<String> headersForEntity(String entity) {

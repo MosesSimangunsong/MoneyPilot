@@ -399,8 +399,9 @@ void main() {
     final watchlist = await portfolioRepository.getWatchlist();
 
     expect(watchlist, hasLength(1));
-    expect(watchlist.single.symbol, 'BBRI.JK');
+    expect(watchlist.single.symbol, 'BBRI');
     expect(watchlist.single.targetPrice, 4500);
+    expect(watchlist.single.syncStatus, 'pending');
   });
 
   test(

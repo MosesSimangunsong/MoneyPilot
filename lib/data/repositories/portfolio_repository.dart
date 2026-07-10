@@ -205,6 +205,8 @@ class PortfolioRepository {
     dividend.note = _normalizeNullable(dividend.note);
     dividend.receivedDate = DateTimeUtils.normalizeUtc(dividend.receivedDate);
     dividend.updatedAt = DateTimeUtils.utcNow();
+    dividend.syncStatus = 'pending';
+    dividend.syncErrorMessage = null;
     dividend.deletedAt = dividend.isDeleted
         ? (dividend.deletedAt == null
               ? dividend.updatedAt
@@ -404,7 +406,11 @@ class PortfolioRepository {
     String? note,
   }) async {
     final DateTime now = DateTimeUtils.utcNow();
-    final String normalizedSymbol = _normalizeSymbol(symbol);
+    final String normalizedMarket = _normalizeMarket(market);
+    final String normalizedSymbol = _normalizeSymbol(
+      symbol,
+      market: normalizedMarket,
+    );
     final WatchlistItem? existing = await _isar.watchlistItems
         .filter()
         .symbolEqualTo(normalizedSymbol)
@@ -413,13 +419,15 @@ class PortfolioRepository {
     if (existing != null) {
       existing.symbol = normalizedSymbol;
       existing.companyName = _normalizeNullable(companyName);
-      existing.market = _normalizeMarket(market);
+      existing.market = normalizedMarket;
       existing.targetPrice = targetPrice;
       existing.note = _normalizeNullable(note);
       existing.isDeleted = false;
       existing.deletedAt = null;
       existing.updatedAt = now;
       existing.createdAt = DateTimeUtils.normalizeUtc(existing.createdAt);
+      existing.syncStatus = 'pending';
+      existing.syncErrorMessage = null;
       await _isar.writeTxn(() async {
         await _isar.watchlistItems.put(existing);
       });
@@ -430,7 +438,7 @@ class PortfolioRepository {
       uuid: IdGenerator.newUuid(),
       symbol: normalizedSymbol,
       companyName: _normalizeNullable(companyName),
-      market: _normalizeMarket(market),
+      market: normalizedMarket,
       targetPrice: targetPrice,
       note: _normalizeNullable(note),
       createdAt: now,
@@ -457,14 +465,16 @@ class PortfolioRepository {
       throw StateError('Watchlist tidak ditemukan atau sudah dihapus.');
     }
 
-    item.symbol = _normalizeSymbol(symbol);
-    item.companyName = _normalizeNullable(companyName);
     item.market = _normalizeMarket(market);
+    item.symbol = _normalizeSymbol(symbol, market: item.market);
+    item.companyName = _normalizeNullable(companyName);
     item.targetPrice = targetPrice;
     item.note = _normalizeNullable(note);
     item.updatedAt = DateTimeUtils.utcNow();
     item.deletedAt = null;
     item.isDeleted = false;
+    item.syncStatus = 'pending';
+    item.syncErrorMessage = null;
 
     await _isar.writeTxn(() async {
       await _isar.watchlistItems.put(item);
@@ -475,7 +485,7 @@ class PortfolioRepository {
 
   Future<List<WatchlistItem>> getWatchlistBySymbols(List<String> symbols) {
     final List<String> normalizedSymbols = symbols
-        .map(_normalizeSymbol)
+        .map((String symbol) => _normalizeSymbol(symbol))
         .where((String item) => item.isNotEmpty)
         .toSet()
         .toList(growable: false);
@@ -497,12 +507,14 @@ class PortfolioRepository {
 
   Future<WatchlistItem> upsertWatchlistItem(WatchlistItem item) async {
     final DateTime now = DateTimeUtils.utcNow();
-    item.symbol = _normalizeSymbol(item.symbol);
-    item.companyName = _normalizeNullable(item.companyName);
     item.market = _normalizeMarket(item.market);
+    item.symbol = _normalizeSymbol(item.symbol, market: item.market);
+    item.companyName = _normalizeNullable(item.companyName);
     item.note = _normalizeNullable(item.note);
     item.createdAt = DateTimeUtils.normalizeUtc(item.createdAt);
     item.updatedAt = now;
+    item.syncStatus = 'pending';
+    item.syncErrorMessage = null;
     item.deletedAt = item.isDeleted
         ? (item.deletedAt == null
               ? now
@@ -530,6 +542,8 @@ class PortfolioRepository {
     item.isDeleted = true;
     item.deletedAt = now;
     item.updatedAt = now;
+    item.syncStatus = 'pending';
+    item.syncErrorMessage = null;
 
     await _isar.writeTxn(() async {
       await _isar.watchlistItems.put(item);
@@ -549,8 +563,15 @@ class PortfolioRepository {
     return normalized.isEmpty ? 'IDX' : normalized;
   }
 
-  String _normalizeSymbol(String value) {
-    return value.trim().toUpperCase();
+  String _normalizeSymbol(String value, {String market = 'IDX'}) {
+    final String normalized = value.trim().toUpperCase();
+    if (normalized.isEmpty) {
+      return '';
+    }
+    if (_normalizeMarket(market) == 'IDX' && normalized.endsWith('.JK')) {
+      return normalized.substring(0, normalized.length - 3);
+    }
+    return normalized;
   }
 
   String _normalizeActionType(String value) {

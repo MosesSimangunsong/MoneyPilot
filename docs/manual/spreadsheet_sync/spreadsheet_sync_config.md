@@ -31,6 +31,9 @@ https://script.google.com/macros/s/AKFY.../exec
 
 1. `Categories`
 2. `Transactions`
+3. `Stock_Transactions`
+4. `Dividends`
+5. `Watchlist`
 
 ## Entity yang Sudah Didukung Kode Apps Script
 
@@ -41,15 +44,21 @@ https://script.google.com/macros/s/AKFY.../exec
 5. `Watchlist`
 
 Catatan:
-- Flutter saat ini baru menjalankan sync dua arah untuk `Categories` dan `Transactions`.
-- Dukungan entity lain sudah disiapkan di Apps Script dan header sheet, tetapi belum aktif di repository sync Flutter saat ini.
+- Flutter menjalankan sync dua arah untuk seluruh entity utama personal finance dan portofolio.
+- Semua entity memakai UUID sebagai source of truth, soft delete, dan conflict handling `latest updatedAt wins`.
 
 ## Tahap Sync Manual Flutter Saat Ini
 
 1. `push Categories`
 2. `push Transactions`
-3. `pull Categories`
-4. `pull Transactions`
+3. `push Stock_Transactions`
+4. `push Dividends`
+5. `push Watchlist`
+6. `pull Categories`
+7. `pull Transactions`
+8. `pull Stock_Transactions`
+9. `pull Dividends`
+10. `pull Watchlist`
 
 ## Redirect Google Apps Script
 
