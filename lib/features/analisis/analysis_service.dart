@@ -1,3 +1,4 @@
+import '../../core/utils/market_symbol_utils.dart';
 import '../../data/models/market_quote.dart';
 import '../../data/models/news_article.dart';
 import '../../data/models/watchlist_item.dart';
@@ -31,8 +32,10 @@ class AnalysisService {
     bool newsConnected = false;
     bool marketAttemptFailed = false;
     bool newsAttemptFailed = false;
+    bool marketBackendReachable = true;
     List<NewsArticle> latestNews = const <NewsArticle>[];
     Map<String, MarketQuote> marketQuotes = const <String, MarketQuote>{};
+    String? marketStatusMessage;
 
     try {
       latestNews = await _newsRepository.getNews(limit: 6);
@@ -43,11 +46,22 @@ class AnalysisService {
 
     if (trackedSymbols.isNotEmpty) {
       try {
-        marketQuotes = await _marketDataApiService.getQuotes(
-          trackedSymbols
-              .map((String symbol) => normalizeSymbolForBackend(symbol))
-              .toList(growable: false),
-        );
+        final MarketQuotesResponse response = await _marketDataApiService
+            .getQuotesResult(
+              trackedSymbols
+                  .map(normalizeMarketSymbolForBackend)
+                  .toList(growable: false),
+            );
+        marketQuotes = response.quotes;
+        marketBackendReachable = response.backendReachable;
+        if (!response.backendReachable) {
+          marketAttemptFailed = true;
+          marketStatusMessage =
+              'Server MoneyPilot belum dapat dihubungi. Data lokal tetap tersedia.';
+        } else if (response.hasProviderErrors && marketQuotes.isEmpty) {
+          marketStatusMessage =
+              'Data pasar belum tersedia. Portofolio lokal tetap dapat digunakan.';
+        }
       } catch (_) {
         marketAttemptFailed = true;
       }
@@ -75,7 +89,7 @@ class AnalysisService {
             companyName: companyName,
           );
           final MarketQuote? marketQuote =
-              marketQuotes[normalizeSymbolForBackend(symbol)] ??
+              marketQuotes[normalizeMarketSymbolForBackend(symbol)] ??
               marketQuotes[symbol];
 
           return AnalysisTrackedSymbol(
@@ -99,17 +113,20 @@ class AnalysisService {
 
     final bool backendUnavailable = marketAttemptFailed || newsAttemptFailed;
     final bool backendConnected =
-        newsConnected || marketQuotes.isNotEmpty || trackedSymbols.isEmpty;
+        (newsConnected || marketQuotes.isNotEmpty || trackedSymbols.isEmpty) &&
+        !backendUnavailable;
 
     return AnalysisDashboardData(
       overview: overview,
       watchlist: watchlist,
       trackedItems: trackedItems,
       latestNews: latestNews,
-      backendConnected: backendConnected && !backendUnavailable,
-      backendStatusMessage: backendUnavailable
-          ? 'Server MoneyPilot belum dapat dihubungi. Analisis tetap menampilkan data lokal.'
-          : 'Data lokal siap digunakan${newsConnected || marketQuotes.isNotEmpty ? ' dan server MoneyPilot sedang terhubung.' : '.'}',
+      backendConnected: backendConnected || marketBackendReachable,
+      backendStatusMessage:
+          marketStatusMessage ??
+          (backendUnavailable
+              ? 'Server MoneyPilot belum dapat dihubungi. Data lokal tetap tersedia.'
+              : 'Data lokal siap digunakan${newsConnected || marketQuotes.isNotEmpty ? ' dan server MoneyPilot sedang terhubung.' : '.'}'),
     );
   }
 
@@ -127,13 +144,12 @@ class AnalysisService {
       }
     }
 
-    MarketQuote? marketQuote;
     List<NewsArticle> relatedNews = const <NewsArticle>[];
     bool backendUnavailable = false;
 
-    marketQuote = await _marketDataApiService.getQuote(
-      normalizeSymbolForBackend(normalizedSymbol),
-    );
+    final MarketQuoteResponse marketQuoteResponse = await _marketDataApiService
+        .getQuoteResult(normalizeMarketSymbolForBackend(normalizedSymbol));
+    final MarketQuote? marketQuote = marketQuoteResponse.quote;
     try {
       relatedNews = await _newsRepository.getRelatedNews(
         normalizedSymbol,
@@ -146,6 +162,16 @@ class AnalysisService {
     final String companyName =
         position?.companyName ?? watchlistItem?.companyName ?? normalizedSymbol;
 
+    String? backendStatusMessage;
+    if (!marketQuoteResponse.backendReachable || backendUnavailable) {
+      backendStatusMessage =
+          'Server MoneyPilot belum dapat dihubungi. Data lokal tetap tersedia.';
+    } else if (marketQuote == null && marketQuoteResponse.backendReachable) {
+      backendStatusMessage =
+          marketQuoteResponse.message ??
+          'Data pasar belum tersedia. Portofolio lokal tetap dapat digunakan.';
+    }
+
     return AnalysisSymbolDetailData(
       symbol: normalizedSymbol,
       companyName: companyName,
@@ -153,9 +179,7 @@ class AnalysisService {
       watchlistItem: watchlistItem,
       marketQuote: marketQuote,
       relatedNews: relatedNews,
-      backendStatusMessage: backendUnavailable
-          ? 'Server MoneyPilot belum dapat dihubungi. Detail tetap menampilkan data lokal.'
-          : null,
+      backendStatusMessage: backendStatusMessage,
       insights: buildEducationalInsights(
         symbol: normalizedSymbol,
         companyName: companyName,
@@ -180,24 +204,6 @@ class AnalysisService {
     }
     final List<String> result = merged.toList(growable: false)..sort();
     return result;
-  }
-
-  static String normalizeSymbolForBackend(
-    String symbol, {
-    String market = 'IDX',
-  }) {
-    final String normalizedSymbol = symbol.trim().toUpperCase();
-    final String normalizedMarket = market.trim().toUpperCase();
-    if (normalizedSymbol.isEmpty) {
-      return normalizedSymbol;
-    }
-    if (normalizedSymbol.contains('.')) {
-      return normalizedSymbol;
-    }
-    if (normalizedMarket == 'IDX') {
-      return '$normalizedSymbol.JK';
-    }
-    return normalizedSymbol;
   }
 
   static List<NewsArticle> filterNewsForSymbol(

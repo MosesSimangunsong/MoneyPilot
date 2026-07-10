@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/date_formatter.dart';
+import '../../core/utils/market_symbol_utils.dart';
 import '../../data/models/dividend.dart';
 import '../../data/models/market_quote.dart';
 import '../../data/models/stock_transaction.dart';
@@ -37,119 +38,130 @@ class _PortofolioScreenState extends State<PortofolioScreen> {
     return FutureBuilder<_PortfolioScreenData>(
       key: ValueKey<int>(_refreshNonce),
       future: _loadScreenData(),
-      builder:
-          (
-            BuildContext context,
-            AsyncSnapshot<_PortfolioScreenData> snapshot,
-          ) {
-            final PortfolioOverview? data = snapshot.data?.overview;
-            final Map<String, MarketQuote> marketQuotes =
-                snapshot.data?.marketQuotes ?? const <String, MarketQuote>{};
+      builder: (BuildContext context, AsyncSnapshot<_PortfolioScreenData> snapshot) {
+        final PortfolioOverview? data = snapshot.data?.overview;
+        final Map<String, MarketQuote> marketQuotes =
+            snapshot.data?.marketQuotes ?? const <String, MarketQuote>{};
+        final String? marketStatusMessage = snapshot.data?.marketStatusMessage;
 
-            return AppPage(
-              title: 'Portofolio',
-              description:
-                  'Catat transaksi saham dan dividen manual, lalu pantau posisi yang masih kamu pegang.',
+        return AppPage(
+          title: 'Portofolio',
+          description:
+              'Catat transaksi saham dan dividen manual, lalu pantau posisi yang masih kamu pegang.',
+          children: <Widget>[
+            _PortfolioSummaryCard(data: data),
+            const SizedBox(height: AppSpacing.lg),
+            Row(
               children: <Widget>[
-                _PortfolioSummaryCard(data: data),
-                const SizedBox(height: AppSpacing.lg),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: () => _openStockTransactionForm(),
-                        icon: const Icon(LucideIcons.plus),
-                        label: const Text('Tambah Transaksi Saham'),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _openDividendForm(),
-                        icon: const Icon(LucideIcons.wallet),
-                        label: const Text('Catat Dividen'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                const InfoCard(
-                  title: 'Sync saham dan dividen belum diaktifkan',
-                  description:
-                      'Tahap ini memprioritaskan penyimpanan lokal yang stabil. Data portofolio sudah memakai UUID, timestamp UTC, syncStatus, dan soft delete agar siap diaktifkan ke spreadsheet pada tahap berikutnya.',
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                Text(
-                  'Posisi saham',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                if (snapshot.connectionState == ConnectionState.waiting &&
-                    data == null)
-                  const Center(child: CircularProgressIndicator())
-                else if (snapshot.hasError)
-                  const _SectionMessage(
-                    title: 'Portofolio belum bisa dimuat',
-                    description:
-                        'Coba buka kembali halaman ini. Jika masalah berlanjut, periksa data lokal aplikasi.',
-                  )
-                else if (data == null || data.positions.isEmpty)
-                  const _SectionMessage(
-                    title: 'Belum ada posisi aktif',
-                    description:
-                        'Tambahkan transaksi beli saham agar ringkasan posisi mulai terisi.',
-                  )
-                else ...<Widget>[
-                  if (marketQuotes.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: AppSpacing.md),
-                      child: _SectionMessage(
-                        title: 'Harga pasar belum terhubung',
-                        description:
-                            'Backend market mungkin belum aktif atau belum dapat dijangkau. Data portofolio lokal tetap aman dan tetap bisa dicatat.',
-                      ),
-                    ),
-                  ...data.positions.map(
-                    (PortfolioPositionSummary position) => _PositionCard(
-                      position: position,
-                      marketQuote:
-                          marketQuotes['${position.symbol}.JK'] ??
-                          marketQuotes[position.symbol],
-                    ),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => _openStockTransactionForm(),
+                    icon: const Icon(LucideIcons.plus),
+                    label: const Text('Tambah Transaksi Saham'),
                   ),
-                ],
-                const SizedBox(height: AppSpacing.xl),
-                Text(
-                  'Transaksi saham terbaru',
-                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                if (data == null || data.recentTransactions.isEmpty)
-                  const _SectionMessage(
-                    title: 'Belum ada transaksi saham',
-                    description:
-                        'Transaksi beli dan jual yang kamu catat akan muncul di sini.',
-                  )
-                else
-                  ..._buildTransactionList(data.recentTransactions),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _openDividendForm(),
+                    icon: const Icon(LucideIcons.wallet),
+                    label: const Text('Catat Dividen'),
+                  ),
+                ),
               ],
-            );
-          },
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            const InfoCard(
+              title: 'Sync saham dan dividen belum diaktifkan',
+              description:
+                  'Tahap ini memprioritaskan penyimpanan lokal yang stabil. Data portofolio sudah memakai UUID, timestamp UTC, syncStatus, dan soft delete agar siap diaktifkan ke spreadsheet pada tahap berikutnya.',
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            Text(
+              'Posisi saham',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                data == null)
+              const Center(child: CircularProgressIndicator())
+            else if (snapshot.hasError)
+              const _SectionMessage(
+                title: 'Portofolio belum bisa dimuat',
+                description:
+                    'Coba buka kembali halaman ini. Jika masalah berlanjut, periksa data lokal aplikasi.',
+              )
+            else if (data == null || data.positions.isEmpty)
+              const _SectionMessage(
+                title: 'Belum ada posisi aktif',
+                description:
+                    'Tambahkan transaksi beli saham agar ringkasan posisi mulai terisi.',
+              )
+            else ...<Widget>[
+              if (marketStatusMessage != null)
+                Padding(
+                  padding: EdgeInsets.only(bottom: AppSpacing.md),
+                  child: _SectionMessage(
+                    title: 'Status data pasar',
+                    description: marketStatusMessage,
+                  ),
+                ),
+              ...data.positions.map(
+                (PortfolioPositionSummary position) => _PositionCard(
+                  position: position,
+                  marketQuote:
+                      marketQuotes[normalizeMarketSymbolForBackend(
+                        position.symbol,
+                      )],
+                ),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.xl),
+            Text(
+              'Transaksi saham terbaru',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            if (data == null || data.recentTransactions.isEmpty)
+              const _SectionMessage(
+                title: 'Belum ada transaksi saham',
+                description:
+                    'Transaksi beli dan jual yang kamu catat akan muncul di sini.',
+              )
+            else
+              ..._buildTransactionList(data.recentTransactions),
+          ],
+        );
+      },
     );
   }
 
   Future<_PortfolioScreenData> _loadScreenData() async {
     final PortfolioOverview overview = await widget.portfolioRepository
         .getPortfolioOverview();
-    final Map<String, MarketQuote> marketQuotes = await widget
+    final MarketQuotesResponse marketResponse = await widget
         .marketDataApiService
-        .getQuotes(
+        .getQuotesResult(
           overview.positions
-              .map((PortfolioPositionSummary item) => '${item.symbol}.JK')
+              .map((PortfolioPositionSummary item) => item.symbol)
               .toList(growable: false),
         );
 
-    return _PortfolioScreenData(overview: overview, marketQuotes: marketQuotes);
+    String? marketStatusMessage;
+    if (!marketResponse.backendReachable) {
+      marketStatusMessage =
+          'Server MoneyPilot belum dapat dihubungi. Data lokal tetap tersedia.';
+    } else if (marketResponse.hasProviderErrors &&
+        marketResponse.quotes.isEmpty) {
+      marketStatusMessage =
+          'Data pasar belum tersedia. Portofolio lokal tetap dapat digunakan.';
+    }
+
+    return _PortfolioScreenData(
+      overview: overview,
+      marketQuotes: marketResponse.quotes,
+      marketStatusMessage: marketStatusMessage,
+    );
   }
 
   List<Widget> _buildTransactionList(List<StockTransaction> transactions) {
@@ -430,10 +442,11 @@ class _PositionCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Data pasar bersifat estimasi dan bukan rekomendasi investasi.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+              _buildMarketQuoteMeta(marketQuote),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
             ),
           ],
         ),
@@ -603,12 +616,35 @@ String _formatLot(double lot) {
   return lot.toStringAsFixed(2);
 }
 
+String _buildMarketQuoteMeta(MarketQuote? marketQuote) {
+  if (marketQuote == null) {
+    return 'Data pasar bersifat estimasi dan bukan rekomendasi investasi.';
+  }
+
+  final List<String> lines = <String>['Sumber: ${marketQuote.sourceLabel}'];
+  if (marketQuote.isFallback) {
+    lines.add('Menggunakan data fallback.');
+  }
+  if (marketQuote.isStale) {
+    lines.add('Data dapat tertunda.');
+  }
+  if (marketQuote.asOf != null) {
+    lines.add('Per ${DateFormatter.formatDateTime(marketQuote.asOf!)}');
+  } else if (marketQuote.cachedAt != null) {
+    lines.add('Cache ${DateFormatter.formatDateTime(marketQuote.cachedAt!)}');
+  }
+  lines.add(marketQuote.message);
+  return lines.join('\n');
+}
+
 class _PortfolioScreenData {
   const _PortfolioScreenData({
     required this.overview,
     required this.marketQuotes,
+    required this.marketStatusMessage,
   });
 
   final PortfolioOverview overview;
   final Map<String, MarketQuote> marketQuotes;
+  final String? marketStatusMessage;
 }

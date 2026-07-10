@@ -25,8 +25,19 @@ class Config:
     TESTING = os.getenv("FLASK_TESTING", "0") == "1"
     BACKEND_HOST = os.getenv("BACKEND_HOST", "127.0.0.1")
     BACKEND_PORT = int(os.getenv("BACKEND_PORT", "5000"))
-    MARKET_DATA_PROVIDER = os.getenv("MARKET_DATA_PROVIDER", "MOCK").upper()
+    MARKET_DATA_PROVIDER = os.getenv("MARKET_DATA_PROVIDER", "mock").lower()
+    MARKET_DATA_API_KEY = os.getenv("MARKET_DATA_API_KEY", "").strip()
+    MARKET_DATA_BASE_URL = (
+        os.getenv("MARKET_DATA_BASE_URL", "https://eodhd.com/api/real-time").strip()
+    )
     MARKET_CACHE_TTL_SECONDS = int(os.getenv("MARKET_CACHE_TTL_SECONDS", "900"))
+    MARKET_REQUEST_TIMEOUT_SECONDS = int(
+        os.getenv("MARKET_REQUEST_TIMEOUT_SECONDS", "8")
+    )
+    ENABLE_MARKET_MOCK_FALLBACK = (
+        os.getenv("ENABLE_MARKET_MOCK_FALLBACK", "true").strip().lower()
+        in {"1", "true", "yes", "on"}
+    )
     MARKET_CACHE_DB_PATH = os.getenv(
         "MARKET_CACHE_DB_PATH",
         str(BASE_DIR / "data" / "market_cache.db"),

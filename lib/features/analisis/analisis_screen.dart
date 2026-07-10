@@ -8,6 +8,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/date_formatter.dart';
 import '../../data/models/news_article.dart';
+import '../../data/models/market_quote.dart';
 import '../../data/models/watchlist_item.dart';
 import '../../data/repositories/news_repository.dart';
 import '../../data/repositories/portfolio_repository.dart';
@@ -289,6 +290,11 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                             item.marketQuote!.price,
                           ),
                   ),
+                  if (item.marketQuote != null)
+                    _MetaItem(
+                      label: 'Sumber Data',
+                      value: item.marketQuote!.sourceLabel,
+                    ),
                   _MetaItem(
                     label: 'Berita terkait',
                     value: '${item.relatedNews.length}',
@@ -324,6 +330,16 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                       ),
                     ),
                   ),
+              if (item.marketQuote != null) ...<Widget>[
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  _buildMarketDataCaption(item.marketQuote!),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+              ],
               if ((item.watchlistItem?.note ?? '').isNotEmpty) ...<Widget>[
                 const SizedBox(height: AppSpacing.sm),
                 Text(
@@ -489,6 +505,20 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
       _future = _analysisService.loadDashboard();
     });
   }
+}
+
+String _buildMarketDataCaption(MarketQuote quote) {
+  final List<String> parts = <String>['Sumber: ${quote.sourceLabel}'];
+  if (quote.isFallback) {
+    parts.add('menggunakan data fallback');
+  }
+  if (quote.isStale) {
+    parts.add('data dapat tertunda');
+  }
+  if (quote.asOf != null) {
+    parts.add('per ${DateFormatter.formatDateTime(quote.asOf!)}');
+  }
+  return '${parts.join(' • ')}.\n${quote.message}';
 }
 
 class _DisclaimerCard extends StatelessWidget {

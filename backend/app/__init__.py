@@ -11,6 +11,7 @@ from .services.ai_analysis_service import AIAnalysisService
 from .services.cache_service import CacheService
 from .services.google_news_service import GoogleNewsService
 from .services.market_data_service import MarketDataService
+from .services.market_data_provider import MarketDataProviderError
 from .services.prompt_builder import PromptBuilder
 
 
@@ -33,6 +34,11 @@ def create_app(config_object: type[Config] = Config) -> Flask:
     market_service = MarketDataService(
         cache_service=cache_service,
         provider_name=app.config["MARKET_DATA_PROVIDER"],
+        api_key=app.config["MARKET_DATA_API_KEY"],
+        base_url=app.config["MARKET_DATA_BASE_URL"],
+        timeout_seconds=app.config["MARKET_REQUEST_TIMEOUT_SECONDS"],
+        cache_ttl_seconds=app.config["MARKET_CACHE_TTL_SECONDS"],
+        enable_mock_fallback=app.config["ENABLE_MARKET_MOCK_FALLBACK"],
     )
     news_service = GoogleNewsService(
         cache_service=cache_service,
@@ -54,6 +60,22 @@ def create_app(config_object: type[Config] = Config) -> Flask:
     app.extensions["market_service"] = market_service
     app.extensions["news_service"] = news_service
     app.extensions["analysis_service"] = analysis_service
+
+    @app.errorhandler(MarketDataProviderError)
+    def handle_market_provider_error(error: MarketDataProviderError):
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "error": {
+                        "code": error.code,
+                        "statusCode": error.status_code,
+                    },
+                    "message": error.message,
+                }
+            ),
+            error.status_code,
+        )
 
     @app.errorhandler(HTTPException)
     def handle_http_exception(error: HTTPException):

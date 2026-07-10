@@ -1,10 +1,16 @@
 import json
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from flask import current_app
 
 from ..db import get_db
 from ..models.market_cache import MarketCacheQuote
+from .market_data_provider import (
+    MARKET_DATA_DISCLAIMER,
+    display_market_symbol,
+    normalize_market_symbol,
+)
 
 
 class CacheService:
@@ -28,23 +34,31 @@ class CacheService:
         return self._to_payload(record, is_stale=False)
 
     def get_quote(self, symbol: str) -> MarketCacheQuote | None:
+        normalized_symbol = normalize_market_symbol(symbol)
         row = get_db().execute(
             """
-            SELECT symbol, price, currency, source, as_of, created_at, updated_at
+            SELECT
+                symbol, display_symbol, price, currency, source, provider,
+                is_mock, is_fallback, as_of, message, created_at, updated_at
             FROM market_cache
             WHERE symbol = ?
             """,
-            (symbol,),
+            (normalized_symbol,),
         ).fetchone()
         if row is None:
             return None
 
         return MarketCacheQuote(
             symbol=row["symbol"],
+            display_symbol=row["display_symbol"] or display_market_symbol(row["symbol"]),
             price=float(row["price"]),
             currency=row["currency"],
             source=row["source"],
+            provider=row["provider"] or row["source"],
+            is_mock=bool(row["is_mock"]),
+            is_fallback=bool(row["is_fallback"]),
             as_of=row["as_of"],
+            message=row["message"] or MARKET_DATA_DISCLAIMER,
             created_at=row["created_at"],
             updated_at=row["updated_at"],
         )
@@ -53,36 +67,51 @@ class CacheService:
         now = self._utc_now_text()
         existing = self.get_quote(quote["symbol"])
         created_at = existing.created_at if existing is not None else now
+        normalized_symbol = normalize_market_symbol(quote["symbol"])
 
         get_db().execute(
             """
             INSERT INTO market_cache (
-                symbol, price, currency, source, as_of, created_at, updated_at
+                symbol, display_symbol, price, currency, source, provider,
+                is_mock, is_fallback, as_of, message, created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(symbol) DO UPDATE SET
+                display_symbol = excluded.display_symbol,
                 price = excluded.price,
                 currency = excluded.currency,
                 source = excluded.source,
+                provider = excluded.provider,
+                is_mock = excluded.is_mock,
+                is_fallback = excluded.is_fallback,
                 as_of = excluded.as_of,
+                message = excluded.message,
                 updated_at = excluded.updated_at
             """,
             (
-                quote["symbol"],
+                normalized_symbol,
+                quote.get("displaySymbol") or display_market_symbol(normalized_symbol),
                 quote["price"],
                 quote["currency"],
                 quote["source"],
+                quote.get("provider") or quote["source"],
+                int(bool(quote.get("isMock"))),
+                int(bool(quote.get("isFallback"))),
                 quote["asOf"],
+                quote.get("message") or MARKET_DATA_DISCLAIMER,
                 created_at,
                 now,
             ),
         )
         get_db().commit()
 
-        return {
-            **quote,
-            "isStale": False,
-        }
+        return self._to_payload(self.get_quote(normalized_symbol), is_stale=False)
+
+    def get_stale_quote(self, symbol: str) -> dict | None:
+        record = self.get_quote(symbol)
+        if record is None:
+            return None
+        return self._to_payload(record, is_stale=True)
 
     def get_valid_news_feed(self, cache_key: str) -> list[dict] | None:
         row = get_db().execute(
@@ -228,12 +257,21 @@ class CacheService:
         )
         get_db().commit()
 
-    def _to_payload(self, quote: MarketCacheQuote, *, is_stale: bool) -> dict:
+    def _to_payload(self, quote: MarketCacheQuote | None, *, is_stale: bool) -> dict | None:
+        if quote is None:
+            return None
         return {
             "symbol": quote.symbol,
+            "displaySymbol": quote.display_symbol or display_market_symbol(quote.symbol),
             "price": quote.price,
             "currency": quote.currency,
             "source": quote.source,
+            "provider": quote.provider,
+            "isMock": quote.is_mock,
+            "isFallback": quote.is_fallback,
             "asOf": quote.as_of,
+            "cachedAt": quote.updated_at,
+            "cacheTtlSeconds": current_app.config["MARKET_CACHE_TTL_SECONDS"],
+            "message": quote.message or MARKET_DATA_DISCLAIMER,
             "isStale": is_stale,
         }

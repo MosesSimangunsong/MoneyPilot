@@ -6,10 +6,15 @@ from flask import current_app, g
 SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS market_cache (
     symbol TEXT PRIMARY KEY,
+    display_symbol TEXT NOT NULL DEFAULT '',
     price REAL NOT NULL,
     currency TEXT NOT NULL,
     source TEXT NOT NULL,
+    provider TEXT NOT NULL DEFAULT '',
+    is_mock INTEGER NOT NULL DEFAULT 0,
+    is_fallback INTEGER NOT NULL DEFAULT 0,
     as_of TEXT NOT NULL,
+    message TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
@@ -44,6 +49,21 @@ CREATE TABLE IF NOT EXISTS analysis_cache (
 );
 """
 
+MARKET_CACHE_REQUIRED_COLUMNS = {
+    "symbol": "TEXT PRIMARY KEY",
+    "display_symbol": "TEXT NOT NULL DEFAULT ''",
+    "price": "REAL NOT NULL",
+    "currency": "TEXT NOT NULL",
+    "source": "TEXT NOT NULL",
+    "provider": "TEXT NOT NULL DEFAULT ''",
+    "is_mock": "INTEGER NOT NULL DEFAULT 0",
+    "is_fallback": "INTEGER NOT NULL DEFAULT 0",
+    "as_of": "TEXT NOT NULL",
+    "message": "TEXT NOT NULL DEFAULT ''",
+    "created_at": "TEXT NOT NULL",
+    "updated_at": "TEXT NOT NULL",
+}
+
 
 def get_db() -> sqlite3.Connection:
     if "db" not in g:
@@ -64,6 +84,14 @@ def close_db(_error=None) -> None:
 def init_db() -> None:
     db = get_db()
     db.executescript(SCHEMA_SQL)
+    existing_columns = {
+        row["name"]
+        for row in db.execute("PRAGMA table_info(market_cache)").fetchall()
+    }
+    for column_name, column_sql in MARKET_CACHE_REQUIRED_COLUMNS.items():
+        if column_name in existing_columns:
+            continue
+        db.execute(f"ALTER TABLE market_cache ADD COLUMN {column_name} {column_sql}")
     db.commit()
 
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:app/core/utils/market_symbol_utils.dart';
 import 'package:app/data/local/local_database_service.dart';
 import 'package:app/data/repositories/category_repository.dart';
 import 'package:app/data/repositories/news_repository.dart';
@@ -90,11 +91,8 @@ void main() {
   });
 
   test('normalizeSymbolForBackend mengubah BBCA menjadi BBCA.JK', () {
-    expect(AnalysisService.normalizeSymbolForBackend('BBCA'), 'BBCA.JK');
-    expect(
-      AnalysisService.normalizeSymbolForBackend('AAPL', market: 'US'),
-      'AAPL',
-    );
+    expect(normalizeMarketSymbolForBackend('BBCA'), 'BBCA.JK');
+    expect(normalizeMarketSymbolForBackend('AAPL', market: 'US'), 'AAPL');
   });
 
   test('loadDashboard tetap berjalan saat backend gagal', () async {
@@ -121,9 +119,6 @@ void main() {
 
     expect(data.watchlist, hasLength(1));
     expect(data.backendConnected, isFalse);
-    expect(
-      data.backendStatusMessage,
-      contains('Analisis tetap menampilkan data lokal'),
-    );
+    expect(data.backendStatusMessage, contains('Data lokal tetap tersedia'));
   });
 }

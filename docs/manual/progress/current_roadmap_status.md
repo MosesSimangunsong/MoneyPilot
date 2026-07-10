@@ -1,6 +1,6 @@
 # Current Roadmap Status
 
-Dokumen ini merangkum status roadmap aktual MoneyPilot setelah Tahap 13 dan
+Dokumen ini merangkum status roadmap aktual MoneyPilot setelah Tahap 15 dan
 menjadi acuan penutupan gap klaim CV menuju demo final.
 
 ## Tahap Yang Sudah Selesai
@@ -13,6 +13,8 @@ menjadi acuan penutupan gap klaim CV menuju demo final.
 - Tahap 11 Settings, Export, dan Privacy
 - Tahap 12 Testing, Stabilization, dan Polish MVP
 - Tahap 13 CV Claim Gap Closure Foundation
+- Tahap 14 Spreadsheet Sync Expansion
+- Tahap 15 Market Data Provider Hardening
 - Tahap 8 Backend Flask dan Market Data
 - Tahap 9 Berita dan AI News Impact Analysis
 
@@ -26,21 +28,16 @@ menjadi acuan penutupan gap klaim CV menuju demo final.
 - Tahap 7 yang belum diaktifkan kembali pada urutan kerja terbaru
 - Tahap lanjutan portofolio di luar pencatatan manual dasar
 - Tahap deployment dan login server
-- Tahap integrasi provider market real
 
-## Status Audit Tahap 13
+## Status Audit Tahap 15
+- `pytest` backend: lulus
 - `flutter analyze`: lulus
 - `flutter test`: lulus
-- `pytest` backend: tidak dijalankan karena backend tidak berubah
-- Halaman kategori sekarang aktif dari UI, mendukung lihat/filter/tambah/edit/
-  soft delete kategori dengan validasi nama kosong dan pencegahan duplikasi
-- Routing kategori sudah aktif dari tab Keuangan dan halaman Pengaturan
-- Copy onboarding sudah disesuaikan dengan fitur aktual seperti voice input,
-  local-first storage, spreadsheet sync, portofolio, dividen, watchlist,
-  berita, dan analisis edukatif
-- Rapikan UX Bahasa Indonesia diterapkan pada area kategori, onboarding, dan
-  beberapa label utama di Pengaturan
-- Dokumen validasi klaim CV manual ditambahkan
+- Backend market data kini punya provider architecture yang jelas
+- Provider `mock` tetap aktif dan provider eksternal `eodhd` tersedia secara opsional
+- Cache market memakai normalized symbol dan metadata quote yang lebih jujur
+- Flutter menampilkan source, fallback, dan disclaimer market data secara eksplisit
+- Tidak ada transaksi, modal, holding detail, atau data keuangan user yang dikirim ke backend
 
 ## Manual Test Yang Masih Wajib
 - Startup dan onboarding pada perangkat baru
@@ -48,7 +45,7 @@ menjadi acuan penutupan gap klaim CV menuju demo final.
 - Biometric lock pada perangkat yang mendukung dan yang tidak mendukung
 - Voice input dengan izin mikrofon aktif/nonaktif
 - Spreadsheet sync dengan URL valid, URL salah, token kosong, dan timeout
-- Portofolio saat backend hidup dan mati
+- Portofolio saat backend hidup, mati, dan fallback mock
 - Berita, detail berita, dan analisis saat backend hidup dan mati
 
 ## Gate Rilis MVP
@@ -62,5 +59,6 @@ menjadi acuan penutupan gap klaim CV menuju demo final.
 ## Status Final MVP
 - Status saat ini: `candidate-ready`
 - Artinya: fondasi MVP sudah kuat dan gap UI/copy paling terlihat sudah
-  ditutup, tetapi ekspansi sync portofolio, penguatan market provider, AI demo
-  hardening, dan manual regression perangkat nyata masih harus diselesaikan.
+  ditutup, market provider hardening sudah lebih defensible, tetapi manual
+  regression perangkat nyata dan hardening demo lanjutan masih harus
+  diselesaikan.

@@ -153,6 +153,25 @@ Verifikasi:
 - flutter analyze: No issues found
 - flutter test: All tests passed
 
+## Tahap 15 - Market Data Provider Hardening
+Status: selesai
+
+Hasil:
+- Backend market data direfaktor ke provider architecture sederhana
+- Helper normalisasi symbol backend dan Flutter disatukan untuk `BBCA` dan `BBCA.JK`
+- Provider `mock` tetap stabil untuk demo dan provider eksternal `eodhd` ditambahkan secara opsional
+- Quote response sekarang memuat `displaySymbol`, `provider`, `isMock`, `isFallback`, `cachedAt`, `cacheTtlSeconds`, dan disclaimer
+- Cache market memakai normalized symbol dan bisa mengembalikan data stale/fallback dengan metadata jujur
+- Error dan timeout provider market menghasilkan response aman tanpa membocorkan API key
+- Flutter service tetap kompatibel dengan contract response lama dan baru
+- UI Portofolio, Analisis, dan detail symbol kini menampilkan sumber data, fallback, dan disclaimer market secara eksplisit
+- Tidak ada data pribadi user yang dikirim ke backend market
+
+Verifikasi:
+- pytest: 20 passed
+- flutter analyze: No issues found
+- flutter test: All tests passed
+
 ## Catatan Stabilisasi
 - MVP berada pada status kandidat final, tetapi manual test utama lintas fitur
   tetap wajib diselesaikan sebelum rilis/freeze.

@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/date_formatter.dart';
+import '../../data/models/market_quote.dart';
 import '../../data/models/news_article.dart';
 import '../../data/models/watchlist_item.dart';
 import '../../data/repositories/news_repository.dart';
@@ -272,6 +273,15 @@ class _DetailMetricsCard extends StatelessWidget {
     return _DetailSectionCard(
       title: 'Ringkasan Symbol',
       description: '',
+      action: data.marketQuote == null
+          ? null
+          : Text(
+              _buildDetailMarketCaption(data.marketQuote!),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
       child: Wrap(
         spacing: AppSpacing.xl,
         runSpacing: AppSpacing.lg,
@@ -306,6 +316,11 @@ class _DetailMetricsCard extends StatelessWidget {
                 ? 'Data Lokal'
                 : CurrencyFormatter.formatRupiah(data.marketQuote!.price),
           ),
+          if (data.marketQuote != null)
+            _DetailMetric(
+              label: 'Sumber Data',
+              value: data.marketQuote!.sourceLabel,
+            ),
           _DetailMetric(
             label: 'Nilai Pasar',
             value: data.marketQuote == null
@@ -327,6 +342,22 @@ class _DetailMetricsCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _buildDetailMarketCaption(MarketQuote quote) {
+  final List<String> parts = <String>['Sumber: ${quote.sourceLabel}'];
+  if (quote.isFallback) {
+    parts.add('menggunakan data fallback');
+  }
+  if (quote.isStale) {
+    parts.add('data dapat tertunda');
+  }
+  if (quote.asOf != null) {
+    parts.add('per ${DateFormatter.formatDateTime(quote.asOf!)}');
+  } else if (quote.cachedAt != null) {
+    parts.add('cache ${DateFormatter.formatDateTime(quote.cachedAt!)}');
+  }
+  return '${parts.join(' | ')}.\n${quote.message}';
 }
 
 class _DetailMetric extends StatelessWidget {
@@ -403,13 +434,14 @@ class _DetailSectionCard extends StatelessWidget {
               ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             ),
           ],
-          if (child != null) ...<Widget>[
-            if (description.isNotEmpty) const SizedBox(height: AppSpacing.lg),
-            child!,
-          ],
           if (action != null) ...<Widget>[
             const SizedBox(height: AppSpacing.lg),
             action!,
+          ],
+          if (child != null) ...<Widget>[
+            if (description.isNotEmpty || action != null)
+              const SizedBox(height: AppSpacing.lg),
+            child!,
           ],
         ],
       ),

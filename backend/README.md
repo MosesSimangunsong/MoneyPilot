@@ -1,21 +1,18 @@
 # MoneyPilot Backend
 
-Backend ini menyediakan data market, feed berita ekonomi, analisis dampak
-berita berbasis AI, dan cache lokal. Backend tidak menyimpan transaksi,
-dividen, atau data keuangan pribadi user.
+Backend ini menyediakan quote market, feed berita ekonomi, analisis dampak
+berita, dan cache lokal. Backend tidak menyimpan transaksi, dividen, nominal
+modal, holding portofolio, atau data keuangan pribadi user.
 
-## Fitur Tahap 9
+## Fokus Tahap 15
 
-- Flask app factory
-- SQLite cache untuk quote market
-- SQLite cache untuk feed berita dan hasil analisis berita
-- Mock provider untuk saham Indonesia
-- Google News RSS service dengan fallback development
-- AI analysis service provider-agnostic
-- Endpoint health check
-- Endpoint quote tunggal dan batch quote
-- Endpoint daftar berita, detail berita sederhana, dan analisis berita
-- Error response JSON konsisten
+- Provider architecture untuk market data
+- Provider `mock` yang stabil untuk demo
+- Provider eksternal opsional `eodhd`
+- Fallback aman ke mock jika provider eksternal gagal
+- Cache quote berbasis symbol yang sudah dinormalisasi
+- Timeout dan error JSON yang rapi
+- Metadata quote yang jujur untuk Flutter
 
 ## Setup
 
@@ -36,36 +33,6 @@ python run.py
 
 Server default berjalan di `http://127.0.0.1:5000`.
 
-## Integrasi Dengan Flutter
-
-Flutter membaca base URL backend melalui compile-time environment:
-
-- `BACKEND_BASE_URL` untuk endpoint berita dan analisis berita
-- `MARKET_BACKEND_BASE_URL` untuk endpoint market
-
-Contoh menjalankan Flutter dengan base URL:
-
-```powershell
-flutter run --dart-define=BACKEND_BASE_URL=http://127.0.0.1:5000 --dart-define=MARKET_BACKEND_BASE_URL=http://127.0.0.1:5000
-```
-
-Panduan base URL sesuai perangkat:
-
-- Desktop lokal Windows/macOS/Linux: `http://127.0.0.1:5000`
-- Android emulator: `http://10.0.2.2:5000`
-- HP fisik dalam jaringan yang sama: `http://IP_LAN_KOMPUTER:5000`
-
-Contoh untuk HP fisik:
-
-```powershell
-python run.py
-flutter run --dart-define=BACKEND_BASE_URL=http://192.168.1.10:5000 --dart-define=MARKET_BACKEND_BASE_URL=http://192.168.1.10:5000
-```
-
-Jika ingin diakses dari HP fisik, sesuaikan `BACKEND_HOST` ke alamat yang dapat
-diakses dari jaringan lokal, misalnya `0.0.0.0`, lalu atur `CORS_ORIGINS`
-dengan lebih ketat sesuai kebutuhan development.
-
 ## Menjalankan Test
 
 ```powershell
@@ -74,52 +41,115 @@ cd backend
 pytest
 ```
 
+## Integrasi Dengan Flutter
+
+Flutter membaca base URL backend melalui compile-time environment:
+
+- `BACKEND_BASE_URL` untuk endpoint berita dan analisis berita
+- `MARKET_BACKEND_BASE_URL` untuk endpoint market
+
+Contoh:
+
+```powershell
+flutter run --dart-define=BACKEND_BASE_URL=http://127.0.0.1:5000 --dart-define=MARKET_BACKEND_BASE_URL=http://127.0.0.1:5000
+```
+
+Panduan base URL:
+
+- Desktop lokal: `http://127.0.0.1:5000`
+- Android emulator: `http://10.0.2.2:5000`
+- HP fisik satu jaringan: `http://IP_LAN_KOMPUTER:5000`
+
+Contoh HP fisik:
+
+```powershell
+python run.py
+flutter run --dart-define=BACKEND_BASE_URL=http://192.168.1.10:5000 --dart-define=MARKET_BACKEND_BASE_URL=http://192.168.1.10:5000
+```
+
+Jika ingin diakses dari HP fisik, set `BACKEND_HOST=0.0.0.0` dan batasi
+`CORS_ORIGINS` sesuai kebutuhan development.
+
 ## Environment Variables
 
-Salin `.env.example` bila ingin mengatur environment sendiri.
+Salin `backend/.env.example` ke `backend/.env` bila perlu.
 
-- `BACKEND_HOST`: host Flask, default `127.0.0.1`
-- `BACKEND_PORT`: port Flask, default `5000`
-- `MARKET_DATA_PROVIDER`: saat ini gunakan `MOCK`
-- `MARKET_CACHE_TTL_SECONDS`: TTL cache quote, default `900`
-- `MARKET_CACHE_DB_PATH`: lokasi file SQLite cache
-- `NEWS_PROVIDER`: default `google_news_rss`
-- `NEWS_CACHE_TTL_SECONDS`: TTL cache daftar berita, default `900`
-- `ANALYSIS_CACHE_TTL_SECONDS`: TTL cache analisis, default `86400`
-- `AI_PROVIDER`: default `openai`
-- `OPENAI_API_KEY`: API key OpenAI, boleh kosong saat development, dan hanya boleh disimpan di backend
-- `AI_MODEL`: model OpenAI, default internal backend `gpt-4.1-mini`
-- `ENABLE_DEV_ANALYSIS_FALLBACK`: `1` untuk mengaktifkan fallback mock analysis
-- `CORS_ORIGINS`: origin dev Flutter, default `*`
+- `MARKET_DATA_PROVIDER=mock`
+  Backend selalu memakai mock provider.
+- `MARKET_DATA_PROVIDER=eodhd`
+  Backend mencoba provider eksternal EODHD.
+- `MARKET_DATA_API_KEY`
+  API key provider eksternal. Hanya boleh disimpan di backend.
+- `MARKET_DATA_BASE_URL`
+  Base URL provider eksternal. Default `https://eodhd.com/api/real-time`.
+- `MARKET_CACHE_TTL_SECONDS`
+  TTL cache quote dalam detik. Default `900`.
+- `MARKET_REQUEST_TIMEOUT_SECONDS`
+  Timeout request provider eksternal dalam detik. Default `8`.
+- `ENABLE_MARKET_MOCK_FALLBACK=true`
+  Jika provider eksternal gagal, backend fallback ke mock.
 
-## Catatan Keamanan Environment
+## Provider Yang Tersedia
 
-- Jangan menyimpan `OPENAI_API_KEY` di Flutter atau di file Dart mana pun.
-- Secret token spreadsheet tidak boleh di-hardcode di source Flutter.
-- Simpan secret token spreadsheet melalui pengaturan aplikasi atau environment
-  backend yang relevan, bukan sebagai konstanta publik di aplikasi.
+- `mock`
+  Provider lokal stabil untuk `BBCA.JK`, `BMRI.JK`, `BBRI.JK`, `TLKM.JK`,
+  dan `ASII.JK`.
+- `eodhd`
+  Provider eksternal opsional yang hanya aktif jika
+  `MARKET_DATA_PROVIDER=eodhd` dan `MARKET_DATA_API_KEY` tersedia.
+
+## Aturan Privasi dan Keamanan
+
+- Flutter hanya mengirim symbol saham seperti `BBCA` atau `BBCA.JK`.
+- Flutter tidak mengirim transaksi user ke backend.
+- Flutter tidak mengirim nominal modal, holding detail, atau data keuangan
+  pribadi ke backend.
+- API key provider market tidak pernah dikirim ke Flutter.
+- Jangan commit file `.env` yang berisi secret.
+
+## Normalisasi Symbol
+
+- Input `BBCA` akan dinormalisasi menjadi `BBCA.JK`.
+- Input `BBCA.JK` tetap dipakai sebagai `BBCA.JK`.
+- Field `displaySymbol` tetap menampilkan `BBCA` untuk UI Flutter.
+
+## Cache dan Fallback
+
+- Cache key selalu memakai symbol yang sudah dinormalisasi.
+- Cache valid akan langsung dipakai tanpa memanggil provider lagi.
+- Jika cache expired dan provider utama gagal, backend akan mencoba:
+  1. stale cache jika tersedia
+  2. mock fallback jika diaktifkan
+- Cache hanya menyimpan quote market dan metadata quote, tanpa data user.
+
+## Error Handling
+
+Jika provider market gagal dan fallback dimatikan:
+
+```json
+{
+  "status": "error",
+  "error": {
+    "code": "MARKET_PROVIDER_UNAVAILABLE",
+    "statusCode": 503
+  },
+  "message": "Data pasar belum tersedia. Coba lagi nanti."
+}
+```
 
 ## Endpoint
 
 ### `GET /health`
 
-Contoh response:
-
 ```json
 {
   "status": "success",
   "message": "MoneyPilot backend is healthy",
-  "serverTime": "2026-07-09T00:00:00Z"
+  "serverTime": "2026-07-10T00:00:00Z"
 }
 ```
 
 ### `GET /api/market/quote/<symbol>`
-
-Contoh request:
-
-```text
-GET /api/market/quote/BBCA.JK
-```
 
 Contoh response:
 
@@ -128,11 +158,18 @@ Contoh response:
   "status": "success",
   "data": {
     "symbol": "BBCA.JK",
+    "displaySymbol": "BBCA",
     "price": 9050.0,
     "currency": "IDR",
     "source": "mock",
-    "asOf": "2026-07-09T00:00:00Z",
-    "isStale": false
+    "provider": "MockMarketDataProvider",
+    "isMock": true,
+    "isFallback": false,
+    "isStale": false,
+    "asOf": "2026-07-10T00:00:00Z",
+    "cachedAt": "2026-07-10T00:00:03Z",
+    "cacheTtlSeconds": 900,
+    "message": "Data pasar bersifat estimasi dan bukan rekomendasi investasi."
   }
 }
 ```
@@ -143,53 +180,7 @@ Contoh request:
 
 ```json
 {
-  "symbols": ["BBCA.JK", "BMRI.JK"]
-}
-```
-
-### `GET /api/news`
-
-Query params opsional:
-
-- `category`
-- `q`
-- `limit`
-
-Contoh response:
-
-```json
-{
-  "status": "success",
-  "data": [
-    {
-      "id": "4df7f43f3d6b7df0",
-      "title": "Investor menanti arah suku bunga dan dampaknya ke rupiah",
-      "summary": "Pelaku pasar menilai perubahan arah suku bunga global dapat memengaruhi arus modal.",
-      "source": "Google News",
-      "url": "https://news.google.com/...",
-      "category": "Suku Bunga",
-      "publishedAt": "2026-07-09T10:00:00Z"
-    }
-  ],
-  "serverTime": "2026-07-09T10:00:05Z"
-}
-```
-
-### `GET /api/news/<id>`
-
-Endpoint detail sederhana ini membaca berita yang sudah pernah masuk cache list.
-
-### `POST /api/news/analyze`
-
-Contoh request:
-
-```json
-{
-  "newsId": "4df7f43f3d6b7df0",
-  "title": "Ketidakpastian global membuat investor memantau emas",
-  "summary": "Ketidakpastian global membuat pelaku pasar lebih berhati-hati.",
-  "url": "https://example.com/news/emas",
-  "category": "Geopolitik"
+  "symbols": ["BBCA", "BMRI.JK"]
 }
 ```
 
@@ -199,73 +190,31 @@ Contoh response:
 {
   "status": "success",
   "data": {
-    "newsId": "4df7f43f3d6b7df0",
-    "judul": "Ketidakpastian global membuat investor memantau emas",
-    "ringkasan": "Ketidakpastian global membuat pelaku pasar lebih berhati-hati.",
-    "kategori": "Geopolitik",
-    "asetTerdampak": ["Emas", "USD/IDR", "IHSG"],
-    "impactScore": 68,
-    "confidenceScore": 58,
-    "dampakPotensial": "Berita ini berpotensi memengaruhi sentimen pasar.",
-    "rantaiSebabAkibat": ["..."],
-    "dataPendukung": ["..."],
-    "skenarioPositif": "...",
-    "skenarioNegatif": "...",
-    "halYangPerluDipantau": ["..."],
-    "kesimpulanPemula": "...",
-    "disclaimer": "Informasi ini bukan nasihat keuangan."
-  },
-  "serverTime": "2026-07-09T10:00:05Z"
+    "quotes": [
+      {
+        "symbol": "BBCA.JK",
+        "displaySymbol": "BBCA",
+        "price": 9050.0,
+        "currency": "IDR",
+        "source": "mock",
+        "provider": "MockMarketDataProvider",
+        "isMock": true,
+        "isFallback": false,
+        "isStale": false,
+        "asOf": "2026-07-10T00:00:00Z",
+        "cachedAt": "2026-07-10T00:00:03Z",
+        "cacheTtlSeconds": 900,
+        "message": "Data pasar bersifat estimasi dan bukan rekomendasi investasi."
+      }
+    ],
+    "errors": [],
+    "count": 1
+  }
 }
 ```
 
-Jika `OPENAI_API_KEY` kosong, backend tidak crash. Pada development atau test,
-backend dapat mengembalikan fallback analysis yang tetap aman dan berbahasa
-Indonesia.
+## Catatan Demo
 
-Contoh response:
-
-```json
-{
-  "status": "success",
-  "data": [
-    {
-      "symbol": "BBCA.JK",
-      "price": 9050.0,
-      "currency": "IDR",
-      "source": "mock",
-      "asOf": "2026-07-09T00:00:00Z",
-      "isStale": false
-    },
-    {
-      "symbol": "BMRI.JK",
-      "price": 6325.0,
-      "currency": "IDR",
-      "source": "mock",
-      "asOf": "2026-07-09T00:00:00Z",
-      "isStale": false
-    }
-  ]
-}
-```
-
-## Mock Market Data
-
-Tahap 8 masih memakai mock provider yang stabil untuk:
-
-- `BBCA.JK`
-- `BMRI.JK`
-- `BBRI.JK`
-- `TLKM.JK`
-- `ASII.JK`
-
-Struktur servicenya sudah disiapkan agar nanti mudah diganti ke provider asli
-tanpa mengubah kontrak endpoint.
-
-## Catatan Privasi
-
-- Backend tidak menyimpan transaksi user.
-- Backend tidak menyimpan dividen user.
-- Backend tidak menerima upload data keuangan pribadi dari Flutter.
-- Data market saat ini bersifat estimasi mock dan bukan rekomendasi investasi.
-- Analisis berita bersifat edukatif dan bukan rekomendasi beli atau jual.
+- Data market bersifat estimasi.
+- Tidak ada rekomendasi beli atau jual.
+- Aplikasi ini bukan aplikasi trading dan tidak memiliki broker integration.
