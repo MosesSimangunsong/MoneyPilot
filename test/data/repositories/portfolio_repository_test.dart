@@ -205,4 +205,62 @@ void main() {
     expect(transaction.updatedAt.isUtc, isTrue);
     expect(transaction.transactionDate.isUtc, isTrue);
   });
+
+  test('watchlist bisa ditambah dan symbol dinormalisasi', () async {
+    final item = await portfolioRepository.createWatchlistItem(
+      symbol: 'bbca',
+      companyName: 'Bank Central Asia',
+      targetPrice: 10000,
+      note: 'Pantau valuasi',
+    );
+
+    final List watchlist = await portfolioRepository.getWatchlist();
+
+    expect(item.symbol, 'BBCA');
+    expect(item.market, 'IDX');
+    expect(item.createdAt.isUtc, isTrue);
+    expect(item.updatedAt.isUtc, isTrue);
+    expect(watchlist, hasLength(1));
+  });
+
+  test('watchlist bisa diedit', () async {
+    final item = await portfolioRepository.createWatchlistItem(symbol: 'BBCA');
+
+    final updated = await portfolioRepository.updateWatchlistItem(
+      item.uuid,
+      symbol: 'BBCA',
+      targetPrice: 9800,
+      note: 'Tunggu laporan kuartal',
+    );
+
+    expect(updated.targetPrice, 9800);
+    expect(updated.note, 'Tunggu laporan kuartal');
+    expect(updated.updatedAt.isUtc, isTrue);
+  });
+
+  test('soft delete watchlist menyembunyikan item aktif', () async {
+    final item = await portfolioRepository.createWatchlistItem(symbol: 'TLKM');
+
+    await portfolioRepository.softDeleteWatchlistItem(item.uuid);
+
+    final List activeWatchlist = await portfolioRepository.getWatchlist();
+    final deletedItem = await portfolioRepository.getWatchlistItemByUuid(
+      item.uuid,
+    );
+
+    expect(activeWatchlist, isEmpty);
+    expect(deletedItem?.isDeleted, isTrue);
+    expect(deletedItem?.deletedAt, isNotNull);
+  });
+
+  test('watchlist deleted tidak muncul pada daftar aktif', () async {
+    final item = await portfolioRepository.createWatchlistItem(symbol: 'BBCA');
+    await portfolioRepository.createWatchlistItem(symbol: 'TLKM');
+
+    await portfolioRepository.softDeleteWatchlistItem(item.uuid);
+    final List activeWatchlist = await portfolioRepository.getWatchlist();
+
+    expect(activeWatchlist, hasLength(1));
+    expect(activeWatchlist.single.symbol, 'TLKM');
+  });
 }

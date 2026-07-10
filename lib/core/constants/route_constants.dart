@@ -17,4 +17,5 @@ class RouteConstants {
   static const String transaksiSahamBaru = '/portofolio/transaksi-saham-baru';
   static const String catatDividen = '/portofolio/catat-dividen';
   static const String analisis = '/analisis';
+  static const String analisisSymbolDetail = '/analisis/symbol';
 }

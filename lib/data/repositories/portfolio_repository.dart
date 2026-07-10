@@ -377,14 +377,129 @@ class PortfolioRepository {
     return _isar.watchlistItems
         .filter()
         .isDeletedEqualTo(false)
+        .sortBySymbol()
+        .thenByUpdatedAtDesc()
+        .findAll();
+  }
+
+  Future<WatchlistItem?> getWatchlistItemByUuid(String uuid) {
+    return _isar.watchlistItems.filter().uuidEqualTo(uuid).findFirst();
+  }
+
+  Future<WatchlistItem?> getActiveWatchlistItemBySymbol(String symbol) {
+    final String normalizedSymbol = _normalizeSymbol(symbol);
+    return _isar.watchlistItems
+        .filter()
+        .symbolEqualTo(normalizedSymbol)
+        .and()
+        .isDeletedEqualTo(false)
+        .findFirst();
+  }
+
+  Future<WatchlistItem> createWatchlistItem({
+    required String symbol,
+    String? companyName,
+    String market = 'IDX',
+    double? targetPrice,
+    String? note,
+  }) async {
+    final DateTime now = DateTimeUtils.utcNow();
+    final String normalizedSymbol = _normalizeSymbol(symbol);
+    final WatchlistItem? existing = await _isar.watchlistItems
+        .filter()
+        .symbolEqualTo(normalizedSymbol)
+        .findFirst();
+
+    if (existing != null) {
+      existing.symbol = normalizedSymbol;
+      existing.companyName = _normalizeNullable(companyName);
+      existing.market = _normalizeMarket(market);
+      existing.targetPrice = targetPrice;
+      existing.note = _normalizeNullable(note);
+      existing.isDeleted = false;
+      existing.deletedAt = null;
+      existing.updatedAt = now;
+      existing.createdAt = DateTimeUtils.normalizeUtc(existing.createdAt);
+      await _isar.writeTxn(() async {
+        await _isar.watchlistItems.put(existing);
+      });
+      return existing;
+    }
+
+    final WatchlistItem item = WatchlistItem(
+      uuid: IdGenerator.newUuid(),
+      symbol: normalizedSymbol,
+      companyName: _normalizeNullable(companyName),
+      market: _normalizeMarket(market),
+      targetPrice: targetPrice,
+      note: _normalizeNullable(note),
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    await _isar.writeTxn(() async {
+      await _isar.watchlistItems.put(item);
+    });
+
+    return item;
+  }
+
+  Future<WatchlistItem> updateWatchlistItem(
+    String uuid, {
+    required String symbol,
+    String? companyName,
+    String market = 'IDX',
+    double? targetPrice,
+    String? note,
+  }) async {
+    final WatchlistItem? item = await getWatchlistItemByUuid(uuid);
+    if (item == null || item.isDeleted) {
+      throw StateError('Watchlist tidak ditemukan atau sudah dihapus.');
+    }
+
+    item.symbol = _normalizeSymbol(symbol);
+    item.companyName = _normalizeNullable(companyName);
+    item.market = _normalizeMarket(market);
+    item.targetPrice = targetPrice;
+    item.note = _normalizeNullable(note);
+    item.updatedAt = DateTimeUtils.utcNow();
+    item.deletedAt = null;
+    item.isDeleted = false;
+
+    await _isar.writeTxn(() async {
+      await _isar.watchlistItems.put(item);
+    });
+
+    return item;
+  }
+
+  Future<List<WatchlistItem>> getWatchlistBySymbols(List<String> symbols) {
+    final List<String> normalizedSymbols = symbols
+        .map(_normalizeSymbol)
+        .where((String item) => item.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
+
+    if (normalizedSymbols.isEmpty) {
+      return Future<List<WatchlistItem>>.value(const <WatchlistItem>[]);
+    }
+
+    return _isar.watchlistItems
+        .filter()
+        .anyOf(
+          normalizedSymbols,
+          (q, String symbol) =>
+              q.symbolEqualTo(symbol).and().isDeletedEqualTo(false),
+        )
         .sortByUpdatedAtDesc()
         .findAll();
   }
 
   Future<WatchlistItem> upsertWatchlistItem(WatchlistItem item) async {
     final DateTime now = DateTimeUtils.utcNow();
-    item.symbol = item.symbol.trim().toUpperCase();
+    item.symbol = _normalizeSymbol(item.symbol);
     item.companyName = _normalizeNullable(item.companyName);
+    item.market = _normalizeMarket(item.market);
     item.note = _normalizeNullable(item.note);
     item.createdAt = DateTimeUtils.normalizeUtc(item.createdAt);
     item.updatedAt = now;
@@ -427,6 +542,15 @@ class PortfolioRepository {
       return null;
     }
     return trimmed;
+  }
+
+  String _normalizeMarket(String value) {
+    final String normalized = value.trim().toUpperCase();
+    return normalized.isEmpty ? 'IDX' : normalized;
+  }
+
+  String _normalizeSymbol(String value) {
+    return value.trim().toUpperCase();
   }
 
   String _normalizeActionType(String value) {

@@ -19,6 +19,19 @@ class NewsRepository {
     );
   }
 
+  Future<List<NewsArticle>> getRelatedNews(
+    String symbol, {
+    String? companyName,
+    int limit = 6,
+  }) {
+    final String normalizedSymbol = symbol.trim().toUpperCase();
+    final String normalizedCompanyName = companyName?.trim() ?? '';
+    final String query = normalizedCompanyName.isEmpty
+        ? normalizedSymbol
+        : '$normalizedSymbol $normalizedCompanyName';
+    return _newsApiService.fetchNews(query: query, limit: limit);
+  }
+
   Future<NewsArticle> getNewsDetail(String newsId) {
     return _newsApiService.fetchNewsDetail(newsId);
   }

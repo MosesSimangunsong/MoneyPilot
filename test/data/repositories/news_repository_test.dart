@@ -37,4 +37,39 @@ void main() {
 
     expect(articles.single.category, 'Indonesia');
   });
+
+  test('getRelatedNews tidak memicu endpoint analisis AI otomatis', () async {
+    final List<String> requestedPaths = <String>[];
+    final repository = NewsRepository(
+      NewsApiService(
+        client: MockClient((http.Request request) async {
+          requestedPaths.add(request.url.path);
+          return http.Response(
+            jsonEncode(<String, dynamic>{
+              'status': 'success',
+              'data': <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'id': 'news-bbca',
+                  'title': 'BBCA dipantau investor',
+                  'summary': 'Ringkasan BBCA',
+                  'source': 'Mock Source',
+                  'url': 'https://example.com/news-bbca',
+                  'category': 'Saham',
+                  'publishedAt': '2026-07-09T10:00:00Z',
+                },
+              ],
+            }),
+            200,
+          );
+        }),
+        baseUrl: 'http://localhost:5000',
+      ),
+    );
+
+    final List<NewsArticle> articles = await repository.getRelatedNews('BBCA');
+
+    expect(articles, hasLength(1));
+    expect(requestedPaths, everyElement('/api/news'));
+    expect(requestedPaths, isNot(contains('/api/news/analyze')));
+  });
 }

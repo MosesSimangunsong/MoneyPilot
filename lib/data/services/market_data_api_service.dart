@@ -18,6 +18,32 @@ class MarketDataApiService {
   final http.Client _client;
   final String _baseUrl;
 
+  Future<MarketQuote?> getQuote(String symbol) async {
+    final String normalizedSymbol = symbol.trim().toUpperCase();
+    if (normalizedSymbol.isEmpty || _baseUrl.isEmpty) {
+      return null;
+    }
+
+    final Uri uri = Uri.parse('$_baseUrl/api/market/quote/$normalizedSymbol');
+    try {
+      final http.Response response = await _client.get(uri);
+      if (response.statusCode != 200) {
+        return null;
+      }
+
+      final Map<String, dynamic> payload =
+          jsonDecode(response.body) as Map<String, dynamic>;
+      final Map<String, dynamic>? data =
+          payload['data'] as Map<String, dynamic>?;
+      if (data == null) {
+        return null;
+      }
+      return MarketQuote.fromJson(data);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<Map<String, MarketQuote>> getQuotes(List<String> symbols) async {
     final List<String> normalizedSymbols = symbols
         .map((String symbol) => symbol.trim().toUpperCase())

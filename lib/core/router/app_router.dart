@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/analisis/analisis_screen.dart';
+import '../../features/analisis/analysis_symbol_detail_screen.dart';
 import '../../features/beranda/beranda_screen.dart';
 import '../../features/berita/analisis_berita_screen.dart';
 import '../../features/berita/berita_screen.dart';
@@ -268,8 +269,25 @@ class AppRouter {
               GoRoute(
                 path: RouteConstants.analisis,
                 builder: (BuildContext context, GoRouterState state) {
-                  return const AnalisisScreen();
+                  return AnalisisScreen(
+                    portfolioRepository: _portfolioRepository,
+                    marketDataApiService: _marketDataApiService,
+                    newsRepository: _newsRepository,
+                  );
                 },
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'symbol/:symbol',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return AnalysisSymbolDetailScreen(
+                        symbol: state.pathParameters['symbol'] ?? '',
+                        portfolioRepository: _portfolioRepository,
+                        marketDataApiService: _marketDataApiService,
+                        newsRepository: _newsRepository,
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),
