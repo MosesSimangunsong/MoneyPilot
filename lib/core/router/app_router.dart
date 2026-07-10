@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/analisis/analisis_screen.dart';
 import '../../features/beranda/beranda_screen.dart';
+import '../../features/berita/analisis_berita_screen.dart';
 import '../../features/berita/berita_screen.dart';
+import '../../features/berita/detail_berita_screen.dart';
 import '../../features/keuangan/add_edit_transaction_screen.dart';
 import '../../features/keuangan/keuangan_screen.dart';
 import '../../features/keuangan/konfirmasi_suara_screen.dart';
@@ -18,6 +20,7 @@ import '../../features/startup/biometric_lock_screen.dart';
 import '../../features/startup/splash_screen.dart';
 import '../../data/repositories/app_setting_repository.dart';
 import '../../data/repositories/category_repository.dart';
+import '../../data/repositories/news_repository.dart';
 import '../../data/repositories/portfolio_repository.dart';
 import '../../data/repositories/sync_repository.dart';
 import '../../data/repositories/transaction_repository.dart';
@@ -35,6 +38,7 @@ class AppRouter {
     required CategoryRepository categoryRepository,
     required PortfolioRepository portfolioRepository,
     required MarketDataApiService marketDataApiService,
+    required NewsRepository newsRepository,
     required SyncRepository syncRepository,
     required TransactionRepository transactionRepository,
     required VoiceTranscriptRepository voiceTranscriptRepository,
@@ -42,6 +46,7 @@ class AppRouter {
        _categoryRepository = categoryRepository,
        _portfolioRepository = portfolioRepository,
        _marketDataApiService = marketDataApiService,
+       _newsRepository = newsRepository,
        _syncRepository = syncRepository,
        _transactionRepository = transactionRepository,
        _voiceTranscriptRepository = voiceTranscriptRepository;
@@ -51,6 +56,7 @@ class AppRouter {
   final CategoryRepository _categoryRepository;
   final PortfolioRepository _portfolioRepository;
   final MarketDataApiService _marketDataApiService;
+  final NewsRepository _newsRepository;
   final SyncRepository _syncRepository;
   final TransactionRepository _transactionRepository;
   final VoiceTranscriptRepository _voiceTranscriptRepository;
@@ -121,8 +127,32 @@ class AppRouter {
               GoRoute(
                 path: RouteConstants.berita,
                 builder: (BuildContext context, GoRouterState state) {
-                  return const BeritaScreen();
+                  return BeritaScreen(newsRepository: _newsRepository);
                 },
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'detail',
+                    builder: (BuildContext context, GoRouterState state) {
+                      final NewsRouteArguments arguments =
+                          state.extra! as NewsRouteArguments;
+                      return DetailBeritaScreen(
+                        newsRepository: _newsRepository,
+                        arguments: arguments,
+                      );
+                    },
+                  ),
+                  GoRoute(
+                    path: 'analisis',
+                    builder: (BuildContext context, GoRouterState state) {
+                      final NewsRouteArguments arguments =
+                          state.extra! as NewsRouteArguments;
+                      return AnalisisBeritaScreen(
+                        newsRepository: _newsRepository,
+                        arguments: arguments,
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),

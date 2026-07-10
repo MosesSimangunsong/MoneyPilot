@@ -6,8 +6,12 @@ from .config import Config
 from .db import close_db, init_app as init_db_app
 from .routes.health import health_bp
 from .routes.market import market_bp
+from .routes.news import news_bp
+from .services.ai_analysis_service import AIAnalysisService
 from .services.cache_service import CacheService
+from .services.google_news_service import GoogleNewsService
 from .services.market_data_service import MarketDataService
+from .services.prompt_builder import PromptBuilder
 
 
 def create_app(config_object: type[Config] = Config) -> Flask:
@@ -23,13 +27,33 @@ def create_app(config_object: type[Config] = Config) -> Flask:
     app.teardown_appcontext(close_db)
     app.register_blueprint(health_bp)
     app.register_blueprint(market_bp, url_prefix="/api/market")
+    app.register_blueprint(news_bp, url_prefix="/api/news")
 
     cache_service = CacheService()
     market_service = MarketDataService(
         cache_service=cache_service,
         provider_name=app.config["MARKET_DATA_PROVIDER"],
     )
+    news_service = GoogleNewsService(
+        cache_service=cache_service,
+        provider_name=app.config["NEWS_PROVIDER"],
+        enable_dev_fallback=app.config["DEBUG"]
+        or app.config["TESTING"]
+        or app.config["ENABLE_DEV_ANALYSIS_FALLBACK"],
+    )
+    analysis_service = AIAnalysisService(
+        cache_service=cache_service,
+        prompt_builder=PromptBuilder(),
+        provider_name=app.config["AI_PROVIDER"],
+        openai_api_key=app.config["OPENAI_API_KEY"],
+        model_name=app.config["AI_MODEL"],
+        enable_dev_fallback=app.config["DEBUG"]
+        or app.config["TESTING"]
+        or app.config["ENABLE_DEV_ANALYSIS_FALLBACK"],
+    )
     app.extensions["market_service"] = market_service
+    app.extensions["news_service"] = news_service
+    app.extensions["analysis_service"] = analysis_service
 
     @app.errorhandler(HTTPException)
     def handle_http_exception(error: HTTPException):

@@ -5,11 +5,13 @@ import 'core/session/app_session_controller.dart';
 import 'data/local/local_database_service.dart';
 import 'data/repositories/app_setting_repository.dart';
 import 'data/repositories/category_repository.dart';
+import 'data/repositories/news_repository.dart';
 import 'data/repositories/portfolio_repository.dart';
 import 'data/repositories/sync_repository.dart';
 import 'data/repositories/transaction_repository.dart';
 import 'data/repositories/voice_transcript_repository.dart';
 import 'data/services/market_data_api_service.dart';
+import 'data/services/news_api_service.dart';
 import 'data/services/spreadsheet_sync_service.dart';
 
 Future<void> main() async {
@@ -33,6 +35,7 @@ Future<void> main() async {
     databaseService.isar,
   );
   final MarketDataApiService marketDataApiService = MarketDataApiService();
+  final NewsRepository newsRepository = NewsRepository(NewsApiService());
   final SyncRepository syncRepository = SyncRepository(
     databaseService.isar,
     appSettingRepository: appSettingRepository,
@@ -54,6 +57,7 @@ Future<void> main() async {
       categoryRepository: categoryRepository,
       portfolioRepository: portfolioRepository,
       marketDataApiService: marketDataApiService,
+      newsRepository: newsRepository,
       syncRepository: syncRepository,
       transactionRepository: transactionRepository,
       voiceTranscriptRepository: voiceTranscriptRepository,

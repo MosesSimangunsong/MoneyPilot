@@ -5,6 +5,7 @@ import 'core/session/app_session_controller.dart';
 import 'core/theme/app_theme.dart';
 import 'data/local/local_database_service.dart';
 import 'data/services/market_data_api_service.dart';
+import 'data/repositories/news_repository.dart';
 import 'data/repositories/category_repository.dart';
 import 'data/repositories/app_setting_repository.dart';
 import 'data/repositories/portfolio_repository.dart';
@@ -21,6 +22,7 @@ class MoneyPilotApp extends StatefulWidget {
     required this.categoryRepository,
     required this.portfolioRepository,
     required this.marketDataApiService,
+    required this.newsRepository,
     required this.syncRepository,
     required this.transactionRepository,
     required this.voiceTranscriptRepository,
@@ -32,6 +34,7 @@ class MoneyPilotApp extends StatefulWidget {
   final CategoryRepository categoryRepository;
   final PortfolioRepository portfolioRepository;
   final MarketDataApiService marketDataApiService;
+  final NewsRepository newsRepository;
   final SyncRepository syncRepository;
   final TransactionRepository transactionRepository;
   final VoiceTranscriptRepository voiceTranscriptRepository;
@@ -56,6 +59,7 @@ class _MoneyPilotAppState extends State<MoneyPilotApp>
       categoryRepository: widget.categoryRepository,
       portfolioRepository: widget.portfolioRepository,
       marketDataApiService: widget.marketDataApiService,
+      newsRepository: widget.newsRepository,
       syncRepository: widget.syncRepository,
       transactionRepository: widget.transactionRepository,
       voiceTranscriptRepository: widget.voiceTranscriptRepository,

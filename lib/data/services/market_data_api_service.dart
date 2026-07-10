@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../core/constants/api_constants.dart';
 import '../models/market_quote.dart';
 
 class MarketDataApiService {
@@ -11,7 +12,7 @@ class MarketDataApiService {
 
   static const String _defaultBaseUrl = String.fromEnvironment(
     'MARKET_BACKEND_BASE_URL',
-    defaultValue: 'http://127.0.0.1:5000',
+    defaultValue: ApiConstants.defaultBackendBaseUrl,
   );
 
   final http.Client _client;

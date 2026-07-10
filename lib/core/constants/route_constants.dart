@@ -6,6 +6,8 @@ class RouteConstants {
   static const String biometricLock = '/kunci';
   static const String beranda = '/beranda';
   static const String berita = '/berita';
+  static const String beritaDetail = '/berita/detail';
+  static const String beritaAnalisis = '/berita/analisis';
   static const String keuangan = '/keuangan';
   static const String transaksiBaru = '/keuangan/transaksi-baru';
   static const String transaksiSuara = '/keuangan/suara';

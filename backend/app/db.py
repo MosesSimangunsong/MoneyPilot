@@ -13,6 +13,35 @@ CREATE TABLE IF NOT EXISTS market_cache (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS news_feed_cache (
+    cache_key TEXT PRIMARY KEY,
+    response_json TEXT NOT NULL,
+    fetched_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS news_article_cache (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    source TEXT NOT NULL,
+    url TEXT NOT NULL,
+    category TEXT NOT NULL,
+    published_at TEXT NOT NULL,
+    fetched_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS analysis_cache (
+    cache_key TEXT PRIMARY KEY,
+    news_id TEXT NOT NULL,
+    response_json TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    model TEXT NOT NULL,
+    generated_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
 """
 
 
