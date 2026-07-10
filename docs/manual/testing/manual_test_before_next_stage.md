@@ -1,6 +1,11 @@
 # Manual Test Before Next Stage
 
-Checklist ini wajib diselesaikan sebelum memilih tahap roadmap berikutnya.
+Checklist ini dipakai sebagai gate final Tahap 12 sebelum MVP dinyatakan siap.
+
+## Status Otomatis Audit Tahap 12
+- [x] `flutter analyze` lulus
+- [x] `flutter test` lulus
+- [x] `pytest` backend lulus
 
 ## Startup dan Akses Awal
 - [ ] App startup berhasil tanpa crash
@@ -60,3 +65,11 @@ Checklist ini wajib diselesaikan sebelum memilih tahap roadmap berikutnya.
 - [ ] Temuan manual test sudah dicatat
 - [ ] Bug blocker sudah diperbaiki atau diputuskan untuk ditahan
 - [ ] Tahap berikutnya belum dipilih sebelum checklist ini selesai
+
+## Catatan Audit Tahap 12
+- Temuan bug blocker dari automated audit: tidak ada
+- Perbaikan kecil yang sudah diterapkan:
+  - fallback error lebih aman di halaman Pengaturan
+  - loading state saat cek backend
+  - status sync terakhir dibersihkan setelah reset data lokal
+- Status MVP saat ini: kandidat final, menunggu manual regression

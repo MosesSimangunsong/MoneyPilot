@@ -58,6 +58,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isSaving = false;
   bool _isSyncing = false;
   bool _isExporting = false;
+  bool _isCheckingBackend = false;
   bool _isResetting = false;
   bool _obscureToken = true;
   bool _biometricAvailable = false;
@@ -164,8 +165,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                           const SizedBox(height: AppSpacing.md),
                           OutlinedButton(
-                            onPressed: _loadBackendStatus,
-                            child: const Text('Periksa Ulang Backend'),
+                            onPressed: _isCheckingBackend
+                                ? null
+                                : _loadBackendStatus,
+                            child: Text(
+                              _isCheckingBackend
+                                  ? 'Memeriksa backend...'
+                                  : 'Periksa Ulang Backend',
+                            ),
                           ),
                         ],
                       ),
@@ -363,45 +370,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadSettings() async {
-    final AppSetting settings = await widget.appSettingRepository
-        .getOrCreateSettings();
-    final int pendingCount = await widget.syncRepository
-        .countPendingSyncItems();
-    final bool biometricAvailable = await _biometricService.isAvailable();
-    final BackendStatusResult backendStatus = await _backendStatusService
-        .checkHealth();
+    try {
+      final AppSetting settings = await widget.appSettingRepository
+          .getOrCreateSettings();
+      final int pendingCount = await widget.syncRepository
+          .countPendingSyncItems();
+      final bool biometricAvailable = await _biometricService.isAvailable();
+      final BackendStatusResult backendStatus = await _backendStatusService
+          .checkHealth();
 
-    if (!mounted) {
-      return;
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _urlController.text = settings.gasWebhookUrl ?? '';
+        _tokenController.text = settings.gasSecretToken ?? '';
+        _status = settings.lastSpreadsheetSyncStatus;
+        _statusMessage = settings.lastSpreadsheetSyncMessage;
+        _lastSyncAt = settings.lastSpreadsheetSyncAt;
+        _lastBackupAt = settings.lastLocalBackupAt;
+        _pendingCount = pendingCount;
+        _biometricAvailable = biometricAvailable;
+        _backendConnected = backendStatus.isConnected;
+        _backendMessage = backendStatus.message;
+        _backendServerTime = backendStatus.serverTime;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _backendConnected = false;
+        _backendMessage = 'Pengaturan belum bisa dimuat sepenuhnya.';
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Terjadi kendala saat memuat pengaturan. Coba buka lagi beberapa saat.',
+          ),
+        ),
+      );
     }
-
-    setState(() {
-      _urlController.text = settings.gasWebhookUrl ?? '';
-      _tokenController.text = settings.gasSecretToken ?? '';
-      _status = settings.lastSpreadsheetSyncStatus;
-      _statusMessage = settings.lastSpreadsheetSyncMessage;
-      _lastSyncAt = settings.lastSpreadsheetSyncAt;
-      _lastBackupAt = settings.lastLocalBackupAt;
-      _pendingCount = pendingCount;
-      _biometricAvailable = biometricAvailable;
-      _backendConnected = backendStatus.isConnected;
-      _backendMessage = backendStatus.message;
-      _backendServerTime = backendStatus.serverTime;
-      _isLoading = false;
-    });
   }
 
   Future<void> _loadBackendStatus() async {
-    final BackendStatusResult backendStatus = await _backendStatusService
-        .checkHealth();
-    if (!mounted) {
-      return;
-    }
     setState(() {
-      _backendConnected = backendStatus.isConnected;
-      _backendMessage = backendStatus.message;
-      _backendServerTime = backendStatus.serverTime;
+      _isCheckingBackend = true;
     });
+
+    try {
+      final BackendStatusResult backendStatus = await _backendStatusService
+          .checkHealth();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _backendConnected = backendStatus.isConnected;
+        _backendMessage = backendStatus.message;
+        _backendServerTime = backendStatus.serverTime;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCheckingBackend = false;
+        });
+      }
+    }
   }
 
   Future<void> _saveSettings() async {
@@ -430,6 +468,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Konfigurasi sync berhasil disimpan.')),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Konfigurasi sync belum berhasil disimpan. Coba lagi beberapa saat.',
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -509,6 +559,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(error.message)));
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _status = 'failed';
+        _statusMessage =
+            'Sync belum bisa dijalankan sekarang. Periksa koneksi dan konfigurasi lalu coba lagi.';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Sync belum bisa dijalankan sekarang. Periksa koneksi dan konfigurasi lalu coba lagi.',
+          ),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -561,6 +627,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             'Export CSV selesai. File disimpan di ${result.directoryPath}',
           ),
           duration: const Duration(seconds: 5),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Export CSV belum berhasil. Periksa izin penyimpanan lalu coba lagi.',
+          ),
         ),
       );
     } finally {
@@ -666,11 +744,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _status = 'belum';
         _statusMessage =
             'Data lokal telah direset. Konfigurasi aplikasi tetap disimpan.';
+        _lastSyncAt = null;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
             'Reset data lokal selesai. Data utama telah dibersihkan.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Reset data lokal belum berhasil. Pastikan tidak ada proses lain yang sedang memakai database.',
           ),
         ),
       );

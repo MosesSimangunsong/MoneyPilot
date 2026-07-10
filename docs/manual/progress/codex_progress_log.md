@@ -84,6 +84,53 @@ Verifikasi:
 - flutter analyze: bersih
 - flutter test: lulus
 
+## Tahap 10 - Tab Analisis dan Watchlist
+Status: selesai
+
+Hasil:
+- Tab Analisis tidak lagi kosong dan menampilkan watchlist serta ringkasan
+  symbol yang dipantau
+- Detail symbol analisis tersedia sebagai fondasi analisis lanjutan
+- Disclaimer edukatif tetap tampil dan tidak ada rekomendasi beli/jual
+
+Verifikasi:
+- flutter analyze: bersih
+- flutter test: lulus
+
+## Tahap 11 - Settings, Export, dan Privacy
+Status: selesai
+
+Hasil:
+- Halaman Pengaturan terpusat untuk sync, keamanan, backend status, export,
+  reset data lokal, dan privacy note
+- Export CSV lokal aktif untuk transaksi, kategori, saham, dividen, dan
+  watchlist
+- Reset data lokal dua langkah aktif dengan menjaga konfigurasi aplikasi tetap
+  tersimpan
+
+Verifikasi:
+- flutter analyze: bersih
+- flutter test: lulus
+
+## Tahap 12 - Testing, Stabilization, dan Polish MVP
+Status: selesai
+
+Hasil:
+- Audit penuh lintas startup, router, keuangan, portofolio, berita, analisis,
+  dan settings selesai
+- `flutter analyze`, `flutter test`, dan `pytest` backend lulus di audit ini
+- Halaman Pengaturan dirapikan dengan fallback error save/sync/export/reset
+  yang lebih aman
+- Status cek backend diberi loading state yang jelas
+- Reset data lokal kini membersihkan tampilan status sync terakhir agar tidak
+  membingungkan
+
+Verifikasi:
+- flutter analyze: No issues found
+- flutter test: All tests passed
+- pytest: 14 passed
+
 ## Catatan Stabilisasi
-- Tahap berikutnya belum boleh dipilih sebelum manual test utama lintas fitur selesai.
+- MVP berada pada status kandidat final, tetapi manual test utama lintas fitur
+  tetap wajib diselesaikan sebelum rilis/freeze.
 - Manual test utama minimal harus mencakup startup, onboarding, biometric, transaksi manual, voice input, spreadsheet sync, portofolio saat backend hidup/mati, dan alur berita sampai analisis dampak.

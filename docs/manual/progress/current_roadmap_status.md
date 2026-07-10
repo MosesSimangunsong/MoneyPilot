@@ -1,7 +1,7 @@
 # Current Roadmap Status
 
-Dokumen ini merangkum status roadmap aktual MoneyPilot setelah Tahap 9 dan
-menjadi acuan sebelum memilih tahap berikutnya.
+Dokumen ini merangkum status roadmap aktual MoneyPilot setelah Tahap 12 dan
+menjadi acuan status stabilisasi MVP.
 
 ## Tahap Yang Sudah Selesai
 - Tahap 1 App Foundation
@@ -9,6 +9,9 @@ menjadi acuan sebelum memilih tahap berikutnya.
 - Tahap 3 Keuangan Manual
 - Tahap 4 Voice Input dan Parser Bahasa Indonesia
 - Tahap 5 Google Spreadsheet Sync Dua Arah
+- Tahap 10 Tab Analisis dan Watchlist
+- Tahap 11 Settings, Export, dan Privacy
+- Tahap 12 Testing, Stabilization, dan Polish MVP
 - Tahap 8 Backend Flask dan Market Data
 - Tahap 9 Berita dan AI News Impact Analysis
 
@@ -24,29 +27,34 @@ menjadi acuan sebelum memilih tahap berikutnya.
 - Tahap deployment dan login server
 - Tahap integrasi provider market real
 
-## Tahap Yang Perlu Manual Test
-- Tahap 1 sampai Tahap 5 perlu regression test lintas fitur
-- Tahap 8 perlu validasi backend hidup dan mati
-- Tahap 9 perlu validasi daftar berita, detail berita, analisis dampak, dan
-  fallback aman tanpa rekomendasi investasi
+## Status Audit Tahap 12
+- `flutter analyze`: lulus
+- `flutter test`: lulus
+- `pytest` backend: lulus
+- Audit kode lintas startup, routing, berita, portofolio, analisis, dan
+  settings selesai tanpa menemukan blocker baru
+- Perbaikan kecil diterapkan pada halaman Pengaturan untuk fallback error
+  save/sync/export/reset, status cek backend, dan reset status sync yang lebih
+  konsisten
 
-## Gate Sebelum Tahap Berikutnya
-- Tahap berikutnya belum boleh dipilih sebelum manual test utama lintas fitur
-  selesai.
-- Fokus saat ini adalah stabilisasi, audit kecil, dan memastikan integrasi yang
-  sudah ada tetap aman.
+## Manual Test Yang Masih Wajib
+- Startup dan onboarding pada perangkat baru
+- Biometric lock pada perangkat yang mendukung dan yang tidak mendukung
+- Voice input dengan izin mikrofon aktif/nonaktif
+- Spreadsheet sync dengan URL valid, URL salah, token kosong, dan timeout
+- Portofolio saat backend hidup dan mati
+- Berita, detail berita, dan analisis saat backend hidup dan mati
 
-## Rekomendasi Urutan Kerja Berikutnya
+## Gate Rilis MVP
 1. Selesaikan manual test gabungan di
    `docs/manual/testing/manual_test_before_next_stage.md`.
-2. Catat hasil manual test, bug, dan keputusan perbaikan kecil yang memang
-   terverifikasi.
-3. Jalankan stabilisasi tambahan hanya jika ada bug nyata dari hasil manual
-   test.
-4. Setelah checklist utama lulus, baru pilih tahap berikutnya yang paling
-   rendah risiko dan paling dekat dengan roadmap aktif.
+2. Catat hasil manual test dan bukti perangkat yang dipakai.
+3. Jika ada blocker manual test, tahan rilis MVP sampai diperbaiki.
+4. Jika checklist manual lulus, MVP dapat dinyatakan siap untuk freeze fitur
+   besar dan lanjut ke deployment/post-MVP.
 
-## Rekomendasi Tahap Berikutnya
-- Belum memilih tahap baru.
-- Keputusan tahap berikutnya harus menunggu hasil manual test utama selesai dan
-  dinyatakan stabil.
+## Status Final MVP
+- Status saat ini: `candidate-ready`
+- Artinya: fondasi MVP, fitur utama, test otomatis, dan polish kecil sudah
+  siap; keputusan final tinggal menunggu regression manual lintas perangkat dan
+  skenario backend.
