@@ -150,6 +150,10 @@ class CategoryRepository {
         .then(_normalizeCategoryList);
   }
 
+  Stream<void> watchCategories() {
+    return _isar.categorys.watchLazy(fireImmediately: true);
+  }
+
   Future<List<Category>> getByType(String type) {
     return _isar.categorys
         .filter()
@@ -246,6 +250,31 @@ class CategoryRepository {
       }
       return _normalizeCategoryDates(item);
     });
+  }
+
+  Future<bool> hasActiveCategoryWithName(
+    String name,
+    String type, {
+    String? excludeUuid,
+  }) async {
+    final String normalizedName = name.trim().toLowerCase();
+    final List<Category> categories = await _isar.categorys
+        .filter()
+        .typeEqualTo(type)
+        .and()
+        .isDeletedEqualTo(false)
+        .findAll();
+
+    for (final Category category in categories) {
+      if (excludeUuid != null && category.uuid == excludeUuid) {
+        continue;
+      }
+      if (category.name.trim().toLowerCase() == normalizedName) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   Future<List<Category>> getPendingSyncCategories() {

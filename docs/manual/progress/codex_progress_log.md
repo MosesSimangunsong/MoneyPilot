@@ -130,6 +130,29 @@ Verifikasi:
 - flutter test: All tests passed
 - pytest: 14 passed
 
+## Tahap 13 - CV Claim Gap Closure Foundation
+Status: selesai
+
+Hasil:
+- Halaman kategori aktif dan bisa dibuka dari tab Keuangan maupun Pengaturan
+- Category management mendukung daftar aktif, filter semua/pemasukan/
+  pengeluaran, tambah kategori, edit kategori, validasi nama kosong,
+  pencegahan duplikasi nama aktif pada tipe yang sama, dan soft delete
+- Kategori bawaan dijaga agar tidak bisa dihapus supaya alur pencatatan serta
+  sinkronisasi tetap aman
+- Copy onboarding diperbarui agar sesuai dengan fitur aktual: transaksi
+  manual, voice input Bahasa Indonesia, local-first storage, spreadsheet sync,
+  portofolio, dividen, watchlist, berita, dan analisis edukatif
+- Audit ringan Bahasa Indonesia diterapkan pada Pengaturan dan empty/error
+  state yang disentuh tahap ini
+- Dokumen validasi klaim CV final tahap 13 ditambahkan
+- Test repository kategori diperluas dan widget test onboarding/kategori
+  ditambahkan
+
+Verifikasi:
+- flutter analyze: No issues found
+- flutter test: All tests passed
+
 ## Catatan Stabilisasi
 - MVP berada pada status kandidat final, tetapi manual test utama lintas fitur
   tetap wajib diselesaikan sebelum rilis/freeze.

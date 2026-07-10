@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:app/core/utils/date_time_utils.dart';
 import 'package:app/core/utils/id_generator.dart';
 import 'package:app/data/local/local_database_service.dart';
+import 'package:app/data/models/category.dart';
 import 'package:app/data/models/money_transaction.dart';
 import 'package:app/data/models/watchlist_item.dart';
 import 'package:app/data/repositories/category_repository.dart';
@@ -78,6 +79,54 @@ void main() {
 
       final categories = await categoryRepository.getAllActiveCategories();
       expect(categories, hasLength(18));
+    },
+  );
+
+  test('deteksi duplikasi kategori aktif berdasarkan nama dan tipe', () async {
+    final DateTime now = DateTimeUtils.utcNow();
+    await categoryRepository.upsertCategory(
+      Category(
+        uuid: 'category-expense-ngopi',
+        name: 'Ngopi',
+        type: 'expense',
+        iconName: 'utensils',
+        colorHex: '#2563EB',
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+
+    final bool duplicateExpense = await categoryRepository
+        .hasActiveCategoryWithName('ngopi', 'expense');
+    final bool duplicateIncome = await categoryRepository
+        .hasActiveCategoryWithName('Ngopi', 'income');
+
+    expect(duplicateExpense, isTrue);
+    expect(duplicateIncome, isFalse);
+  });
+
+  test(
+    'kategori yang sudah di-soft delete tidak dihitung sebagai duplikasi',
+    () async {
+      final DateTime now = DateTimeUtils.utcNow();
+      final category = await categoryRepository.upsertCategory(
+        Category(
+          uuid: 'category-income-bonus',
+          name: 'Bonus Proyek',
+          type: 'income',
+          iconName: 'briefcase-business',
+          colorHex: '#0F766E',
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+
+      await categoryRepository.softDeleteCategory(category.uuid);
+
+      final bool hasDuplicate = await categoryRepository
+          .hasActiveCategoryWithName('Bonus Proyek', 'income');
+
+      expect(hasDuplicate, isFalse);
     },
   );
 

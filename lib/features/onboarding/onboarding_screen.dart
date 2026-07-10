@@ -59,7 +59,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Kita siapkan alur awal yang ringkas supaya kamu bisa cepat masuk ke aplikasi.',
+                'Kita siapkan alur awal yang ringkas supaya kamu bisa langsung mencatat transaksi, memantau portofolio, dan memakai fitur utama MoneyPilot.',
                 style: textTheme.bodyLarge?.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -112,7 +112,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         const InfoCard(
           title: 'Mulai dengan nama panggilan',
           description:
-              'Nama ini akan dipakai untuk sapaan ringan di Beranda agar aplikasi terasa lebih personal.',
+              'Nama ini akan dipakai untuk sapaan ringan di Beranda agar aplikasi terasa lebih personal saat kamu memantau keuangan harian.',
         ),
         const SizedBox(height: AppSpacing.xl),
         TextField(
@@ -139,7 +139,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               : 'Biometric belum tersedia',
           description: isSupported
               ? 'MoneyPilot bisa meminta fingerprint saat aplikasi dibuka atau saat kamu kembali setelah beberapa menit.'
-              : 'Perangkat ini belum mendukung fingerprint atau biometric. Untuk MVP, aplikasi tetap bisa dipakai tanpa PIN internal.',
+              : 'Perangkat ini belum mendukung fingerprint atau biometric. Aplikasi tetap bisa dipakai secara lokal tanpa mengubah fitur keuangan lain.',
           trailing: Icon(
             isSupported ? LucideIcons.shieldCheck : LucideIcons.shieldAlert,
             color: isSupported ? AppColors.primary : AppColors.warning,
@@ -173,15 +173,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         InfoCard(
-          title: 'Siapkan akses mikrofon',
+          title: 'Catat transaksi dengan suara Indonesia',
           description:
-              'Tahap voice input akan dibangun setelah fondasi aplikasi siap. Saat fitur itu dibuka nanti, sistem akan meminta izin mikrofon perangkatmu.',
+              'MoneyPilot sudah mendukung pencatatan transaksi suara dalam Bahasa Indonesia. Saat kamu membuka fitur ini, aplikasi akan meminta izin mikrofon perangkat.',
         ),
         SizedBox(height: AppSpacing.xl),
         InfoCard(
-          title: 'Kenapa belum diminta sekarang?',
+          title: 'Yang bisa kamu lakukan setelah izin diberikan',
           description:
-              'Tahap 1 fokus pada fondasi aplikasi. Kita tetap menempatkan langkah ini di onboarding supaya alur produk sudah sesuai dokumen.',
+              'Kamu bisa mengucapkan pemasukan atau pengeluaran harian, lalu meninjau hasil parser sebelum transaksi disimpan ke data lokal.',
         ),
       ],
     );
@@ -192,15 +192,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         InfoCard(
-          title: 'Setup spreadsheet bersifat opsional',
+          title: 'Penyimpanan lokal tetap jadi fondasi utama',
           description:
-              'Kamu tetap bisa memakai MoneyPilot secara lokal dulu. URL Google Apps Script dan secret token akan diatur dari halaman Pengaturan pada tahap berikutnya.',
+              'MoneyPilot memakai penyimpanan lokal offline-first, jadi transaksi tetap bisa dicatat tanpa internet. Sinkronisasi Google Spreadsheet bersifat opsional dan bisa diatur dari halaman Pengaturan.',
         ),
         SizedBox(height: AppSpacing.xl),
         InfoCard(
-          title: 'Yang akan kamu dapat setelah masuk',
+          title: 'Fitur utama yang siap dipakai',
           description:
-              'Beranda, Berita, Keuangan, Portofolio, dan Analisis sudah siap sebagai kerangka navigasi utama untuk MVP.',
+              'Kamu bisa mencatat transaksi manual, memakai voice input Bahasa Indonesia, membackup data ke spreadsheet, memantau portofolio, dividen, watchlist, berita, dan analisis edukatif.',
         ),
       ],
     );

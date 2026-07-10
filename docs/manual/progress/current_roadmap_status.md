@@ -1,7 +1,7 @@
 # Current Roadmap Status
 
-Dokumen ini merangkum status roadmap aktual MoneyPilot setelah Tahap 12 dan
-menjadi acuan status stabilisasi MVP.
+Dokumen ini merangkum status roadmap aktual MoneyPilot setelah Tahap 13 dan
+menjadi acuan penutupan gap klaim CV menuju demo final.
 
 ## Tahap Yang Sudah Selesai
 - Tahap 1 App Foundation
@@ -12,6 +12,7 @@ menjadi acuan status stabilisasi MVP.
 - Tahap 10 Tab Analisis dan Watchlist
 - Tahap 11 Settings, Export, dan Privacy
 - Tahap 12 Testing, Stabilization, dan Polish MVP
+- Tahap 13 CV Claim Gap Closure Foundation
 - Tahap 8 Backend Flask dan Market Data
 - Tahap 9 Berita dan AI News Impact Analysis
 
@@ -27,18 +28,23 @@ menjadi acuan status stabilisasi MVP.
 - Tahap deployment dan login server
 - Tahap integrasi provider market real
 
-## Status Audit Tahap 12
+## Status Audit Tahap 13
 - `flutter analyze`: lulus
 - `flutter test`: lulus
-- `pytest` backend: lulus
-- Audit kode lintas startup, routing, berita, portofolio, analisis, dan
-  settings selesai tanpa menemukan blocker baru
-- Perbaikan kecil diterapkan pada halaman Pengaturan untuk fallback error
-  save/sync/export/reset, status cek backend, dan reset status sync yang lebih
-  konsisten
+- `pytest` backend: tidak dijalankan karena backend tidak berubah
+- Halaman kategori sekarang aktif dari UI, mendukung lihat/filter/tambah/edit/
+  soft delete kategori dengan validasi nama kosong dan pencegahan duplikasi
+- Routing kategori sudah aktif dari tab Keuangan dan halaman Pengaturan
+- Copy onboarding sudah disesuaikan dengan fitur aktual seperti voice input,
+  local-first storage, spreadsheet sync, portofolio, dividen, watchlist,
+  berita, dan analisis edukatif
+- Rapikan UX Bahasa Indonesia diterapkan pada area kategori, onboarding, dan
+  beberapa label utama di Pengaturan
+- Dokumen validasi klaim CV manual ditambahkan
 
 ## Manual Test Yang Masih Wajib
 - Startup dan onboarding pada perangkat baru
+- Category management dari tab Keuangan dan Pengaturan
 - Biometric lock pada perangkat yang mendukung dan yang tidak mendukung
 - Voice input dengan izin mikrofon aktif/nonaktif
 - Spreadsheet sync dengan URL valid, URL salah, token kosong, dan timeout
@@ -55,6 +61,6 @@ menjadi acuan status stabilisasi MVP.
 
 ## Status Final MVP
 - Status saat ini: `candidate-ready`
-- Artinya: fondasi MVP, fitur utama, test otomatis, dan polish kecil sudah
-  siap; keputusan final tinggal menunggu regression manual lintas perangkat dan
-  skenario backend.
+- Artinya: fondasi MVP sudah kuat dan gap UI/copy paling terlihat sudah
+  ditutup, tetapi ekspansi sync portofolio, penguatan market provider, AI demo
+  hardening, dan manual regression perangkat nyata masih harus diselesaikan.

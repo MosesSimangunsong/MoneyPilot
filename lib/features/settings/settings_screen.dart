@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../core/constants/route_constants.dart';
 import '../../core/session/app_session_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -102,7 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   children: <Widget>[
                     Text(
-                      'Kelola sinkronisasi, keamanan, export data, dan informasi privasi MoneyPilot dari satu tempat.',
+                      'Kelola sinkronisasi, keamanan, ekspor data, dan informasi privasi MoneyPilot dari satu tempat.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -134,7 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     _SectionCard(
-                      title: 'Status Backend',
+                      title: 'Status backend',
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
@@ -171,7 +173,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             child: Text(
                               _isCheckingBackend
                                   ? 'Memeriksa backend...'
-                                  : 'Periksa Ulang Backend',
+                                  : 'Periksa ulang backend',
                             ),
                           ),
                         ],
@@ -179,7 +181,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     _SectionCard(
-                      title: 'Google Spreadsheet Sync',
+                      title: 'Sinkronisasi Google Spreadsheet',
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
@@ -205,7 +207,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             enabled: !_isSaving && !_isSyncing,
                             keyboardType: TextInputType.url,
                             decoration: const InputDecoration(
-                              labelText: 'Google Apps Script Web App URL',
+                              labelText: 'URL Web App Google Apps Script',
                               hintText:
                                   'https://script.google.com/macros/s/.../exec',
                             ),
@@ -228,9 +230,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             enabled: !_isSaving && !_isSyncing,
                             obscureText: _obscureToken,
                             decoration: InputDecoration(
-                              labelText: 'Secret token',
+                              labelText: 'Token rahasia',
                               hintText:
-                                  'Masukkan token rahasia Google Apps Script',
+                                  'Masukkan token rahasia untuk sinkronisasi',
                               suffixIcon: IconButton(
                                 onPressed: () {
                                   setState(() {
@@ -246,7 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                             validator: (String? value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'Secret token wajib diisi.';
+                                return 'Token rahasia wajib diisi.';
                               }
                               return null;
                             },
@@ -270,7 +272,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               child: Text(
                                 _isSaving
                                     ? 'Menyimpan...'
-                                    : 'Simpan konfigurasi',
+                                    : 'Simpan pengaturan sinkronisasi',
                               ),
                             ),
                           ),
@@ -285,8 +287,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                               child: Text(
                                 _isSyncing
-                                    ? 'Menjalankan sync...'
-                                    : 'Jalankan sync manual',
+                                    ? 'Menjalankan sinkronisasi...'
+                                    : 'Jalankan sinkronisasi manual',
                               ),
                             ),
                           ),
@@ -295,12 +297,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     _SectionCard(
-                      title: 'Export CSV',
+                      title: 'Kategori transaksi',
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            'Export akan membuat file CSV lokal untuk transaksi, kategori, saham, dividen, dan watchlist aktif.',
+                            'Kelola kategori pemasukan dan pengeluaran tanpa harus keluar dari pengaturan.',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: AppColors.textSecondary),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          OutlinedButton(
+                            onPressed: () =>
+                                context.push(RouteConstants.kategori),
+                            child: const Text('Buka kelola kategori'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    _SectionCard(
+                      title: 'Ekspor CSV',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            'Ekspor akan membuat file CSV lokal untuk transaksi, kategori, saham, dividen, dan watchlist aktif.',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(color: AppColors.textSecondary),
                           ),
@@ -309,8 +331,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             onPressed: _isExporting ? null : _exportCsv,
                             child: Text(
                               _isExporting
-                                  ? 'Menyiapkan export...'
-                                  : 'Export Data ke CSV',
+                                  ? 'Menyiapkan ekspor...'
+                                  : 'Ekspor data ke CSV',
                             ),
                           ),
                         ],
@@ -318,7 +340,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     _SectionCard(
-                      title: 'Reset Data Lokal',
+                      title: 'Reset data lokal',
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
@@ -344,7 +366,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     const _SectionCard(
-                      title: 'Privasi dan Disclaimer',
+                      title: 'Privasi dan disclaimer',
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
@@ -467,7 +489,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Konfigurasi sync berhasil disimpan.')),
+        const SnackBar(
+          content: Text('Pengaturan sinkronisasi berhasil disimpan.'),
+        ),
       );
     } catch (_) {
       if (!mounted) {
@@ -477,7 +501,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Konfigurasi sync belum berhasil disimpan. Coba lagi beberapa saat.',
+            'Pengaturan sinkronisasi belum berhasil disimpan. Coba lagi beberapa saat.',
           ),
         ),
       );
@@ -529,7 +553,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         SnackBar(
           content: Text(
             summary.status == 'success'
-                ? 'Sync selesai. $summaryText'
+                ? 'Sinkronisasi selesai. $summaryText'
                 : summary.message,
           ),
           backgroundColor: summary.status == 'success'
@@ -566,12 +590,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _status = 'failed';
         _statusMessage =
-            'Sync belum bisa dijalankan sekarang. Periksa koneksi dan konfigurasi lalu coba lagi.';
+            'Sinkronisasi belum bisa dijalankan sekarang. Periksa koneksi dan konfigurasi lalu coba lagi.';
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Sync belum bisa dijalankan sekarang. Periksa koneksi dan konfigurasi lalu coba lagi.',
+            'Sinkronisasi belum bisa dijalankan sekarang. Periksa koneksi dan konfigurasi lalu coba lagi.',
           ),
         ),
       );
@@ -624,7 +648,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Export CSV selesai. File disimpan di ${result.directoryPath}',
+            'Ekspor CSV selesai. File disimpan di ${result.directoryPath}',
           ),
           duration: const Duration(seconds: 5),
         ),
@@ -637,7 +661,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Export CSV belum berhasil. Periksa izin penyimpanan lalu coba lagi.',
+            'Ekspor CSV belum berhasil. Periksa izin penyimpanan lalu coba lagi.',
           ),
         ),
       );

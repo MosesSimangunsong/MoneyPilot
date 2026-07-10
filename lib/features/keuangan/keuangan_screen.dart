@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../core/constants/route_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/currency_formatter.dart';
@@ -49,7 +50,14 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
             return AppPage(
               title: 'Keuangan',
               description:
-                  'Catat transaksi harianmu secara manual dan lihat arus kas bulan ini.',
+                  'Catat pemasukan dan pengeluaran harianmu secara manual atau suara, lalu pantau arus kas bulan ini.',
+              actions: <Widget>[
+                IconButton(
+                  tooltip: 'Kelola kategori',
+                  onPressed: () => context.push(RouteConstants.kategori),
+                  icon: const Icon(Icons.category_outlined),
+                ),
+              ],
               children: <Widget>[
                 _SummaryStrip(summary: data?.summary),
                 const SizedBox(height: AppSpacing.lg),
@@ -108,7 +116,8 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   children: <Widget>[
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => context.push('/keuangan/suara'),
+                        onPressed: () =>
+                            context.push(RouteConstants.transaksiSuara),
                         icon: const Icon(LucideIcons.mic),
                         label: const Text('Catat suara'),
                       ),
@@ -117,12 +126,21 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                     Expanded(
                       child: FilledButton.icon(
                         onPressed: () =>
-                            context.push('/keuangan/transaksi-baru'),
+                            context.push(RouteConstants.transaksiBaru),
                         icon: const Icon(LucideIcons.plus),
                         label: const Text('Tambah manual'),
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => context.push(RouteConstants.kategori),
+                    icon: const Icon(Icons.category_outlined),
+                    label: const Text('Kelola kategori'),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 Text(
@@ -222,7 +240,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
   }
 
   Future<void> _openEditForm(String transactionUuid) async {
-    await context.push('/keuangan/$transactionUuid/edit');
+    await context.push('${RouteConstants.keuangan}/$transactionUuid/edit');
   }
 
   Future<void> _confirmDelete(MoneyTransaction transaction) async {

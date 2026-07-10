@@ -8,6 +8,7 @@ import '../../features/berita/analisis_berita_screen.dart';
 import '../../features/berita/berita_screen.dart';
 import '../../features/berita/detail_berita_screen.dart';
 import '../../features/keuangan/add_edit_transaction_screen.dart';
+import '../../features/keuangan/kategori_screen.dart';
 import '../../features/keuangan/keuangan_screen.dart';
 import '../../features/keuangan/konfirmasi_suara_screen.dart';
 import '../../features/keuangan/tambah_transaksi_screen.dart';
@@ -178,6 +179,14 @@ class AppRouter {
                   );
                 },
                 routes: <RouteBase>[
+                  GoRoute(
+                    path: 'kategori',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return KategoriScreen(
+                        categoryRepository: _categoryRepository,
+                      );
+                    },
+                  ),
                   GoRoute(
                     path: 'transaksi-baru',
                     builder: (BuildContext context, GoRouterState state) {
