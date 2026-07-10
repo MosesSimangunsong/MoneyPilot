@@ -15,6 +15,14 @@ class NewsImpactAnalysis {
     required this.halYangPerluDipantau,
     required this.kesimpulanPemula,
     required this.disclaimer,
+    required this.isAiGenerated,
+    required this.isFallback,
+    required this.isCached,
+    required this.provider,
+    required this.model,
+    this.fallbackReason,
+    required this.generatedAt,
+    required this.cacheTtlSeconds,
   });
 
   final String newsId;
@@ -32,6 +40,16 @@ class NewsImpactAnalysis {
   final List<String> halYangPerluDipantau;
   final String kesimpulanPemula;
   final String disclaimer;
+  
+  // Metadata fields
+  final bool isAiGenerated;
+  final bool isFallback;
+  final bool isCached;
+  final String provider;
+  final String model;
+  final String? fallbackReason;
+  final String generatedAt;
+  final int cacheTtlSeconds;
 
   factory NewsImpactAnalysis.fromJson(Map<String, dynamic> json) {
     List<String> readList(String key) {
@@ -65,6 +83,14 @@ class NewsImpactAnalysis {
       halYangPerluDipantau: readList('halYangPerluDipantau'),
       kesimpulanPemula: (json['kesimpulanPemula'] as String? ?? '').trim(),
       disclaimer: (json['disclaimer'] as String? ?? '').trim(),
+      isAiGenerated: json['isAiGenerated'] as bool? ?? false,
+      isFallback: json['isFallback'] as bool? ?? true,
+      isCached: json['isCached'] as bool? ?? false,
+      provider: (json['provider'] as String? ?? 'unknown').trim(),
+      model: (json['model'] as String? ?? 'unknown').trim(),
+      fallbackReason: json['fallbackReason'] as String?,
+      generatedAt: (json['generatedAt'] as String? ?? '').trim(),
+      cacheTtlSeconds: json['cacheTtlSeconds'] as int? ?? 0,
     );
   }
 }

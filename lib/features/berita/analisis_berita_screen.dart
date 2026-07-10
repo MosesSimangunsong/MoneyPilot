@@ -64,6 +64,8 @@ class _AnalisisBeritaScreenState extends State<AnalisisBeritaScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
+                    _MetadataBanner(analysis: analysis),
+                    const SizedBox(height: AppSpacing.lg),
                     _ScoreRow(analysis: analysis),
                     const SizedBox(height: AppSpacing.lg),
                     _Section(
@@ -335,6 +337,80 @@ class _AnalysisError extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           FilledButton(onPressed: onRetry, child: const Text('Coba Lagi')),
         ],
+      ),
+    );
+  }
+}
+
+
+class _MetadataBanner extends StatelessWidget {
+  const _MetadataBanner({required this.analysis});
+
+  final NewsImpactAnalysis analysis;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> badges = <Widget>[];
+
+    if (analysis.isCached) {
+      badges.add(const _Badge(label: 'Dari Cache', color: AppColors.textSecondary));
+    }
+
+    if (analysis.isFallback) {
+      badges.add(const _Badge(label: 'Analisis Fallback Edukatif', color: AppColors.warning));
+    } else if (analysis.isAiGenerated) {
+      badges.add(const _Badge(label: 'Dihasilkan oleh AI', color: AppColors.primaryDark));
+    }
+
+    if (badges.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: badges,
+        ),
+        if (analysis.isFallback && analysis.fallbackReason != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Catatan sistem: ${analysis.fallbackReason}',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.warning,
+                  fontStyle: FontStyle.italic,
+                ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
       ),
     );
   }

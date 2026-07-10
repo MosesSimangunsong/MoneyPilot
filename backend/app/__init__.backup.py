@@ -47,23 +47,12 @@ def create_app(config_object: type[Config] = Config) -> Flask:
         or app.config["TESTING"]
         or app.config["ENABLE_DEV_ANALYSIS_FALLBACK"],
     )
-    analysis_provider_name = app.config["AI_PROVIDER"]
-    analysis_openai_api_key = app.config["OPENAI_API_KEY"]
-    analysis_gemini_api_key = app.config["GEMINI_API_KEY"]
-
-    # Saat automated test, jangan pernah panggil provider AI eksternal.
-    # Ini menjaga test tetap cepat, gratis, stabil, dan tidak memakai kuota Gemini/OpenAI.
-    if app.config["TESTING"]:
-        analysis_provider_name = "mock"
-        analysis_openai_api_key = ""
-        analysis_gemini_api_key = ""
-
     analysis_service = AIAnalysisService(
         cache_service=cache_service,
         prompt_builder=PromptBuilder(),
-        provider_name=analysis_provider_name,
-        openai_api_key=analysis_openai_api_key,
-        gemini_api_key=analysis_gemini_api_key,
+        provider_name=app.config["AI_PROVIDER"],
+        openai_api_key=app.config["OPENAI_API_KEY"],
+        gemini_api_key=app.config["GEMINI_API_KEY"],
         model_name=app.config["AI_MODEL"],
         gemini_model_name=app.config["GEMINI_MODEL"],
         cache_ttl_seconds=app.config["ANALYSIS_CACHE_TTL_SECONDS"],

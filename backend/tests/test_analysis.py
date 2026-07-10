@@ -13,7 +13,12 @@ def test_analyze_without_api_key_does_not_crash(client):
     assert response.status_code == 200
     payload = response.get_json()
     assert payload["status"] == "success"
-    assert payload["data"]["disclaimer"] == "Informasi ini bukan nasihat keuangan."
+    
+    # Memastikan disclaimer baru dan deteksi fallback berjalan
+    analysis = payload["data"]
+    assert analysis["disclaimer"] == "Analisis ini bersifat edukatif dan bukan rekomendasi beli atau jual. Risiko investasi sepenuhnya berada di tangan pengguna."
+    assert analysis["isFallback"] is True
+    assert analysis["provider"] == "mock-development"
 
 
 def test_analyze_returns_valid_schema_with_mock_fallback(client):
@@ -30,6 +35,8 @@ def test_analyze_returns_valid_schema_with_mock_fallback(client):
     assert response.status_code == 200
     payload = response.get_json()
     analysis = payload["data"]
+    
+    # Menambahkan metadata baru ke dalam required keys
     required_keys = {
         "newsId",
         "judul",
@@ -46,6 +53,14 @@ def test_analyze_returns_valid_schema_with_mock_fallback(client):
         "halYangPerluDipantau",
         "kesimpulanPemula",
         "disclaimer",
+        "isAiGenerated",
+        "isFallback",
+        "isCached",
+        "provider",
+        "model",
+        "fallbackReason",
+        "generatedAt",
+        "cacheTtlSeconds",
     }
     assert required_keys <= set(analysis.keys())
     assert isinstance(analysis["asetTerdampak"], list)
