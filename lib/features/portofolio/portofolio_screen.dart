@@ -37,90 +37,104 @@ class _PortofolioScreenState extends State<PortofolioScreen> {
     return FutureBuilder<_PortfolioScreenData>(
       key: ValueKey<int>(_refreshNonce),
       future: _loadScreenData(),
-      builder: (BuildContext context, AsyncSnapshot<_PortfolioScreenData> snapshot) {
-        final PortfolioOverview? data = snapshot.data?.overview;
-        final Map<String, MarketQuote> marketQuotes =
-            snapshot.data?.marketQuotes ?? const <String, MarketQuote>{};
+      builder:
+          (
+            BuildContext context,
+            AsyncSnapshot<_PortfolioScreenData> snapshot,
+          ) {
+            final PortfolioOverview? data = snapshot.data?.overview;
+            final Map<String, MarketQuote> marketQuotes =
+                snapshot.data?.marketQuotes ?? const <String, MarketQuote>{};
 
-        return AppPage(
-          title: 'Portofolio',
-          description:
-              'Catat transaksi saham dan dividen manual, lalu pantau posisi yang masih kamu pegang.',
-          children: <Widget>[
-            _PortfolioSummaryCard(data: data),
-            const SizedBox(height: AppSpacing.lg),
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: () => _openStockTransactionForm(),
-                    icon: const Icon(LucideIcons.plus),
-                    label: const Text('Tambah Transaksi Saham'),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _openDividendForm(),
-                    icon: const Icon(LucideIcons.wallet),
-                    label: const Text('Catat Dividen'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            const InfoCard(
-              title: 'Sync saham dan dividen belum diaktifkan',
+            return AppPage(
+              title: 'Portofolio',
               description:
-                  'Tahap ini memprioritaskan penyimpanan lokal yang stabil. Data portofolio sudah memakai UUID, timestamp UTC, syncStatus, dan soft delete agar siap diaktifkan ke spreadsheet pada tahap berikutnya.',
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            Text(
-              'Posisi saham',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            if (snapshot.connectionState == ConnectionState.waiting &&
-                data == null)
-              const Center(child: CircularProgressIndicator())
-            else if (snapshot.hasError)
-              const _SectionMessage(
-                title: 'Portofolio belum bisa dimuat',
-                description:
-                    'Coba buka kembali halaman ini. Jika masalah berlanjut, periksa data lokal aplikasi.',
-              )
-            else if (data == null || data.positions.isEmpty)
-              const _SectionMessage(
-                title: 'Belum ada posisi aktif',
-                description:
-                    'Tambahkan transaksi beli saham agar ringkasan posisi mulai terisi.',
-              )
-            else
-              ...data.positions.map(
-                (PortfolioPositionSummary position) => _PositionCard(
-                  position: position,
-                  marketQuote:
-                      marketQuotes['${position.symbol}.JK'] ??
-                      marketQuotes[position.symbol],
+                  'Catat transaksi saham dan dividen manual, lalu pantau posisi yang masih kamu pegang.',
+              children: <Widget>[
+                _PortfolioSummaryCard(data: data),
+                const SizedBox(height: AppSpacing.lg),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () => _openStockTransactionForm(),
+                        icon: const Icon(LucideIcons.plus),
+                        label: const Text('Tambah Transaksi Saham'),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _openDividendForm(),
+                        icon: const Icon(LucideIcons.wallet),
+                        label: const Text('Catat Dividen'),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            const SizedBox(height: AppSpacing.xl),
-            Text(
-              'Transaksi saham terbaru',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            if (data == null || data.recentTransactions.isEmpty)
-              const _SectionMessage(
-                title: 'Belum ada transaksi saham',
-                description:
-                    'Transaksi beli dan jual yang kamu catat akan muncul di sini.',
-              )
-            else
-              ..._buildTransactionList(data.recentTransactions),
-          ],
-        );
-      },
+                const SizedBox(height: AppSpacing.lg),
+                const InfoCard(
+                  title: 'Sync saham dan dividen belum diaktifkan',
+                  description:
+                      'Tahap ini memprioritaskan penyimpanan lokal yang stabil. Data portofolio sudah memakai UUID, timestamp UTC, syncStatus, dan soft delete agar siap diaktifkan ke spreadsheet pada tahap berikutnya.',
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                Text(
+                  'Posisi saham',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                if (snapshot.connectionState == ConnectionState.waiting &&
+                    data == null)
+                  const Center(child: CircularProgressIndicator())
+                else if (snapshot.hasError)
+                  const _SectionMessage(
+                    title: 'Portofolio belum bisa dimuat',
+                    description:
+                        'Coba buka kembali halaman ini. Jika masalah berlanjut, periksa data lokal aplikasi.',
+                  )
+                else if (data == null || data.positions.isEmpty)
+                  const _SectionMessage(
+                    title: 'Belum ada posisi aktif',
+                    description:
+                        'Tambahkan transaksi beli saham agar ringkasan posisi mulai terisi.',
+                  )
+                else ...<Widget>[
+                  if (marketQuotes.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: AppSpacing.md),
+                      child: _SectionMessage(
+                        title: 'Harga pasar belum terhubung',
+                        description:
+                            'Backend market mungkin belum aktif atau belum dapat dijangkau. Data portofolio lokal tetap aman dan tetap bisa dicatat.',
+                      ),
+                    ),
+                  ...data.positions.map(
+                    (PortfolioPositionSummary position) => _PositionCard(
+                      position: position,
+                      marketQuote:
+                          marketQuotes['${position.symbol}.JK'] ??
+                          marketQuotes[position.symbol],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.xl),
+                Text(
+                  'Transaksi saham terbaru',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                if (data == null || data.recentTransactions.isEmpty)
+                  const _SectionMessage(
+                    title: 'Belum ada transaksi saham',
+                    description:
+                        'Transaksi beli dan jual yang kamu catat akan muncul di sini.',
+                  )
+                else
+                  ..._buildTransactionList(data.recentTransactions),
+              ],
+            );
+          },
     );
   }
 
@@ -493,7 +507,7 @@ class _StockTransactionTile extends StatelessWidget {
       subtitle: Padding(
         padding: const EdgeInsets.only(top: AppSpacing.xs),
         child: Text(
-          '${_formatLot(transaction.lot.toDouble())} lot • ${transaction.shares} lembar • ${DateFormatter.formatShortDate(transaction.transactionDate)}',
+          '${_formatLot(transaction.lot.toDouble())} lot - ${transaction.shares} lembar - ${DateFormatter.formatShortDate(transaction.transactionDate)}',
           style: Theme.of(
             context,
           ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),

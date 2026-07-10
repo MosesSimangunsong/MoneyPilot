@@ -146,7 +146,7 @@ class _ScoreRow extends StatelessWidget {
       children: <Widget>[
         Expanded(
           child: _ScoreCard(
-            label: 'Impact Score',
+            label: 'Skor Dampak',
             value: '${analysis.impactScore}/100',
             tone: AppColors.primaryDark,
           ),
@@ -154,7 +154,7 @@ class _ScoreRow extends StatelessWidget {
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: _ScoreCard(
-            label: 'Confidence Score',
+            label: 'Skor Keyakinan',
             value: '${analysis.confidenceScore}/100',
             tone: analysis.confidenceScore >= 60
                 ? AppColors.success
@@ -261,7 +261,7 @@ class _StringList extends StatelessWidget {
           .map(
             (String value) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: Text('• $value'),
+              child: Text('- $value'),
             ),
           )
           .toList(growable: false),

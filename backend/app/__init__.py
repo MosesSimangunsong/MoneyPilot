@@ -78,7 +78,7 @@ def create_app(config_object: type[Config] = Config) -> Flask:
             jsonify(
                 {
                     "status": "error",
-                    "message": "Internal server error",
+                    "message": "Terjadi kesalahan internal pada server.",
                     "error": {
                         "code": "INTERNAL_SERVER_ERROR",
                         "statusCode": 500,

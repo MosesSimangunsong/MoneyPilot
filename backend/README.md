@@ -36,6 +36,36 @@ python run.py
 
 Server default berjalan di `http://127.0.0.1:5000`.
 
+## Integrasi Dengan Flutter
+
+Flutter membaca base URL backend melalui compile-time environment:
+
+- `BACKEND_BASE_URL` untuk endpoint berita dan analisis berita
+- `MARKET_BACKEND_BASE_URL` untuk endpoint market
+
+Contoh menjalankan Flutter dengan base URL:
+
+```powershell
+flutter run --dart-define=BACKEND_BASE_URL=http://127.0.0.1:5000 --dart-define=MARKET_BACKEND_BASE_URL=http://127.0.0.1:5000
+```
+
+Panduan base URL sesuai perangkat:
+
+- Desktop lokal Windows/macOS/Linux: `http://127.0.0.1:5000`
+- Android emulator: `http://10.0.2.2:5000`
+- HP fisik dalam jaringan yang sama: `http://IP_LAN_KOMPUTER:5000`
+
+Contoh untuk HP fisik:
+
+```powershell
+python run.py
+flutter run --dart-define=BACKEND_BASE_URL=http://192.168.1.10:5000 --dart-define=MARKET_BACKEND_BASE_URL=http://192.168.1.10:5000
+```
+
+Jika ingin diakses dari HP fisik, sesuaikan `BACKEND_HOST` ke alamat yang dapat
+diakses dari jaringan lokal, misalnya `0.0.0.0`, lalu atur `CORS_ORIGINS`
+dengan lebih ketat sesuai kebutuhan development.
+
 ## Menjalankan Test
 
 ```powershell
@@ -57,10 +87,17 @@ Salin `.env.example` bila ingin mengatur environment sendiri.
 - `NEWS_CACHE_TTL_SECONDS`: TTL cache daftar berita, default `900`
 - `ANALYSIS_CACHE_TTL_SECONDS`: TTL cache analisis, default `86400`
 - `AI_PROVIDER`: default `openai`
-- `OPENAI_API_KEY`: API key OpenAI, boleh kosong saat development
+- `OPENAI_API_KEY`: API key OpenAI, boleh kosong saat development, dan hanya boleh disimpan di backend
 - `AI_MODEL`: model OpenAI, default internal backend `gpt-4.1-mini`
 - `ENABLE_DEV_ANALYSIS_FALLBACK`: `1` untuk mengaktifkan fallback mock analysis
 - `CORS_ORIGINS`: origin dev Flutter, default `*`
+
+## Catatan Keamanan Environment
+
+- Jangan menyimpan `OPENAI_API_KEY` di Flutter atau di file Dart mana pun.
+- Secret token spreadsheet tidak boleh di-hardcode di source Flutter.
+- Simpan secret token spreadsheet melalui pengaturan aplikasi atau environment
+  backend yang relevan, bukan sebagai konstanta publik di aplikasi.
 
 ## Endpoint
 

@@ -37,7 +37,7 @@ class DetailBeritaScreen extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         Text(
-          '${article.source} • ${DateFormatter.formatDateTime(article.publishedAt)} • ${article.category}',
+          '${article.source} - ${DateFormatter.formatDateTime(article.publishedAt)} - ${article.category}',
           style: Theme.of(
             context,
           ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),

@@ -79,53 +79,57 @@ class _BeritaScreenState extends State<BeritaScreen> {
         const SizedBox(height: AppSpacing.lg),
         FutureBuilder<List<NewsArticle>>(
           future: _future,
-          builder: (BuildContext context, AsyncSnapshot<List<NewsArticle>> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const _MessageBox(
-                title: 'Sedang mengambil berita terbaru...',
-                description:
-                    'MoneyPilot sedang menyiapkan daftar berita yang relevan untukmu.',
-              );
-            }
+          builder:
+              (
+                BuildContext context,
+                AsyncSnapshot<List<NewsArticle>> snapshot,
+              ) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const _MessageBox(
+                    title: 'Sedang mengambil berita terbaru...',
+                    description:
+                        'MoneyPilot sedang menyiapkan daftar berita yang relevan untukmu.',
+                  );
+                }
 
-            if (snapshot.hasError) {
-              final String message = snapshot.error is AppException
-                  ? (snapshot.error as AppException).message
-                  : 'MoneyPilot belum bisa mengambil berita karena koneksi bermasalah.';
-              return _RetryBox(
-                title: 'Berita belum bisa dimuat',
-                description: message,
-                onRetry: _refresh,
-              );
-            }
+                if (snapshot.hasError) {
+                  final String message = snapshot.error is AppException
+                      ? (snapshot.error as AppException).message
+                      : 'MoneyPilot belum bisa mengambil berita karena koneksi bermasalah.';
+                  return _RetryBox(
+                    title: 'Berita belum bisa dimuat',
+                    description: message,
+                    onRetry: _refresh,
+                  );
+                }
 
-            final List<NewsArticle> articles = snapshot.data ?? <NewsArticle>[];
-            if (articles.isEmpty) {
-              return _RetryBox(
-                title: 'Berita belum tersedia',
-                description:
-                    'Coba perbarui beberapa saat lagi atau pilih kategori lain.',
-                onRetry: _refresh,
-              );
-            }
+                final List<NewsArticle> articles = snapshot.data ?? <NewsArticle>[];
+                if (articles.isEmpty) {
+                  return _RetryBox(
+                    title: 'Berita belum tersedia',
+                    description:
+                        'Coba perbarui beberapa saat lagi atau pilih kategori lain.',
+                    onRetry: _refresh,
+                  );
+                }
 
-            return Column(
-              children: <Widget>[
-                for (
-                  int index = 0;
-                  index < articles.length;
-                  index++
-                ) ...<Widget>[
-                  _NewsTile(
-                    article: articles[index],
-                    onTap: () => _openDetail(articles[index]),
-                  ),
-                  if (index < articles.length - 1)
-                    const Divider(height: 1, color: AppColors.border),
-                ],
-              ],
-            );
-          },
+                return Column(
+                  children: <Widget>[
+                    for (
+                      int index = 0;
+                      index < articles.length;
+                      index++
+                    ) ...<Widget>[
+                      _NewsTile(
+                        article: articles[index],
+                        onTap: () => _openDetail(articles[index]),
+                      ),
+                      if (index < articles.length - 1)
+                        const Divider(height: 1, color: AppColors.border),
+                    ],
+                  ],
+                );
+              },
         ),
       ],
     );
@@ -187,7 +191,7 @@ class _NewsTile extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              '${article.source} • ${DateFormatter.formatDateTime(article.publishedAt)} • ${article.category}',
+              '${article.source} - ${DateFormatter.formatDateTime(article.publishedAt)} - ${article.category}',
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
