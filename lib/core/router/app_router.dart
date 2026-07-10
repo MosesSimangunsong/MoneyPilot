@@ -21,6 +21,7 @@ import '../../features/startup/biometric_lock_screen.dart';
 import '../../features/startup/splash_screen.dart';
 import '../../data/repositories/app_setting_repository.dart';
 import '../../data/repositories/category_repository.dart';
+import '../../data/repositories/local_data_maintenance_repository.dart';
 import '../../data/repositories/news_repository.dart';
 import '../../data/repositories/portfolio_repository.dart';
 import '../../data/repositories/sync_repository.dart';
@@ -37,6 +38,7 @@ class AppRouter {
     this._sessionController, {
     required AppSettingRepository appSettingRepository,
     required CategoryRepository categoryRepository,
+    required LocalDataMaintenanceRepository localDataMaintenanceRepository,
     required PortfolioRepository portfolioRepository,
     required MarketDataApiService marketDataApiService,
     required NewsRepository newsRepository,
@@ -45,6 +47,7 @@ class AppRouter {
     required VoiceTranscriptRepository voiceTranscriptRepository,
   }) : _appSettingRepository = appSettingRepository,
        _categoryRepository = categoryRepository,
+       _localDataMaintenanceRepository = localDataMaintenanceRepository,
        _portfolioRepository = portfolioRepository,
        _marketDataApiService = marketDataApiService,
        _newsRepository = newsRepository,
@@ -55,6 +58,7 @@ class AppRouter {
   final AppSessionController _sessionController;
   final AppSettingRepository _appSettingRepository;
   final CategoryRepository _categoryRepository;
+  final LocalDataMaintenanceRepository _localDataMaintenanceRepository;
   final PortfolioRepository _portfolioRepository;
   final MarketDataApiService _marketDataApiService;
   final NewsRepository _newsRepository;
@@ -93,7 +97,12 @@ class AppRouter {
         builder: (BuildContext context, GoRouterState state) {
           return SettingsScreen(
             appSettingRepository: _appSettingRepository,
+            categoryRepository: _categoryRepository,
+            localDataMaintenanceRepository: _localDataMaintenanceRepository,
+            portfolioRepository: _portfolioRepository,
+            sessionController: _sessionController,
             syncRepository: _syncRepository,
+            transactionRepository: _transactionRepository,
           );
         },
       ),

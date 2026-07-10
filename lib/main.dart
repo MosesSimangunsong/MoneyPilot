@@ -5,6 +5,7 @@ import 'core/session/app_session_controller.dart';
 import 'data/local/local_database_service.dart';
 import 'data/repositories/app_setting_repository.dart';
 import 'data/repositories/category_repository.dart';
+import 'data/repositories/local_data_maintenance_repository.dart';
 import 'data/repositories/news_repository.dart';
 import 'data/repositories/portfolio_repository.dart';
 import 'data/repositories/sync_repository.dart';
@@ -28,6 +29,8 @@ Future<void> main() async {
     databaseService.isar,
   );
   await categoryRepository.seedDefaultCategoriesIfNeeded();
+  final LocalDataMaintenanceRepository localDataMaintenanceRepository =
+      LocalDataMaintenanceRepository(databaseService.isar);
   final TransactionRepository transactionRepository = TransactionRepository(
     databaseService.isar,
   );
@@ -55,6 +58,7 @@ Future<void> main() async {
       databaseService: databaseService,
       appSettingRepository: appSettingRepository,
       categoryRepository: categoryRepository,
+      localDataMaintenanceRepository: localDataMaintenanceRepository,
       portfolioRepository: portfolioRepository,
       marketDataApiService: marketDataApiService,
       newsRepository: newsRepository,
