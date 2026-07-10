@@ -9,6 +9,7 @@ import 'data/repositories/portfolio_repository.dart';
 import 'data/repositories/sync_repository.dart';
 import 'data/repositories/transaction_repository.dart';
 import 'data/repositories/voice_transcript_repository.dart';
+import 'data/services/market_data_api_service.dart';
 import 'data/services/spreadsheet_sync_service.dart';
 
 Future<void> main() async {
@@ -31,6 +32,7 @@ Future<void> main() async {
   final PortfolioRepository portfolioRepository = PortfolioRepository(
     databaseService.isar,
   );
+  final MarketDataApiService marketDataApiService = MarketDataApiService();
   final SyncRepository syncRepository = SyncRepository(
     databaseService.isar,
     appSettingRepository: appSettingRepository,
@@ -51,6 +53,7 @@ Future<void> main() async {
       appSettingRepository: appSettingRepository,
       categoryRepository: categoryRepository,
       portfolioRepository: portfolioRepository,
+      marketDataApiService: marketDataApiService,
       syncRepository: syncRepository,
       transactionRepository: transactionRepository,
       voiceTranscriptRepository: voiceTranscriptRepository,

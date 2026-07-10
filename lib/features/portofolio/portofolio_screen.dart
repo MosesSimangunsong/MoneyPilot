@@ -8,15 +8,22 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/date_formatter.dart';
 import '../../data/models/dividend.dart';
+import '../../data/models/market_quote.dart';
 import '../../data/models/stock_transaction.dart';
 import '../../data/repositories/portfolio_repository.dart';
+import '../../data/services/market_data_api_service.dart';
 import '../../shared/layouts/app_page.dart';
 import '../../shared/widgets/info_card.dart';
 
 class PortofolioScreen extends StatefulWidget {
-  const PortofolioScreen({super.key, required this.portfolioRepository});
+  const PortofolioScreen({
+    super.key,
+    required this.portfolioRepository,
+    required this.marketDataApiService,
+  });
 
   final PortfolioRepository portfolioRepository;
+  final MarketDataApiService marketDataApiService;
 
   @override
   State<PortofolioScreen> createState() => _PortofolioScreenState();
@@ -27,11 +34,13 @@ class _PortofolioScreenState extends State<PortofolioScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<PortfolioOverview>(
+    return FutureBuilder<_PortfolioScreenData>(
       key: ValueKey<int>(_refreshNonce),
-      future: widget.portfolioRepository.getPortfolioOverview(),
-      builder: (BuildContext context, AsyncSnapshot<PortfolioOverview> snapshot) {
-        final PortfolioOverview? data = snapshot.data;
+      future: _loadScreenData(),
+      builder: (BuildContext context, AsyncSnapshot<_PortfolioScreenData> snapshot) {
+        final PortfolioOverview? data = snapshot.data?.overview;
+        final Map<String, MarketQuote> marketQuotes =
+            snapshot.data?.marketQuotes ?? const <String, MarketQuote>{};
 
         return AppPage(
           title: 'Portofolio',
@@ -88,8 +97,12 @@ class _PortofolioScreenState extends State<PortofolioScreen> {
               )
             else
               ...data.positions.map(
-                (PortfolioPositionSummary position) =>
-                    _PositionCard(position: position),
+                (PortfolioPositionSummary position) => _PositionCard(
+                  position: position,
+                  marketQuote:
+                      marketQuotes['${position.symbol}.JK'] ??
+                      marketQuotes[position.symbol],
+                ),
               ),
             const SizedBox(height: AppSpacing.xl),
             Text(
@@ -109,6 +122,20 @@ class _PortofolioScreenState extends State<PortofolioScreen> {
         );
       },
     );
+  }
+
+  Future<_PortfolioScreenData> _loadScreenData() async {
+    final PortfolioOverview overview = await widget.portfolioRepository
+        .getPortfolioOverview();
+    final Map<String, MarketQuote> marketQuotes = await widget
+        .marketDataApiService
+        .getQuotes(
+          overview.positions
+              .map((PortfolioPositionSummary item) => '${item.symbol}.JK')
+              .toList(growable: false),
+        );
+
+    return _PortfolioScreenData(overview: overview, marketQuotes: marketQuotes);
   }
 
   List<Widget> _buildTransactionList(List<StockTransaction> transactions) {
@@ -288,12 +315,27 @@ class _SummaryMetric extends StatelessWidget {
 }
 
 class _PositionCard extends StatelessWidget {
-  const _PositionCard({required this.position});
+  const _PositionCard({required this.position, required this.marketQuote});
 
   final PortfolioPositionSummary position;
+  final MarketQuote? marketQuote;
 
   @override
   Widget build(BuildContext context) {
+    final double? marketValue = marketQuote == null
+        ? null
+        : marketQuote!.price * position.totalShares;
+    final double? gainLoss = marketValue == null
+        ? null
+        : marketValue - position.totalCost;
+    final double? gainLossPercent =
+        marketValue == null || position.totalCost == 0
+        ? null
+        : (gainLoss! / position.totalCost) * 100;
+    final Color gainLossColor = (gainLoss ?? 0) >= 0
+        ? AppColors.success
+        : AppColors.warning;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Container(
@@ -351,7 +393,33 @@ class _PositionCard extends StatelessWidget {
                     position.averageBuyPrice,
                   ),
                 ),
+                _PositionMeta(
+                  label: 'Harga Pasar',
+                  value: marketQuote == null
+                      ? 'Harga pasar belum tersedia'
+                      : CurrencyFormatter.formatRupiah(marketQuote!.price),
+                ),
+                _PositionMeta(
+                  label: 'Nilai Pasar',
+                  value: marketValue == null
+                      ? 'Harga pasar belum tersedia'
+                      : CurrencyFormatter.formatRupiah(marketValue),
+                ),
+                _PositionMeta(
+                  label: 'Estimasi Untung/Rugi',
+                  value: gainLoss == null
+                      ? 'Harga pasar belum tersedia'
+                      : '${CurrencyFormatter.formatRupiah(gainLoss)} (${gainLossPercent!.toStringAsFixed(2)}%)',
+                  valueColor: gainLoss == null ? null : gainLossColor,
+                ),
               ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Data pasar bersifat estimasi dan bukan rekomendasi investasi.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -361,10 +429,15 @@ class _PositionCard extends StatelessWidget {
 }
 
 class _PositionMeta extends StatelessWidget {
-  const _PositionMeta({required this.label, required this.value});
+  const _PositionMeta({
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
 
   final String label;
   final String value;
+  final Color? valueColor;
 
   @override
   Widget build(BuildContext context) {
@@ -380,7 +453,12 @@ class _PositionMeta extends StatelessWidget {
             ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.xs),
-          Text(value, style: Theme.of(context).textTheme.titleSmall),
+          Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(color: valueColor),
+          ),
         ],
       ),
     );
@@ -509,4 +587,14 @@ String _formatLot(double lot) {
     return lot.toStringAsFixed(0);
   }
   return lot.toStringAsFixed(2);
+}
+
+class _PortfolioScreenData {
+  const _PortfolioScreenData({
+    required this.overview,
+    required this.marketQuotes,
+  });
+
+  final PortfolioOverview overview;
+  final Map<String, MarketQuote> marketQuotes;
 }

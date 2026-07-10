@@ -22,6 +22,7 @@ import '../../data/repositories/portfolio_repository.dart';
 import '../../data/repositories/sync_repository.dart';
 import '../../data/repositories/transaction_repository.dart';
 import '../../data/repositories/voice_transcript_repository.dart';
+import '../../data/services/market_data_api_service.dart';
 import '../../data/services/speech_service.dart';
 import '../../data/services/transaction_parser_service.dart';
 import '../constants/route_constants.dart';
@@ -33,12 +34,14 @@ class AppRouter {
     required AppSettingRepository appSettingRepository,
     required CategoryRepository categoryRepository,
     required PortfolioRepository portfolioRepository,
+    required MarketDataApiService marketDataApiService,
     required SyncRepository syncRepository,
     required TransactionRepository transactionRepository,
     required VoiceTranscriptRepository voiceTranscriptRepository,
   }) : _appSettingRepository = appSettingRepository,
        _categoryRepository = categoryRepository,
        _portfolioRepository = portfolioRepository,
+       _marketDataApiService = marketDataApiService,
        _syncRepository = syncRepository,
        _transactionRepository = transactionRepository,
        _voiceTranscriptRepository = voiceTranscriptRepository;
@@ -47,6 +50,7 @@ class AppRouter {
   final AppSettingRepository _appSettingRepository;
   final CategoryRepository _categoryRepository;
   final PortfolioRepository _portfolioRepository;
+  final MarketDataApiService _marketDataApiService;
   final SyncRepository _syncRepository;
   final TransactionRepository _transactionRepository;
   final VoiceTranscriptRepository _voiceTranscriptRepository;
@@ -196,6 +200,7 @@ class AppRouter {
                 builder: (BuildContext context, GoRouterState state) {
                   return PortofolioScreen(
                     portfolioRepository: _portfolioRepository,
+                    marketDataApiService: _marketDataApiService,
                   );
                 },
                 routes: <RouteBase>[
