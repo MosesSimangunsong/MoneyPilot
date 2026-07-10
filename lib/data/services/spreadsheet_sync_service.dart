@@ -24,6 +24,7 @@ class SpreadsheetSyncService {
     required String entity,
     required List<Map<String, dynamic>> items,
   }) {
+    _validateToken(token);
     return _send(
       webAppUrl: webAppUrl,
       operation: 'push',
@@ -41,8 +42,9 @@ class SpreadsheetSyncService {
     required String webAppUrl,
     required String token,
     required String entity,
-    DateTime? since,
+    String? since,
   }) {
+    _validateToken(token);
     return _send(
       webAppUrl: webAppUrl,
       operation: 'pull',
@@ -51,7 +53,7 @@ class SpreadsheetSyncService {
         'token': token,
         'operation': 'pull',
         'entity': entity,
-        if (since != null) 'since': since.toUtc().toIso8601String(),
+        if ((since ?? '').trim().isNotEmpty) 'since': since!.trim(),
       },
     );
   }
@@ -344,6 +346,12 @@ class SpreadsheetSyncService {
 
   Uri _parseUri(String value) {
     final String normalized = value.replaceAll(RegExp(r'[\r\n\t]'), '').trim();
+    if (normalized.isEmpty) {
+      throw const SpreadsheetSyncException(
+        message: 'URL Google Apps Script wajib diisi.',
+        code: 'MISSING_URL',
+      );
+    }
     final Uri? uri = Uri.tryParse(normalized);
     if (uri == null ||
         !uri.hasScheme ||
@@ -356,6 +364,15 @@ class SpreadsheetSyncService {
       );
     }
     return uri;
+  }
+
+  void _validateToken(String value) {
+    if (value.replaceAll(RegExp(r'[\r\n\t]'), '').trim().isEmpty) {
+      throw const SpreadsheetSyncException(
+        message: 'Secret token wajib diisi.',
+        code: 'MISSING_TOKEN',
+      );
+    }
   }
 
   bool _isRedirectStatus(int statusCode) {

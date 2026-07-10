@@ -44,15 +44,15 @@ class SyncStatusIndicator extends StatelessWidget {
         );
       case 'failed':
         return const _SyncAppearance(
-          label: 'Gagal',
+          label: 'Gagal sync',
           backgroundColor: Color(0xFFFDECEC),
           borderColor: Color(0xFFF7C7C7),
           textColor: AppColors.danger,
         );
       case 'pending':
         final String label = pendingCount > 0
-            ? 'Menunggu $pendingCount'
-            : 'Menunggu';
+            ? 'Menunggu sync ($pendingCount)'
+            : 'Menunggu sync';
         return _SyncAppearance(
           label: label,
           backgroundColor: const Color(0xFFFFF7E7),
@@ -61,7 +61,7 @@ class SyncStatusIndicator extends StatelessWidget {
         );
       default:
         return const _SyncAppearance(
-          label: 'Belum sync',
+          label: 'Belum disinkronkan',
           backgroundColor: Color(0xFFF4F5F7),
           borderColor: AppColors.border,
           textColor: AppColors.textSecondary,

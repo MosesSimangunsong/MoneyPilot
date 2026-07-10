@@ -109,4 +109,13 @@ class SheetConstants {
         dividends: dividendHeaders,
         watchlist: watchlistHeaders,
       };
+
+  static const List<String> activeSyncEntities = <String>[
+    categories,
+    transactions,
+  ];
+
+  static List<String> headersForEntity(String entity) {
+    return entityToHeaders[entity] ?? const <String>[];
+  }
 }

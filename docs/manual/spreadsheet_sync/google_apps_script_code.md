@@ -2,6 +2,10 @@
 
 Salin seluruh kode berikut ke editor Google Apps Script, lalu deploy sebagai Web App. Kode ini sudah siap untuk health check `GET` dan sync manual `POST` dari MoneyPilot.
 
+Catatan implementasi Flutter Tahap 5:
+- Flutter aktif menjalankan sync dua arah untuk `Categories` dan `Transactions`.
+- `Stock_Transactions`, `Dividends`, dan `Watchlist` tetap didukung oleh Apps Script agar aktivasi tahap berikutnya tidak perlu mengubah endpoint lagi.
+
 ```javascript
 const SHEET_NAMES = {
   Categories: 'Categories',

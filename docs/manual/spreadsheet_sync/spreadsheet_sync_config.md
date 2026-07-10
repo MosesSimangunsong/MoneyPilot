@@ -25,6 +25,7 @@ https://script.google.com/macros/s/AKFY.../exec
 - Token wajib sama dengan nilai Script Property `MONEYPILOT_SYNC_TOKEN`.
 - Token tidak boleh disimpan di repo.
 - Token tidak pernah ditampilkan di log debug Flutter.
+- Flutter akan menolak sync jika token kosong sebelum request dikirim.
 
 ## Entity yang Aktif Disync Flutter Saat Ini
 
@@ -64,3 +65,7 @@ MoneyPilot sekarang menangani redirect Google Apps Script seperti ini:
 - Google Apps Script wajib mengembalikan JSON murni.
 - Flutter akan menolak response non-JSON dan menampilkan `statusCode`, `content-type`, dan `bodyPreview` maksimal 300 karakter.
 - Jika sync gagal, pesan error akan menyebut tahap yang gagal, misalnya `Gagal pada tahap push Categories`.
+- Status sinkronisasi lokal yang dipakai UI:
+  - `synced`
+  - `pending`
+  - `failed`

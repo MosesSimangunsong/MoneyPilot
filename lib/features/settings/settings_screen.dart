@@ -35,6 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String? _status;
   String? _statusMessage;
   DateTime? _lastSyncAt;
+  int _pendingCount = 0;
 
   @override
   void initState() {
@@ -52,7 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: const Text('Pengaturan')),
       body: SafeArea(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -140,6 +141,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _MetadataCard(
                       lastSyncAt: _lastSyncAt,
                       statusMessage: _statusMessage,
+                      pendingCount: _pendingCount,
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     FilledButton(
@@ -177,6 +179,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadSettings() async {
     final AppSetting settings = await widget.appSettingRepository
         .getOrCreateSettings();
+    final int pendingCount = await widget.syncRepository.countPendingSyncItems();
     if (!mounted) {
       return;
     }
@@ -187,6 +190,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _status = settings.lastSpreadsheetSyncStatus;
       _statusMessage = settings.lastSpreadsheetSyncMessage;
       _lastSyncAt = settings.lastSpreadsheetSyncAt;
+      _pendingCount = pendingCount;
       _isLoading = false;
     });
   }
@@ -262,10 +266,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _status = summary.status;
         _statusMessage = summary.message;
         _lastSyncAt = summary.completedAt;
+        _pendingCount = summary.pendingCount;
       });
 
       final String summaryText =
-          'Push kategori ${summary.pushedCategories}, transaksi ${summary.pushedTransactions}, saham ${summary.pushedStockTransactions}, dividen ${summary.pushedDividends}. Pull kategori ${summary.pulledCategories}, transaksi ${summary.pulledTransactions}, saham ${summary.pulledStockTransactions}, dividen ${summary.pulledDividends}.';
+          'Push kategori ${summary.pushedCategories}, transaksi ${summary.pushedTransactions}. Pull kategori ${summary.pulledCategories}, transaksi ${summary.pulledTransactions}.';
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -312,10 +317,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 }
 
 class _MetadataCard extends StatelessWidget {
-  const _MetadataCard({required this.lastSyncAt, required this.statusMessage});
+  const _MetadataCard({
+    required this.lastSyncAt,
+    required this.statusMessage,
+    required this.pendingCount,
+  });
 
   final DateTime? lastSyncAt;
   final String? statusMessage;
+  final int pendingCount;
 
   @override
   Widget build(BuildContext context) {
@@ -329,7 +339,10 @@ class _MetadataCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('Metadata sync', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'Status sinkronisasi',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             lastSyncAt == null
@@ -338,6 +351,15 @@ class _MetadataCard extends StatelessWidget {
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            pendingCount > 0
+                ? '$pendingCount perubahan masih menunggu sync.'
+                : 'Tidak ada perubahan lokal yang menunggu sync.',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
           ),
           if (statusMessage != null &&
               statusMessage!.trim().isNotEmpty) ...<Widget>[

@@ -1,4 +1,4 @@
-# Manual Testing Tahap 5 - Spreadsheet Sync Dasar
+# Manual Testing Tahap 5 - Spreadsheet Sync Dua Arah
 
 ## Persiapan
 
@@ -8,7 +8,7 @@
 - [ ] Apps Script final sudah dipaste.
 - [ ] Script Property `MONEYPILOT_SYNC_TOKEN` sudah ada.
 - [ ] Web App sudah di-deploy ulang.
-- [ ] URL `/exec` dan token sudah dimasukkan ke halaman `Settings`.
+- [ ] URL `/exec` dan token sudah dimasukkan ke halaman `Pengaturan`.
 
 ## Simpan Konfigurasi
 
@@ -17,6 +17,7 @@
 - [ ] Klik `Simpan konfigurasi`.
 - [ ] Tutup dan buka ulang Settings.
 - [ ] Pastikan URL dan token yang tersimpan tetap benar.
+- [ ] Pastikan status pending sync tampil jika ada perubahan lokal.
 
 ## Push Categories
 
@@ -39,6 +40,14 @@
 - [ ] Ubah `updatedAt` menjadi lebih baru dari lokal.
 - [ ] Klik `Jalankan sync manual`.
 - [ ] Pastikan data lokal ikut berubah.
+
+## Soft Delete
+
+- [ ] Hapus transaksi di aplikasi.
+- [ ] Klik `Jalankan sync manual`.
+- [ ] Pastikan row spreadsheet tetap ada.
+- [ ] Pastikan `isDeleted = true`.
+- [ ] Pastikan `deletedAt` terisi.
 
 ## Error Diagnostics
 

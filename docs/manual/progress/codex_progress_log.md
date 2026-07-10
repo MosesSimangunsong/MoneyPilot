@@ -13,8 +13,8 @@ Verifikasi:
 - flutter analyze: bersih
 - flutter test: lulus
 
-## Tahap 3 — Keuangan Manual
-Status: Selesai
+## Tahap 3 - Keuangan Manual
+Status: selesai
 
 Hasil:
 - Daftar transaksi aktif
@@ -31,43 +31,23 @@ Verifikasi:
 - flutter analyze: No issues found
 - flutter test: All tests passed
 
-## Tahap 4 — Voice Input dan Parser Bahasa Indonesia
+## Tahap 4 - Voice Input dan Parser Bahasa Indonesia
 Status: selesai
 
+## Tahap 5 - Google Spreadsheet Sync Dua Arah
+Status: selesai
 
-## Tahap 5 — Google Spreadsheet Sync Dua Arah
-Status: Persiapan manual
+Hasil:
+- Google Apps Script final untuk health check `GET` dan sync `POST`
+- Validasi token, upsert by UUID, filter `updatedAt > since`, dan JSON response konsisten
+- `SpreadsheetSyncService` Flutter dengan penanganan URL salah, token kosong, timeout, invalid JSON, redirect, dan network error
+- `SyncRepository` dua arah aktif untuk `Categories` dan `Transactions`
+- Conflict resolution `latest updatedAt wins`
+- Soft delete lokal jika remote `isDeleted = true` dan `updatedAt` lebih baru
+- Settings minimal untuk URL Web App, secret token, sync manual, status sync, dan pending sync
+- Unit test mapper, service, dan repository sync
+- Dokumentasi setup dan testing Tahap 5 diperbarui
 
-Persiapan manual:
-- [x] Spreadsheet dibuat
-- [x] Sheet dan header dibuat
-- [x] Secret token dibuat
-- [x] Apps Script Web App aktif
-- [x] Sync rules dibuat
-- [x] Payload examples dibuat
-- [x] Testing checklist dibuat
-- [ ] Placeholder file sync dibuat
-- [ ] Implementasi Flutter sync
-- [ ] Implementasi Google Apps Script sync
-- [ ] Verifikasi analyze/test
-
-## Tahap 6 — Google Spreadsheet Sync Dua Arah
-
-Status: Persiapan manual sedang/selesai, menunggu Tahap 5 Voice Input valid.
-
-Persiapan manual:
-- [ ] Spreadsheet dibuat
-- [ ] Sheet dan header dibuat
-- [ ] Secret token dibuat
-- [ ] Apps Script Web App aktif
-- [ ] Sync rules dibuat
-- [ ] Payload examples dibuat
-- [ ] Testing checklist dibuat
-- [ ] Placeholder file sync dibuat
-
-Implementasi:
-- [ ] Implementasi Flutter sync
-- [ ] Implementasi Google Apps Script sync
-- [ ] Verifikasi flutter analyze
-- [ ] Verifikasi flutter test
-- [ ] Manual test sync spreadsheet
+Verifikasi:
+- flutter analyze: No issues found
+- flutter test: All tests passed

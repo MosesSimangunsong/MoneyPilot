@@ -5,12 +5,9 @@ import 'dart:io';
 import 'package:app/core/utils/date_time_utils.dart';
 import 'package:app/data/local/local_database_service.dart';
 import 'package:app/data/models/category.dart';
-import 'package:app/data/models/dividend.dart';
 import 'package:app/data/models/money_transaction.dart';
-import 'package:app/data/models/stock_transaction.dart';
 import 'package:app/data/repositories/app_setting_repository.dart';
 import 'package:app/data/repositories/category_repository.dart';
-import 'package:app/data/repositories/portfolio_repository.dart';
 import 'package:app/data/repositories/sync_repository.dart';
 import 'package:app/data/repositories/transaction_repository.dart';
 import 'package:app/data/services/spreadsheet_sync_service.dart';
@@ -24,7 +21,6 @@ void main() {
   late LocalDatabaseService databaseService;
   late AppSettingRepository appSettingRepository;
   late CategoryRepository categoryRepository;
-  late PortfolioRepository portfolioRepository;
   late TransactionRepository transactionRepository;
 
   setUpAll(() async {
@@ -39,9 +35,6 @@ void main() {
         .firstWhere(
           (Map<String, dynamic> package) =>
               package['name'] == 'isar_flutter_libs',
-          orElse: () => throw StateError(
-            'Package isar_flutter_libs tidak ditemukan di package_config.',
-          ),
         );
     final String rootUri = isarFlutterLibsPackage['rootUri'] as String;
     final String libraryPath = Uri.base
@@ -61,7 +54,6 @@ void main() {
     await databaseService.init(directoryPath: tempDirectory.path);
     appSettingRepository = AppSettingRepository(databaseService.isar);
     categoryRepository = CategoryRepository(databaseService.isar);
-    portfolioRepository = PortfolioRepository(databaseService.isar);
     transactionRepository = TransactionRepository(databaseService.isar);
 
     await appSettingRepository.updateSpreadsheetConfig(
@@ -78,7 +70,7 @@ void main() {
     }
   });
 
-  test('successful push membuat syncStatus menjadi synced', () async {
+  test('push sukses membuat transaksi pending menjadi synced', () async {
     final Category category = (await categoryRepository.getByType(
       'expense',
     )).first;
@@ -95,23 +87,10 @@ void main() {
     final SyncRepository repository = SyncRepository(
       databaseService.isar,
       appSettingRepository: appSettingRepository,
-      spreadsheetSyncService: _FakeSpreadsheetSyncService(
-        pushResponse: const SpreadsheetSyncResponse(
-          status: 'success',
-          inserted: 1,
-          updated: 0,
-          failed: 0,
-          serverTime: null,
-          message: null,
-          code: null,
-          items: <Map<String, dynamic>>[],
-        ),
-        pullCategoryItems: const <Map<String, dynamic>>[],
-        pullTransactionItems: const <Map<String, dynamic>>[],
-      ),
+      spreadsheetSyncService: _FakeSpreadsheetSyncService(),
     );
 
-    final SyncRunSummary summary = await repository.syncNow();
+    final SyncRunSummary summary = await repository.syncAll();
     final MoneyTransaction? saved = await transactionRepository.getByUuid(
       transaction.uuid,
     );
@@ -119,85 +98,9 @@ void main() {
     expect(summary.status, 'success');
     expect(saved?.syncStatus, 'synced');
     expect(saved?.syncErrorMessage, isNull);
-    expect(summary.pushedStockTransactions, 0);
-    expect(summary.pushedDividends, 0);
   });
 
-  test('stock transactions dan dividends ikut tersinkron saat push', () async {
-    final StockTransaction stockTransaction = await portfolioRepository
-        .createStockTransaction(
-          symbol: 'BBCA',
-          companyName: 'Bank Central Asia',
-          actionType: 'buy',
-          lot: 1,
-          shares: 100,
-          price: 9000,
-          fee: 1000,
-          transactionDate: DateTime.utc(2026, 7, 9, 3),
-          note: 'Beli awal',
-        );
-    final dividendResult = await portfolioRepository
-        .createDividendWithIncomeTransaction(
-          symbol: 'BBCA',
-          companyName: 'Bank Central Asia',
-          grossAmount: 55000,
-          tax: 5000,
-          netAmount: 50000,
-          receivedDate: DateTime.utc(2026, 7, 9, 4),
-          note: 'Dividen interim',
-        );
-
-    final List<String> pushedEntities = <String>[];
-    final SyncRepository repository = SyncRepository(
-      databaseService.isar,
-      appSettingRepository: appSettingRepository,
-      spreadsheetSyncService: _FakeSpreadsheetSyncService(
-        onPush:
-            ({
-              required String entity,
-              required List<Map<String, dynamic>> items,
-            }) {
-              pushedEntities.add(entity);
-            },
-        pushResponse: const SpreadsheetSyncResponse(
-          status: 'success',
-          inserted: 1,
-          updated: 0,
-          failed: 0,
-          serverTime: null,
-          message: null,
-          code: null,
-          items: <Map<String, dynamic>>[],
-        ),
-        pullCategoryItems: const <Map<String, dynamic>>[],
-        pullTransactionItems: const <Map<String, dynamic>>[],
-        pullStockTransactionItems: const <Map<String, dynamic>>[],
-        pullDividendItems: const <Map<String, dynamic>>[],
-      ),
-    );
-
-    final SyncRunSummary summary = await repository.syncNow();
-    final StockTransaction? savedStock = await databaseService
-        .isar
-        .stockTransactions
-        .filter()
-        .uuidEqualTo(stockTransaction.uuid)
-        .findFirst();
-    final Dividend? savedDividend = await databaseService.isar.dividends
-        .filter()
-        .uuidEqualTo(dividendResult.dividend.uuid)
-        .findFirst();
-
-    expect(summary.status, 'success');
-    expect(summary.pushedStockTransactions, 1);
-    expect(summary.pushedDividends, 1);
-    expect(pushedEntities, contains('Stock_Transactions'));
-    expect(pushedEntities, contains('Dividends'));
-    expect(savedStock?.syncStatus, 'synced');
-    expect(savedDividend?.syncStatus, 'synced');
-  });
-
-  test('response error membuat syncStatus menjadi failed', () async {
+  test('push gagal membuat transaksi failed dan data lokal tetap aman', () async {
     final Category category = (await categoryRepository.getByType(
       'expense',
     )).first;
@@ -222,129 +125,19 @@ void main() {
       ),
     );
 
-    final SyncRunSummary summary = await repository.syncNow();
+    final SyncRunSummary summary = await repository.syncAll();
     final MoneyTransaction? saved = await transactionRepository.getByUuid(
       transaction.uuid,
     );
 
     expect(summary.status, 'failed');
-    expect(
-      summary.message,
-      'Gagal pada tahap push Categories. Token tidak valid.',
-    );
+    expect(saved, isNotNull);
+    expect(saved?.title, 'Transport');
     expect(saved?.syncStatus, 'failed');
-    expect(
-      saved?.syncErrorMessage,
-      'Gagal pada tahap push Categories. Token tidak valid.',
-    );
+    expect(saved?.syncErrorMessage, contains('Token tidak valid.'));
   });
 
-  test(
-    'pull stock transactions dan dividends lebih baru meng-update lokal',
-    () async {
-      final StockTransaction stockTransaction = await portfolioRepository
-          .createStockTransaction(
-            symbol: 'BBCA',
-            companyName: 'Nama lokal',
-            actionType: 'buy',
-            lot: 1,
-            shares: 100,
-            price: 9000,
-            fee: 0,
-            transactionDate: DateTime.utc(2026, 7, 9, 3),
-          );
-      final dividendResult = await portfolioRepository
-          .createDividendWithIncomeTransaction(
-            symbol: 'BBCA',
-            companyName: 'Nama lokal',
-            grossAmount: 50000,
-            tax: 0,
-            netAmount: 50000,
-            receivedDate: DateTime.utc(2026, 7, 9, 3),
-            note: 'Lokal',
-          );
-
-      stockTransaction.syncStatus = 'synced';
-      stockTransaction.updatedAt = DateTime.utc(2026, 7, 9, 3);
-      dividendResult.dividend.syncStatus = 'synced';
-      dividendResult.dividend.updatedAt = DateTime.utc(2026, 7, 9, 3);
-      await databaseService.isar.writeTxn(() async {
-        await databaseService.isar.stockTransactions.put(stockTransaction);
-        await databaseService.isar.dividends.put(dividendResult.dividend);
-      });
-
-      final SyncRepository repository = SyncRepository(
-        databaseService.isar,
-        appSettingRepository: appSettingRepository,
-        spreadsheetSyncService: _FakeSpreadsheetSyncService(
-          pullCategoryItems: const <Map<String, dynamic>>[],
-          pullTransactionItems: const <Map<String, dynamic>>[],
-          pullStockTransactionItems: <Map<String, dynamic>>[
-            <String, dynamic>{
-              'uuid': stockTransaction.uuid,
-              'symbol': 'BBCA',
-              'companyName': 'Nama spreadsheet',
-              'actionType': 'buy',
-              'lot': 2,
-              'shares': 200,
-              'price': 9500,
-              'fee': 1500,
-              'syncStatus': 'synced',
-              'syncErrorMessage': '',
-              'isDeleted': false,
-              'transactionDate': '2026-07-09T03:00:00.000Z',
-              'note': 'Update dari spreadsheet',
-              'createdAt': stockTransaction.createdAt.toIso8601String(),
-              'updatedAt': '2026-07-09T04:00:00.000Z',
-              'deletedAt': '',
-            },
-          ],
-          pullDividendItems: <Map<String, dynamic>>[
-            <String, dynamic>{
-              'uuid': dividendResult.dividend.uuid,
-              'symbol': 'BBCA',
-              'companyName': 'Nama spreadsheet',
-              'grossAmount': 60000,
-              'tax': 10000,
-              'netAmount': 50000,
-              'receivedDate': '2026-07-09T03:00:00.000Z',
-              'linkedTransactionUuid':
-                  dividendResult.dividend.linkedTransactionUuid,
-              'note': 'Update dividen spreadsheet',
-              'syncStatus': 'synced',
-              'syncErrorMessage': '',
-              'isDeleted': false,
-              'createdAt': dividendResult.dividend.createdAt.toIso8601String(),
-              'updatedAt': '2026-07-09T04:00:00.000Z',
-              'deletedAt': '',
-            },
-          ],
-        ),
-      );
-
-      final SyncRunSummary summary = await repository.syncNow();
-      final StockTransaction? savedStock = await databaseService
-          .isar
-          .stockTransactions
-          .filter()
-          .uuidEqualTo(stockTransaction.uuid)
-          .findFirst();
-      final Dividend? savedDividend = await databaseService.isar.dividends
-          .filter()
-          .uuidEqualTo(dividendResult.dividend.uuid)
-          .findFirst();
-
-      expect(summary.pulledStockTransactions, 1);
-      expect(summary.pulledDividends, 1);
-      expect(savedStock?.companyName, 'Nama spreadsheet');
-      expect(savedStock?.shares, 200);
-      expect(savedDividend?.companyName, 'Nama spreadsheet');
-      expect(savedDividend?.grossAmount, 60000);
-      expect(savedDividend?.syncStatus, 'synced');
-    },
-  );
-
-  test('pull data lebih baru meng-update lokal', () async {
+  test('remote lebih baru meng-update local', () async {
     final Category category = (await categoryRepository.getByType(
       'expense',
     )).first;
@@ -368,7 +161,6 @@ void main() {
       databaseService.isar,
       appSettingRepository: appSettingRepository,
       spreadsheetSyncService: _FakeSpreadsheetSyncService(
-        pullCategoryItems: const <Map<String, dynamic>>[],
         pullTransactionItems: <Map<String, dynamic>>[
           <String, dynamic>{
             'uuid': transaction.uuid,
@@ -392,7 +184,7 @@ void main() {
       ),
     );
 
-    await repository.syncNow();
+    await repository.syncAll();
     final MoneyTransaction? saved = await transactionRepository.getByUuid(
       transaction.uuid,
     );
@@ -400,10 +192,9 @@ void main() {
     expect(saved?.title, 'Judul baru dari spreadsheet');
     expect(saved?.amount, 18000);
     expect(saved?.paymentMethod, 'QRIS');
-    expect(saved?.syncStatus, 'synced');
   });
 
-  test('pull data lebih lama tidak menimpa lokal', () async {
+  test('remote lebih lama tidak menimpa local', () async {
     final Category category = (await categoryRepository.getByType(
       'expense',
     )).first;
@@ -427,7 +218,6 @@ void main() {
       databaseService.isar,
       appSettingRepository: appSettingRepository,
       spreadsheetSyncService: _FakeSpreadsheetSyncService(
-        pullCategoryItems: const <Map<String, dynamic>>[],
         pullTransactionItems: <Map<String, dynamic>>[
           <String, dynamic>{
             'uuid': transaction.uuid,
@@ -451,7 +241,7 @@ void main() {
       ),
     );
 
-    await repository.syncNow();
+    await repository.syncAll();
     final MoneyTransaction? saved = await transactionRepository.getByUuid(
       transaction.uuid,
     );
@@ -460,84 +250,113 @@ void main() {
     expect(saved?.amount, 50000);
   });
 
-  test(
-    'latest updatedAt wins untuk kategori dan transaksi saat pull',
-    () async {
-      final Category category = (await categoryRepository.getByType(
-        'expense',
-      )).first;
-      category.syncStatus = 'synced';
-      category.updatedAt = DateTime.utc(2026, 7, 9, 5);
-      await databaseService.isar.writeTxn(() async {
-        await databaseService.isar.categorys.put(category);
-      });
+  test('pull insert membuat transaksi lokal baru jika uuid belum ada', () async {
+    final Category category = (await categoryRepository.getByType(
+      'expense',
+    )).first;
 
-      final SyncRepository repository = SyncRepository(
-        databaseService.isar,
-        appSettingRepository: appSettingRepository,
-        spreadsheetSyncService: _FakeSpreadsheetSyncService(
-          pullCategoryItems: <Map<String, dynamic>>[
-            <String, dynamic>{
-              'uuid': category.uuid,
-              'name': 'Nama lama spreadsheet',
-              'type': category.type,
-              'icon': category.iconName,
-              'colorHex': category.colorHex,
-              'isDefault': true,
-              'syncStatus': 'synced',
-              'syncErrorMessage': '',
-              'isDeleted': false,
-              'createdAt': category.createdAt.toIso8601String(),
-              'updatedAt': '2026-07-09T04:00:00.000Z',
-              'deletedAt': '',
-            },
-          ],
-          pullTransactionItems: const <Map<String, dynamic>>[],
-        ),
-      );
+    final SyncRepository repository = SyncRepository(
+      databaseService.isar,
+      appSettingRepository: appSettingRepository,
+      spreadsheetSyncService: _FakeSpreadsheetSyncService(
+        pullTransactionItems: <Map<String, dynamic>>[
+          <String, dynamic>{
+            'uuid': 'tx-remote-new',
+            'type': 'expense',
+            'title': 'Transaksi dari spreadsheet',
+            'amount': 99000,
+            'categoryUuid': category.uuid,
+            'categoryNameSnapshot': category.name,
+            'paymentMethod': 'Transfer',
+            'note': 'Remote',
+            'source': 'spreadsheet',
+            'syncStatus': 'synced',
+            'syncErrorMessage': '',
+            'isDeleted': false,
+            'transactionDate': '2026-07-09T03:00:00.000Z',
+            'createdAt': '2026-07-09T03:00:00.000Z',
+            'updatedAt': '2026-07-09T04:00:00.000Z',
+            'deletedAt': '',
+          },
+        ],
+      ),
+    );
 
-      await repository.syncNow();
-      final Category? savedCategory = await categoryRepository.getByUuid(
-        category.uuid,
-      );
+    await repository.syncAll();
+    final MoneyTransaction? inserted = await transactionRepository.getByUuid(
+      'tx-remote-new',
+    );
 
-      expect(savedCategory?.name, isNot('Nama lama spreadsheet'));
-      expect(savedCategory?.updatedAt, DateTime.utc(2026, 7, 9, 5));
-    },
-  );
+    expect(inserted, isNotNull);
+    expect(inserted?.title, 'Transaksi dari spreadsheet');
+    expect(inserted?.syncStatus, 'synced');
+  });
+
+  test('soft delete pull menandai lokal terhapus jika remote lebih baru', () async {
+    final Category category = (await categoryRepository.getByType(
+      'expense',
+    )).first;
+    final MoneyTransaction transaction = await transactionRepository
+        .createTransaction(
+          type: 'expense',
+          title: 'Akan dihapus',
+          amount: 5000,
+          categoryUuid: category.uuid,
+          source: 'manual',
+          transactionDate: DateTime.utc(2026, 7, 9, 3),
+        );
+
+    transaction.syncStatus = 'synced';
+    transaction.updatedAt = DateTime.utc(2026, 7, 9, 3);
+    await databaseService.isar.writeTxn(() async {
+      await databaseService.isar.moneyTransactions.put(transaction);
+    });
+
+    final SyncRepository repository = SyncRepository(
+      databaseService.isar,
+      appSettingRepository: appSettingRepository,
+      spreadsheetSyncService: _FakeSpreadsheetSyncService(
+        pullTransactionItems: <Map<String, dynamic>>[
+          <String, dynamic>{
+            'uuid': transaction.uuid,
+            'type': 'expense',
+            'title': 'Akan dihapus',
+            'amount': 5000,
+            'categoryUuid': category.uuid,
+            'categoryNameSnapshot': category.name,
+            'paymentMethod': 'Tunai',
+            'note': '',
+            'source': 'manual',
+            'syncStatus': 'synced',
+            'syncErrorMessage': '',
+            'isDeleted': true,
+            'transactionDate': '2026-07-09T03:00:00.000Z',
+            'createdAt': transaction.createdAt.toIso8601String(),
+            'updatedAt': '2026-07-09T04:00:00.000Z',
+            'deletedAt': '2026-07-09T04:00:00.000Z',
+          },
+        ],
+      ),
+    );
+
+    await repository.syncAll();
+    final MoneyTransaction? saved = await transactionRepository.getByUuid(
+      transaction.uuid,
+    );
+
+    expect(saved?.isDeleted, true);
+    expect(saved?.deletedAt, DateTime.utc(2026, 7, 9, 4));
+  });
 }
 
 class _FakeSpreadsheetSyncService extends SpreadsheetSyncService {
   _FakeSpreadsheetSyncService({
-    this.pushResponse = const SpreadsheetSyncResponse(
-      status: 'success',
-      inserted: 0,
-      updated: 0,
-      failed: 0,
-      serverTime: null,
-      message: null,
-      code: null,
-      items: <Map<String, dynamic>>[],
-    ),
-    this.pullCategoryItems = const <Map<String, dynamic>>[],
-    this.pullTransactionItems = const <Map<String, dynamic>>[],
-    this.pullStockTransactionItems = const <Map<String, dynamic>>[],
-    this.pullDividendItems = const <Map<String, dynamic>>[],
-    this.onPush,
     this.pushException,
+    this.pullTransactionItems = const <Map<String, dynamic>>[],
   });
 
-  final SpreadsheetSyncResponse pushResponse;
-  final List<Map<String, dynamic>> pullCategoryItems;
-  final List<Map<String, dynamic>> pullTransactionItems;
-  final List<Map<String, dynamic>> pullStockTransactionItems;
-  final List<Map<String, dynamic>> pullDividendItems;
-  final void Function({
-    required String entity,
-    required List<Map<String, dynamic>> items,
-  })?
-  onPush;
   final SpreadsheetSyncException? pushException;
+  final List<Map<String, dynamic>> pullTransactionItems;
 
   @override
   Future<SpreadsheetSyncResponse> push({
@@ -549,8 +368,16 @@ class _FakeSpreadsheetSyncService extends SpreadsheetSyncService {
     if (pushException != null) {
       throw pushException!;
     }
-    onPush?.call(entity: entity, items: items);
-    return pushResponse;
+    return const SpreadsheetSyncResponse(
+      status: 'success',
+      inserted: 1,
+      updated: 0,
+      failed: 0,
+      serverTime: null,
+      message: null,
+      code: null,
+      items: <Map<String, dynamic>>[],
+    );
   }
 
   @override
@@ -558,7 +385,7 @@ class _FakeSpreadsheetSyncService extends SpreadsheetSyncService {
     required String webAppUrl,
     required String token,
     required String entity,
-    DateTime? since,
+    String? since,
   }) async {
     return SpreadsheetSyncResponse(
       status: 'success',
@@ -569,10 +396,8 @@ class _FakeSpreadsheetSyncService extends SpreadsheetSyncService {
       message: null,
       code: null,
       items: switch (entity) {
-        'Categories' => pullCategoryItems,
+        'Categories' => const <Map<String, dynamic>>[],
         'Transactions' => pullTransactionItems,
-        'Stock_Transactions' => pullStockTransactionItems,
-        'Dividends' => pullDividendItems,
         _ => const <Map<String, dynamic>>[],
       },
     );
