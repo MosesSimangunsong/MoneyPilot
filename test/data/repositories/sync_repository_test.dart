@@ -89,8 +89,8 @@ void main() {
           source: 'manual',
           transactionDate: DateTime.utc(2026, 7, 9, 3),
         );
-    final StockTransaction stockTransaction =
-        await portfolioRepository.createStockTransaction(
+    final StockTransaction stockTransaction = await portfolioRepository
+        .createStockTransaction(
           symbol: 'BBCA',
           actionType: 'buy',
           lot: 1,
@@ -141,51 +141,83 @@ void main() {
     expect(savedDividend?.syncStatus, 'synced');
     expect(savedWatchlist?.syncStatus, 'synced');
     expect(fakeService.pushedEntities, contains(SheetEntity.transactions));
-    expect(
-      fakeService.pushedEntities,
-      contains(SheetEntity.stockTransactions),
-    );
+    expect(fakeService.pushedEntities, contains(SheetEntity.stockTransactions));
     expect(fakeService.pushedEntities, contains(SheetEntity.dividends));
     expect(fakeService.pushedEntities, contains(SheetEntity.watchlist));
   });
 
-  test('push gagal membuat entity investasi failed dan data lokal tetap aman', () async {
-    final StockTransaction stockTransaction =
-        await portfolioRepository.createStockTransaction(
-          symbol: 'TLKM',
-          actionType: 'buy',
-          lot: 1,
-          shares: 100,
-          price: 3000,
-          fee: 0,
-          transactionDate: DateTime.utc(2026, 7, 9, 3),
-        );
+  test(
+    'push gagal membuat entity investasi failed dan data lokal tetap aman',
+    () async {
+      final StockTransaction stockTransaction = await portfolioRepository
+          .createStockTransaction(
+            symbol: 'TLKM',
+            actionType: 'buy',
+            lot: 1,
+            shares: 100,
+            price: 3000,
+            fee: 0,
+            transactionDate: DateTime.utc(2026, 7, 9, 3),
+          );
+
+      final SyncRepository repository = SyncRepository(
+        databaseService.isar,
+        appSettingRepository: appSettingRepository,
+        spreadsheetSyncService: _FakeSpreadsheetSyncService(
+          pushException: const SpreadsheetSyncException(
+            message: 'Token tidak valid.',
+            code: 'INVALID_TOKEN',
+          ),
+        ),
+      );
+
+      final SyncRunSummary summary = await repository.syncAll();
+      final StockTransaction? saved = await portfolioRepository
+          .getStockTransactionByUuid(stockTransaction.uuid);
+
+      expect(summary.status, 'failed');
+      expect(saved, isNotNull);
+      expect(saved?.symbol, 'TLKM');
+      expect(saved?.syncStatus, 'failed');
+      expect(saved?.syncErrorMessage, contains('Token tidak valid.'));
+    },
+  );
+
+  test('push failure melaporkan stage entity yang benar', () async {
+    final Category expenseCategory = (await categoryRepository.getByType(
+      'expense',
+    )).first;
+    await transactionRepository.createTransaction(
+      type: 'expense',
+      title: 'Bayar parkir',
+      amount: 5000,
+      categoryUuid: expenseCategory.uuid,
+      source: 'manual',
+      transactionDate: DateTime.utc(2026, 7, 9, 3),
+    );
 
     final SyncRepository repository = SyncRepository(
       databaseService.isar,
       appSettingRepository: appSettingRepository,
       spreadsheetSyncService: _FakeSpreadsheetSyncService(
+        failOnEntity: SheetEntity.transactions,
         pushException: const SpreadsheetSyncException(
-          message: 'Token tidak valid.',
-          code: 'INVALID_TOKEN',
+          message: 'Response bukan JSON valid.',
+          code: 'INVALID_RESPONSE',
         ),
       ),
     );
 
     final SyncRunSummary summary = await repository.syncAll();
-    final StockTransaction? saved = await portfolioRepository
-        .getStockTransactionByUuid(stockTransaction.uuid);
 
     expect(summary.status, 'failed');
-    expect(saved, isNotNull);
-    expect(saved?.symbol, 'TLKM');
-    expect(saved?.syncStatus, 'failed');
-    expect(saved?.syncErrorMessage, contains('Token tidak valid.'));
+    expect(summary.message, contains('Gagal pada tahap push Transactions.'));
+    expect(summary.message, contains('Response bukan JSON valid.'));
   });
 
   test('pull stock transaction remote lebih baru meng-update local', () async {
-    final StockTransaction transaction =
-        await portfolioRepository.createStockTransaction(
+    final StockTransaction transaction = await portfolioRepository
+        .createStockTransaction(
           symbol: 'BBCA',
           actionType: 'buy',
           lot: 1,
@@ -238,8 +270,8 @@ void main() {
   });
 
   test('pull stock transaction tidak duplikat jika uuid sudah ada', () async {
-    final StockTransaction transaction =
-        await portfolioRepository.createStockTransaction(
+    final StockTransaction transaction = await portfolioRepository
+        .createStockTransaction(
           symbol: 'ASII',
           actionType: 'buy',
           lot: 1,
@@ -287,8 +319,8 @@ void main() {
   });
 
   test('soft delete stock transaction dari pull tersync', () async {
-    final StockTransaction transaction =
-        await portfolioRepository.createStockTransaction(
+    final StockTransaction transaction = await portfolioRepository
+        .createStockTransaction(
           symbol: 'UNVR',
           actionType: 'buy',
           lot: 1,
@@ -336,10 +368,7 @@ void main() {
         .getStockTransactionByUuid(transaction.uuid);
 
     expect(saved?.isDeleted, true);
-    expect(
-      saved?.deletedAt?.toUtc(),
-      DateTime.utc(2026, 7, 9, 4),
-    );
+    expect(saved?.deletedAt?.toUtc(), DateTime.utc(2026, 7, 9, 4));
   });
 
   test('pull dividend tidak membuat duplicate money transaction', () async {
@@ -396,7 +425,10 @@ void main() {
 
     expect(incomeTransactions, hasLength(1));
     expect(dividends, hasLength(1));
-    expect(dividends.single.linkedTransactionUuid, result.incomeTransaction.uuid);
+    expect(
+      dividends.single.linkedTransactionUuid,
+      result.incomeTransaction.uuid,
+    );
   });
 
   test('pull watchlist menormalkan symbol dan tidak duplikat', () async {
@@ -435,9 +467,7 @@ void main() {
     );
 
     await repository.syncAll();
-    final List<WatchlistItem> items = await databaseService
-        .isar
-        .watchlistItems
+    final List<WatchlistItem> items = await databaseService.isar.watchlistItems
         .where()
         .findAll();
 
@@ -447,48 +477,50 @@ void main() {
     expect(items.single.companyName, 'Bank Central Asia Tbk');
   });
 
-  test('latest updatedAt wins untuk watchlist saat remote lebih lama', () async {
-    final WatchlistItem local = await portfolioRepository.createWatchlistItem(
-      symbol: 'TLKM',
-      note: 'Lokal terbaru',
-    );
-    local.syncStatus = 'synced';
-    local.updatedAt = DateTime.utc(2026, 7, 9, 5);
-    await databaseService.isar.writeTxn(() async {
-      await databaseService.isar.watchlistItems.put(local);
-    });
+  test(
+    'latest updatedAt wins untuk watchlist saat remote lebih lama',
+    () async {
+      final WatchlistItem local = await portfolioRepository.createWatchlistItem(
+        symbol: 'TLKM',
+        note: 'Lokal terbaru',
+      );
+      local.syncStatus = 'synced';
+      local.updatedAt = DateTime.utc(2026, 7, 9, 5);
+      await databaseService.isar.writeTxn(() async {
+        await databaseService.isar.watchlistItems.put(local);
+      });
 
-    final SyncRepository repository = SyncRepository(
-      databaseService.isar,
-      appSettingRepository: appSettingRepository,
-      spreadsheetSyncService: _FakeSpreadsheetSyncService(
-        pullWatchlistItems: <Map<String, dynamic>>[
-          <String, dynamic>{
-            'uuid': local.uuid,
-            'symbol': 'TLKM',
-            'companyName': '',
-            'market': 'IDX',
-            'targetPrice': 3500,
-            'note': 'Remote lama',
-            'syncStatus': 'synced',
-            'syncErrorMessage': '',
-            'isDeleted': false,
-            'createdAt': local.createdAt.toIso8601String(),
-            'updatedAt': '2026-07-09T04:00:00.000Z',
-            'deletedAt': '',
-          },
-        ],
-      ),
-    );
+      final SyncRepository repository = SyncRepository(
+        databaseService.isar,
+        appSettingRepository: appSettingRepository,
+        spreadsheetSyncService: _FakeSpreadsheetSyncService(
+          pullWatchlistItems: <Map<String, dynamic>>[
+            <String, dynamic>{
+              'uuid': local.uuid,
+              'symbol': 'TLKM',
+              'companyName': '',
+              'market': 'IDX',
+              'targetPrice': 3500,
+              'note': 'Remote lama',
+              'syncStatus': 'synced',
+              'syncErrorMessage': '',
+              'isDeleted': false,
+              'createdAt': local.createdAt.toIso8601String(),
+              'updatedAt': '2026-07-09T04:00:00.000Z',
+              'deletedAt': '',
+            },
+          ],
+        ),
+      );
 
-    await repository.syncAll();
-    final WatchlistItem? saved = await portfolioRepository.getWatchlistItemByUuid(
-      local.uuid,
-    );
+      await repository.syncAll();
+      final WatchlistItem? saved = await portfolioRepository
+          .getWatchlistItemByUuid(local.uuid);
 
-    expect(saved?.note, 'Lokal terbaru');
-    expect(saved?.targetPrice, isNull);
-  });
+      expect(saved?.note, 'Lokal terbaru');
+      expect(saved?.targetPrice, isNull);
+    },
+  );
 }
 
 class SheetEntity {
@@ -502,12 +534,14 @@ class SheetEntity {
 class _FakeSpreadsheetSyncService extends SpreadsheetSyncService {
   _FakeSpreadsheetSyncService({
     this.pushException,
+    this.failOnEntity,
     this.pullStockTransactionItems = const <Map<String, dynamic>>[],
     this.pullDividendItems = const <Map<String, dynamic>>[],
     this.pullWatchlistItems = const <Map<String, dynamic>>[],
   });
 
   final SpreadsheetSyncException? pushException;
+  final String? failOnEntity;
   final List<Map<String, dynamic>> pullStockTransactionItems;
   final List<Map<String, dynamic>> pullDividendItems;
   final List<Map<String, dynamic>> pullWatchlistItems;
@@ -520,7 +554,8 @@ class _FakeSpreadsheetSyncService extends SpreadsheetSyncService {
     required String entity,
     required List<Map<String, dynamic>> items,
   }) async {
-    if (pushException != null) {
+    if (pushException != null &&
+        (failOnEntity == null || failOnEntity == entity)) {
       throw pushException!;
     }
     pushedEntities.add(entity);

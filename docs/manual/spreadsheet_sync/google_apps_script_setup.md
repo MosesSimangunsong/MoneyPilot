@@ -47,8 +47,8 @@ Redirect `script.google.com` -> `script.googleusercontent.com` adalah perilaku n
 
 Flutter MoneyPilot sekarang sudah menangani:
 
-- `301`, `302`, `303` dengan follow `GET`
-- `307`, `308` dengan preserve `POST`
+- redirect sync dengan preserve `POST` dan body JSON
+- redirect health check dengan preserve `GET`
 
 Jadi Anda tidak perlu mengubah Apps Script untuk urusan redirect tersebut.
 

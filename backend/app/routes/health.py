@@ -10,7 +10,7 @@ def get_health():
     return jsonify(
         {
             "status": "success",
-            "message": "MoneyPilot backend is healthy",
+            "message": "Server market, berita, dan analisis MoneyPilot terhubung.",
             "serverTime": datetime.now(timezone.utc).isoformat().replace(
                 "+00:00", "Z"
             ),

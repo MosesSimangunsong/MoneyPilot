@@ -29,12 +29,9 @@ class SyncRepository {
 
   Future<int> countPendingSyncItems() async {
     final int pendingCategories = await _countPendingCollection<Category>(
-      _isar.categorys
-          .filter()
-          .group(
-            (q) =>
-                q.syncStatusEqualTo('pending').or().syncStatusEqualTo('failed'),
-          ),
+      _isar.categorys.filter().group(
+        (q) => q.syncStatusEqualTo('pending').or().syncStatusEqualTo('failed'),
+      ),
     );
     final int pendingTransactions =
         await _countPendingCollection<MoneyTransaction>(
@@ -103,6 +100,7 @@ class SyncRepository {
     int pulledWatchlist = 0;
 
     try {
+      currentStage = 'push Categories';
       lastServerTime = await _pushEntityIfNeeded(
         stage: 'push Categories',
         webAppUrl: webAppUrl,
@@ -118,6 +116,7 @@ class SyncRepository {
         currentServerTime: lastServerTime,
       );
 
+      currentStage = 'push Transactions';
       lastServerTime = await _pushEntityIfNeeded(
         stage: 'push Transactions',
         webAppUrl: webAppUrl,
@@ -133,6 +132,7 @@ class SyncRepository {
         currentServerTime: lastServerTime,
       );
 
+      currentStage = 'push Stock_Transactions';
       lastServerTime = await _pushEntityIfNeeded(
         stage: 'push Stock_Transactions',
         webAppUrl: webAppUrl,
@@ -148,6 +148,7 @@ class SyncRepository {
         currentServerTime: lastServerTime,
       );
 
+      currentStage = 'push Dividends';
       lastServerTime = await _pushEntityIfNeeded(
         stage: 'push Dividends',
         webAppUrl: webAppUrl,
@@ -163,6 +164,7 @@ class SyncRepository {
         currentServerTime: lastServerTime,
       );
 
+      currentStage = 'push Watchlist';
       lastServerTime = await _pushEntityIfNeeded(
         stage: 'push Watchlist',
         webAppUrl: webAppUrl,
@@ -179,11 +181,12 @@ class SyncRepository {
       );
 
       currentStage = 'pull Categories';
-      final SpreadsheetSyncResponse pullCategoriesResponse = await pullCategories(
-        webAppUrl: webAppUrl,
-        token: token,
-        since: settings.lastSpreadsheetPullAt?.toUtc().toIso8601String(),
-      );
+      final SpreadsheetSyncResponse pullCategoriesResponse =
+          await pullCategories(
+            webAppUrl: webAppUrl,
+            token: token,
+            since: settings.lastSpreadsheetPullAt?.toUtc().toIso8601String(),
+          );
       pulledCategories = await _mergeCategories(pullCategoriesResponse.items);
       lastServerTime = pullCategoriesResponse.serverTime ?? lastServerTime;
 
@@ -453,7 +456,8 @@ class SyncRepository {
     required String token,
     List<WatchlistItem>? watchlist,
   }) async {
-    final List<WatchlistItem> items = watchlist ?? await _loadPendingWatchlist();
+    final List<WatchlistItem> items =
+        watchlist ?? await _loadPendingWatchlist();
     if (items.isEmpty) {
       return null;
     }
@@ -552,7 +556,9 @@ class SyncRepository {
     return response;
   }
 
-  Future<int> _countPendingCollection<T>(QueryBuilder<T, T, QAfterFilterCondition> query) {
+  Future<int> _countPendingCollection<T>(
+    QueryBuilder<T, T, QAfterFilterCondition> query,
+  ) {
     return query.count();
   }
 
@@ -636,7 +642,9 @@ class SyncRepository {
     int changed = 0;
 
     for (final Map<String, dynamic> payload in payloads) {
-      final Category remote = SpreadsheetSyncMapper.categoryFromPayload(payload);
+      final Category remote = SpreadsheetSyncMapper.categoryFromPayload(
+        payload,
+      );
       final Category? local = await _isar.categorys
           .filter()
           .uuidEqualTo(remote.uuid)
@@ -723,7 +731,9 @@ class SyncRepository {
     return changed;
   }
 
-  Future<int> _mergeStockTransactions(List<Map<String, dynamic>> payloads) async {
+  Future<int> _mergeStockTransactions(
+    List<Map<String, dynamic>> payloads,
+  ) async {
     int changed = 0;
 
     for (final Map<String, dynamic> payload in payloads) {
@@ -777,7 +787,9 @@ class SyncRepository {
     int changed = 0;
 
     for (final Map<String, dynamic> payload in payloads) {
-      final Dividend remote = SpreadsheetSyncMapper.dividendFromPayload(payload);
+      final Dividend remote = SpreadsheetSyncMapper.dividendFromPayload(
+        payload,
+      );
       final Dividend? local = await _isar.dividends
           .filter()
           .uuidEqualTo(remote.uuid)
@@ -825,8 +837,9 @@ class SyncRepository {
     int changed = 0;
 
     for (final Map<String, dynamic> payload in payloads) {
-      final WatchlistItem remote =
-          SpreadsheetSyncMapper.watchlistFromPayload(payload);
+      final WatchlistItem remote = SpreadsheetSyncMapper.watchlistFromPayload(
+        payload,
+      );
       final String normalizedSymbol = _normalizeWatchlistSymbol(
         remote.symbol,
         remote.market,

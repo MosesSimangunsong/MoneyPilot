@@ -64,9 +64,9 @@ Catatan:
 
 MoneyPilot sekarang menangani redirect Google Apps Script seperti ini:
 
-- Request pertama ke `/exec` tetap `POST`.
-- Redirect `301`, `302`, `303` diikuti dengan `GET`.
-- Redirect `307`, `308` menjaga method `POST` dan body JSON.
+- Request sync pertama ke `/exec` tetap `POST`.
+- Jika request sync (`push`/`pull`) mendapat redirect `301`, `302`, `303`, `307`, atau `308`, Flutter tetap mengirim `POST` dengan body JSON yang sama ke URL redirect.
+- Jika request `health check` (`GET`) mendapat redirect, method tetap `GET`.
 - Redirect dibatasi maksimal 3 hop.
 
 ## Catatan Penting

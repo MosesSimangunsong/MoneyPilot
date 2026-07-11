@@ -32,7 +32,6 @@ class AnalysisService {
     bool newsConnected = false;
     bool marketAttemptFailed = false;
     bool newsAttemptFailed = false;
-    bool marketBackendReachable = true;
     List<NewsArticle> latestNews = const <NewsArticle>[];
     Map<String, MarketQuote> marketQuotes = const <String, MarketQuote>{};
     String? marketStatusMessage;
@@ -53,7 +52,6 @@ class AnalysisService {
                   .toList(growable: false),
             );
         marketQuotes = response.quotes;
-        marketBackendReachable = response.backendReachable;
         if (!response.backendReachable) {
           marketAttemptFailed = true;
           marketStatusMessage =
@@ -115,18 +113,31 @@ class AnalysisService {
     final bool backendConnected =
         (newsConnected || marketQuotes.isNotEmpty || trackedSymbols.isEmpty) &&
         !backendUnavailable;
+    final String backendStatusMessage;
+    if (!backendConnected) {
+      backendStatusMessage =
+          marketStatusMessage ??
+          'Server MoneyPilot belum dapat dihubungi. Data lokal tetap tersedia.';
+    } else if (marketStatusMessage != null) {
+      backendStatusMessage = marketStatusMessage;
+    } else if (!newsConnected) {
+      backendStatusMessage =
+          'Data portofolio dan watchlist lokal siap. Berita terbaru belum tersedia saat ini.';
+    } else if (trackedItems.isEmpty) {
+      backendStatusMessage =
+          'Data lokal siap. Tambahkan saham ke portofolio atau watchlist untuk melihat analisis yang lebih lengkap.';
+    } else {
+      backendStatusMessage =
+          'Data lokal, harga pasar, dan berita terbaru berhasil dimuat.';
+    }
 
     return AnalysisDashboardData(
       overview: overview,
       watchlist: watchlist,
       trackedItems: trackedItems,
       latestNews: latestNews,
-      backendConnected: backendConnected || marketBackendReachable,
-      backendStatusMessage:
-          marketStatusMessage ??
-          (backendUnavailable
-              ? 'Server MoneyPilot belum dapat dihubungi. Data lokal tetap tersedia.'
-              : 'Data lokal siap digunakan${newsConnected || marketQuotes.isNotEmpty ? ' dan server MoneyPilot sedang terhubung.' : '.'}'),
+      backendConnected: backendConnected,
+      backendStatusMessage: backendStatusMessage,
     );
   }
 

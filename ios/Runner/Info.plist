@@ -6,6 +6,10 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSMicrophoneUsageDescription</key>
+  <string>MoneyPilot membutuhkan akses mikrofon untuk mencatat transaksi dengan suara Bahasa Indonesia.</string>
+  <key>NSSpeechRecognitionUsageDescription</key>
+  <string>MoneyPilot membutuhkan pengenalan suara untuk mengubah ucapan Anda menjadi teks transaksi.</string>
 	<key>CFBundleDisplayName</key>
 	<string>MoneyPilot</string>
 	<key>CFBundleExecutable</key>

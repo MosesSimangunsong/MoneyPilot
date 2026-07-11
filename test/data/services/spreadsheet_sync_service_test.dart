@@ -36,22 +36,21 @@ void main() {
     });
 
     test('Map -> Category mempertahankan isDefault dan isDeleted', () {
-      final Category category = SpreadsheetSyncMapper.categoryFromPayload(
-        <String, dynamic>{
-          'uuid': 'cat-food',
-          'name': 'Makanan & Minuman',
-          'type': 'expense',
-          'icon': 'utensils',
-          'colorHex': '#2563EB',
-          'isDefault': true,
-          'syncStatus': 'synced',
-          'syncErrorMessage': '',
-          'isDeleted': true,
-          'createdAt': '2026-07-09T03:00:00.000Z',
-          'updatedAt': '2026-07-09T04:00:00.000Z',
-          'deletedAt': '2026-07-09T04:00:00.000Z',
-        },
-      );
+      final Category category =
+          SpreadsheetSyncMapper.categoryFromPayload(<String, dynamic>{
+            'uuid': 'cat-food',
+            'name': 'Makanan & Minuman',
+            'type': 'expense',
+            'icon': 'utensils',
+            'colorHex': '#2563EB',
+            'isDefault': true,
+            'syncStatus': 'synced',
+            'syncErrorMessage': '',
+            'isDeleted': true,
+            'createdAt': '2026-07-09T03:00:00.000Z',
+            'updatedAt': '2026-07-09T04:00:00.000Z',
+            'deletedAt': '2026-07-09T04:00:00.000Z',
+          });
 
       expect(category.isDefault, true);
       expect(category.isDeleted, true);
@@ -60,31 +59,34 @@ void main() {
   });
 
   group('SpreadsheetSyncMapper transaction', () {
-    test('MoneyTransaction -> Map mempertahankan snapshot dan payment method', () {
-      final MoneyTransaction transaction = MoneyTransaction(
-        uuid: 'tx-001',
-        type: 'expense',
-        title: 'Beli kopi',
-        amount: 15000,
-        categoryUuid: 'cat-food',
-        categoryNameSnapshot: 'Makanan & Minuman',
-        paymentMethod: 'QRIS',
-        note: '',
-        source: 'manual',
-        syncStatus: 'pending',
-        isDeleted: false,
-        transactionDate: DateTime.utc(2026, 7, 9, 3),
-        createdAt: DateTime.utc(2026, 7, 9, 3),
-        updatedAt: DateTime.utc(2026, 7, 9, 3),
-      );
+    test(
+      'MoneyTransaction -> Map mempertahankan snapshot dan payment method',
+      () {
+        final MoneyTransaction transaction = MoneyTransaction(
+          uuid: 'tx-001',
+          type: 'expense',
+          title: 'Beli kopi',
+          amount: 15000,
+          categoryUuid: 'cat-food',
+          categoryNameSnapshot: 'Makanan & Minuman',
+          paymentMethod: 'QRIS',
+          note: '',
+          source: 'manual',
+          syncStatus: 'pending',
+          isDeleted: false,
+          transactionDate: DateTime.utc(2026, 7, 9, 3),
+          createdAt: DateTime.utc(2026, 7, 9, 3),
+          updatedAt: DateTime.utc(2026, 7, 9, 3),
+        );
 
-      final Map<String, dynamic> payload =
-          SpreadsheetSyncMapper.transactionToPayload(transaction);
+        final Map<String, dynamic> payload =
+            SpreadsheetSyncMapper.transactionToPayload(transaction);
 
-      expect(payload['categoryNameSnapshot'], 'Makanan & Minuman');
-      expect(payload['paymentMethod'], 'QRIS');
-      expect(payload['transactionDate'], '2026-07-09T03:00:00.000Z');
-    });
+        expect(payload['categoryNameSnapshot'], 'Makanan & Minuman');
+        expect(payload['paymentMethod'], 'QRIS');
+        expect(payload['transactionDate'], '2026-07-09T03:00:00.000Z');
+      },
+    );
 
     test('Map -> MoneyTransaction mempertahankan field penting', () {
       final MoneyTransaction transaction =
@@ -142,26 +144,24 @@ void main() {
 
     test('Map -> StockTransaction mempertahankan soft delete', () {
       final StockTransaction transaction =
-          SpreadsheetSyncMapper.stockTransactionFromPayload(
-            <String, dynamic>{
-              'uuid': 'stock-001',
-              'symbol': 'BBCA',
-              'companyName': 'Bank Central Asia',
-              'actionType': 'sell',
-              'lot': 1,
-              'shares': 100,
-              'price': 10000,
-              'fee': 500,
-              'transactionDate': '2026-07-09T03:00:00.000Z',
-              'note': '',
-              'syncStatus': 'synced',
-              'syncErrorMessage': '',
-              'isDeleted': true,
-              'createdAt': '2026-07-09T03:00:00.000Z',
-              'updatedAt': '2026-07-09T04:00:00.000Z',
-              'deletedAt': '2026-07-09T04:00:00.000Z',
-            },
-          );
+          SpreadsheetSyncMapper.stockTransactionFromPayload(<String, dynamic>{
+            'uuid': 'stock-001',
+            'symbol': 'BBCA',
+            'companyName': 'Bank Central Asia',
+            'actionType': 'sell',
+            'lot': 1,
+            'shares': 100,
+            'price': 10000,
+            'fee': 500,
+            'transactionDate': '2026-07-09T03:00:00.000Z',
+            'note': '',
+            'syncStatus': 'synced',
+            'syncErrorMessage': '',
+            'isDeleted': true,
+            'createdAt': '2026-07-09T03:00:00.000Z',
+            'updatedAt': '2026-07-09T04:00:00.000Z',
+            'deletedAt': '2026-07-09T04:00:00.000Z',
+          });
 
       expect(transaction.actionType, 'sell');
       expect(transaction.isDeleted, true);
@@ -194,25 +194,24 @@ void main() {
     });
 
     test('Map -> Dividend mempertahankan field penting', () {
-      final Dividend dividend = SpreadsheetSyncMapper.dividendFromPayload(
-        <String, dynamic>{
-          'uuid': 'div-001',
-          'symbol': 'BBCA',
-          'companyName': 'Bank Central Asia',
-          'grossAmount': 100000,
-          'tax': 10000,
-          'netAmount': 90000,
-          'receivedDate': '2026-07-09T03:00:00.000Z',
-          'linkedTransactionUuid': 'tx-income-1',
-          'note': '',
-          'syncStatus': 'synced',
-          'syncErrorMessage': '',
-          'isDeleted': false,
-          'createdAt': '2026-07-09T03:00:00.000Z',
-          'updatedAt': '2026-07-09T04:00:00.000Z',
-          'deletedAt': '',
-        },
-      );
+      final Dividend dividend =
+          SpreadsheetSyncMapper.dividendFromPayload(<String, dynamic>{
+            'uuid': 'div-001',
+            'symbol': 'BBCA',
+            'companyName': 'Bank Central Asia',
+            'grossAmount': 100000,
+            'tax': 10000,
+            'netAmount': 90000,
+            'receivedDate': '2026-07-09T03:00:00.000Z',
+            'linkedTransactionUuid': 'tx-income-1',
+            'note': '',
+            'syncStatus': 'synced',
+            'syncErrorMessage': '',
+            'isDeleted': false,
+            'createdAt': '2026-07-09T03:00:00.000Z',
+            'updatedAt': '2026-07-09T04:00:00.000Z',
+            'deletedAt': '',
+          });
 
       expect(dividend.linkedTransactionUuid, 'tx-income-1');
       expect(dividend.netAmount, 90000);
@@ -243,22 +242,21 @@ void main() {
     });
 
     test('Map -> Watchlist mempertahankan targetPrice nullable', () {
-      final WatchlistItem item = SpreadsheetSyncMapper.watchlistFromPayload(
-        <String, dynamic>{
-          'uuid': 'watch-001',
-          'symbol': 'BBCA',
-          'companyName': 'Bank Central Asia',
-          'market': 'IDX',
-          'targetPrice': '',
-          'note': '',
-          'syncStatus': 'synced',
-          'syncErrorMessage': '',
-          'isDeleted': false,
-          'createdAt': '2026-07-09T03:00:00.000Z',
-          'updatedAt': '2026-07-09T04:00:00.000Z',
-          'deletedAt': '',
-        },
-      );
+      final WatchlistItem item =
+          SpreadsheetSyncMapper.watchlistFromPayload(<String, dynamic>{
+            'uuid': 'watch-001',
+            'symbol': 'BBCA',
+            'companyName': 'Bank Central Asia',
+            'market': 'IDX',
+            'targetPrice': '',
+            'note': '',
+            'syncStatus': 'synced',
+            'syncErrorMessage': '',
+            'isDeleted': false,
+            'createdAt': '2026-07-09T03:00:00.000Z',
+            'updatedAt': '2026-07-09T04:00:00.000Z',
+            'deletedAt': '',
+          });
 
       expect(item.symbol, 'BBCA');
       expect(item.targetPrice, isNull);
@@ -421,6 +419,291 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('redirect 302 saat push berubah ke GET tanpa body', () async {
+      final List<String> methods = <String>[];
+      final List<String> bodies = <String>[];
+
+      final SpreadsheetSyncService service = SpreadsheetSyncService(
+        client: MockClient((http.Request request) async {
+          methods.add(request.method);
+          bodies.add(request.body);
+
+          if (request.url.host == 'script.google.com') {
+            return http.Response(
+              '',
+              302,
+              headers: const <String, String>{
+                'location':
+                    'https://script.googleusercontent.com/macros/echo?user_content_key=test',
+              },
+            );
+          }
+
+          expect(request.method, 'GET');
+          expect(request.body, isEmpty);
+
+          return http.Response(
+            jsonEncode(<String, dynamic>{
+              'status': 'success',
+              'inserted': 1,
+              'updated': 0,
+              'failed': 0,
+              'serverTime': '2026-07-09T10:00:00.000Z',
+              'items': <Map<String, dynamic>>[],
+            }),
+            200,
+            headers: const <String, String>{
+              'content-type': 'application/json; charset=utf-8',
+            },
+          );
+        }),
+      );
+
+      final SpreadsheetSyncResponse response = await service.push(
+        webAppUrl: 'https://script.google.com/macros/s/test/exec',
+        token: 'secret',
+        entity: 'Transactions',
+        items: const <Map<String, dynamic>>[
+          <String, dynamic>{
+            'uuid': 'tx-001',
+            'updatedAt': '2026-07-09T03:00:00.000Z',
+          },
+        ],
+      );
+
+      expect(response.status, 'success');
+      expect(methods, <String>['POST', 'GET']);
+      expect(bodies[0], contains('"operation":"push"'));
+      expect(bodies[1], isEmpty);
+    });
+
+    test('redirect 303 saat pull berubah ke GET tanpa body', () async {
+      final List<String> methods = <String>[];
+      final List<String> bodies = <String>[];
+
+      final SpreadsheetSyncService service = SpreadsheetSyncService(
+        client: MockClient((http.Request request) async {
+          methods.add(request.method);
+          bodies.add(request.body);
+
+          if (request.url.host == 'script.google.com') {
+            return http.Response(
+              '',
+              303,
+              headers: const <String, String>{
+                'location':
+                    'https://script.googleusercontent.com/macros/echo?user_content_key=test',
+              },
+            );
+          }
+
+          expect(request.method, 'GET');
+          expect(request.body, isEmpty);
+
+          return http.Response(
+            jsonEncode(<String, dynamic>{
+              'status': 'success',
+              'inserted': 0,
+              'updated': 0,
+              'failed': 0,
+              'serverTime': '2026-07-09T10:00:00.000Z',
+              'items': <Map<String, dynamic>>[],
+            }),
+            200,
+            headers: const <String, String>{
+              'content-type': 'application/json; charset=utf-8',
+            },
+          );
+        }),
+      );
+
+      final SpreadsheetSyncResponse response = await service.pull(
+        webAppUrl: 'https://script.google.com/macros/s/test/exec',
+        token: 'secret',
+        entity: 'Transactions',
+        since: '2026-07-09T00:00:00.000Z',
+      );
+
+      expect(response.status, 'success');
+      expect(methods, <String>['POST', 'GET']);
+      expect(bodies[0], contains('"operation":"pull"'));
+      expect(bodies[1], isEmpty);
+    });
+
+    test('redirect 307 saat push tetap POST dan body JSON', () async {
+      final List<String> methods = <String>[];
+      final List<String> bodies = <String>[];
+
+      final SpreadsheetSyncService service = SpreadsheetSyncService(
+        client: MockClient((http.Request request) async {
+          methods.add(request.method);
+          bodies.add(request.body);
+
+          if (request.url.host == 'script.google.com') {
+            return http.Response(
+              '',
+              307,
+              headers: const <String, String>{
+                'location':
+                    'https://script.googleusercontent.com/macros/echo?user_content_key=test307',
+              },
+            );
+          }
+
+          final Map<String, dynamic> payload =
+              jsonDecode(request.body) as Map<String, dynamic>;
+          expect(request.method, 'POST');
+          expect(payload['operation'], 'push');
+          expect(payload['entity'], 'Transactions');
+
+          return http.Response(
+            jsonEncode(<String, dynamic>{
+              'status': 'success',
+              'inserted': 1,
+              'updated': 0,
+              'failed': 0,
+              'serverTime': '2026-07-09T10:00:00.000Z',
+              'items': <Map<String, dynamic>>[],
+            }),
+            200,
+            headers: const <String, String>{
+              'content-type': 'application/json; charset=utf-8',
+            },
+          );
+        }),
+      );
+
+      final SpreadsheetSyncResponse response = await service.push(
+        webAppUrl: 'https://script.google.com/macros/s/test/exec',
+        token: 'secret',
+        entity: 'Transactions',
+        items: const <Map<String, dynamic>>[
+          <String, dynamic>{
+            'uuid': 'tx-001',
+            'updatedAt': '2026-07-09T03:00:00.000Z',
+          },
+        ],
+      );
+
+      expect(response.status, 'success');
+      expect(methods, <String>['POST', 'POST']);
+      expect(bodies[0], contains('"operation":"push"'));
+      expect(bodies[1], contains('"operation":"push"'));
+    });
+
+    test('redirect 308 saat pull tetap POST dan body JSON', () async {
+      final List<String> methods = <String>[];
+      final List<String> bodies = <String>[];
+
+      final SpreadsheetSyncService service = SpreadsheetSyncService(
+        client: MockClient((http.Request request) async {
+          methods.add(request.method);
+          bodies.add(request.body);
+
+          if (request.url.host == 'script.google.com') {
+            return http.Response(
+              '',
+              308,
+              headers: const <String, String>{
+                'location':
+                    'https://script.googleusercontent.com/macros/echo?user_content_key=test308',
+              },
+            );
+          }
+
+          final Map<String, dynamic> payload =
+              jsonDecode(request.body) as Map<String, dynamic>;
+          expect(request.method, 'POST');
+          expect(payload['operation'], 'pull');
+          expect(payload['entity'], 'Transactions');
+          expect(payload['since'], '2026-07-09T00:00:00.000Z');
+
+          return http.Response(
+            jsonEncode(<String, dynamic>{
+              'status': 'success',
+              'inserted': 0,
+              'updated': 0,
+              'failed': 0,
+              'serverTime': '2026-07-09T10:00:00.000Z',
+              'items': <Map<String, dynamic>>[],
+            }),
+            200,
+            headers: const <String, String>{
+              'content-type': 'application/json; charset=utf-8',
+            },
+          );
+        }),
+      );
+
+      final SpreadsheetSyncResponse response = await service.pull(
+        webAppUrl: 'https://script.google.com/macros/s/test/exec',
+        token: 'secret',
+        entity: 'Transactions',
+        since: '2026-07-09T00:00:00.000Z',
+      );
+
+      expect(response.status, 'success');
+      expect(methods, <String>['POST', 'POST']);
+      expect(bodies[0], contains('"operation":"pull"'));
+      expect(bodies[1], contains('"operation":"pull"'));
+    });
+
+    test('redirect 302 tidak melakukan POST kedua ke redirect url', () async {
+      final SpreadsheetSyncService service = SpreadsheetSyncService(
+        client: MockClient((http.Request request) async {
+          if (request.url.host == 'script.google.com') {
+            return http.Response(
+              '',
+              302,
+              headers: const <String, String>{
+                'location':
+                    'https://script.googleusercontent.com/macros/echo?user_content_key=test405',
+              },
+            );
+          }
+
+          if (request.method == 'POST') {
+            return http.Response(
+              '<!DOCTYPE html><html><body>Method Not Allowed</body></html>',
+              405,
+              headers: const <String, String>{
+                'content-type': 'text/html; charset=utf-8',
+              },
+            );
+          }
+
+          return http.Response(
+            jsonEncode(<String, dynamic>{
+              'status': 'success',
+              'inserted': 1,
+              'updated': 0,
+              'failed': 0,
+              'serverTime': '2026-07-09T10:00:00.000Z',
+              'items': <Map<String, dynamic>>[],
+            }),
+            200,
+            headers: const <String, String>{
+              'content-type': 'application/json; charset=utf-8',
+            },
+          );
+        }),
+      );
+
+      final SpreadsheetSyncResponse response = await service.push(
+        webAppUrl: 'https://script.google.com/macros/s/test/exec',
+        token: 'secret',
+        entity: 'Transactions',
+        items: const <Map<String, dynamic>>[
+          <String, dynamic>{
+            'uuid': 'tx-001',
+            'updatedAt': '2026-07-09T03:00:00.000Z',
+          },
+        ],
+      );
+
+      expect(response.status, 'success');
     });
   });
 }

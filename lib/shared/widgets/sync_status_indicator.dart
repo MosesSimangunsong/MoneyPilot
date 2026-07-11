@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../core/theme/app_colors.dart';
+import 'app_status_badge.dart';
 
 class SyncStatusIndicator extends StatelessWidget {
   const SyncStatusIndicator({
@@ -15,20 +16,11 @@ class SyncStatusIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _SyncAppearance appearance = _appearanceForStatus(status);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: appearance.backgroundColor,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: appearance.borderColor),
-      ),
-      child: Text(
-        appearance.label,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: appearance.textColor,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
+    return AppStatusBadge(
+      label: appearance.label,
+      variant: appearance.variant,
+      icon: appearance.icon,
+      compact: true,
     );
   }
 
@@ -38,16 +30,14 @@ class SyncStatusIndicator extends StatelessWidget {
       case 'synced':
         return const _SyncAppearance(
           label: 'Tersinkron',
-          backgroundColor: Color(0xFFE9F8EF),
-          borderColor: Color(0xFFB7E4C7),
-          textColor: AppColors.success,
+          variant: AppStatusBadgeVariant.success,
+          icon: LucideIcons.checkCircle2,
         );
       case 'failed':
         return const _SyncAppearance(
           label: 'Gagal sync',
-          backgroundColor: Color(0xFFFDECEC),
-          borderColor: Color(0xFFF7C7C7),
-          textColor: AppColors.danger,
+          variant: AppStatusBadgeVariant.danger,
+          icon: LucideIcons.alertTriangle,
         );
       case 'pending':
         final String label = pendingCount > 0
@@ -55,16 +45,14 @@ class SyncStatusIndicator extends StatelessWidget {
             : 'Menunggu sync';
         return _SyncAppearance(
           label: label,
-          backgroundColor: const Color(0xFFFFF7E7),
-          borderColor: const Color(0xFFF5D48D),
-          textColor: AppColors.warning,
+          variant: AppStatusBadgeVariant.warning,
+          icon: LucideIcons.clock3,
         );
       default:
         return const _SyncAppearance(
           label: 'Belum disinkronkan',
-          backgroundColor: Color(0xFFF4F5F7),
-          borderColor: AppColors.border,
-          textColor: AppColors.textSecondary,
+          variant: AppStatusBadgeVariant.neutral,
+          icon: LucideIcons.cloudOff,
         );
     }
   }
@@ -73,13 +61,11 @@ class SyncStatusIndicator extends StatelessWidget {
 class _SyncAppearance {
   const _SyncAppearance({
     required this.label,
-    required this.backgroundColor,
-    required this.borderColor,
-    required this.textColor,
+    required this.variant,
+    required this.icon,
   });
 
   final String label;
-  final Color backgroundColor;
-  final Color borderColor;
-  final Color textColor;
+  final AppStatusBadgeVariant variant;
+  final IconData icon;
 }

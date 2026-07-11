@@ -277,13 +277,16 @@ class PortfolioRepository {
 
   Future<PortfolioOverview> getPortfolioOverview({
     int recentTransactionLimit = 10,
+    Map<String, double> currentPrices = const <String, double>{},
   }) async {
     final List<StockTransaction> transactions =
         await getActiveStockTransactions();
     final List<Dividend> dividends = await getActiveDividends();
     final List<PortfolioPositionSummary> positions = calculatePortfolioSummary(
       transactions,
+      currentPrices: currentPrices,
     );
+
     final double totalModal = positions.fold<double>(
       0,
       (double value, PortfolioPositionSummary item) => value + item.totalCost,
@@ -292,11 +295,22 @@ class PortfolioRepository {
       0,
       (double value, Dividend item) => value + item.netAmount,
     );
+    final double totalMarketValue = positions.fold<double>(
+      0,
+      (double value, PortfolioPositionSummary item) => value + item.marketValue,
+    );
+    final double totalUnrealizedProfit = positions.fold<double>(
+      0,
+      (double value, PortfolioPositionSummary item) =>
+          value + item.unrealizedProfit,
+    );
 
     return PortfolioOverview(
       totalOwnedStocks: positions.where((item) => item.totalShares > 0).length,
       totalModal: totalModal,
       totalDividen: totalDividen,
+      totalMarketValue: totalMarketValue,
+      totalUnrealizedProfit: totalUnrealizedProfit,
       positions: positions,
       recentTransactions: transactions.take(recentTransactionLimit).toList(),
       dividends: dividends,
@@ -304,8 +318,9 @@ class PortfolioRepository {
   }
 
   List<PortfolioPositionSummary> calculatePortfolioSummary(
-    List<StockTransaction> transactions,
-  ) {
+    List<StockTransaction> transactions, {
+    Map<String, double> currentPrices = const <String, double>{},
+  }) {
     final List<StockTransaction> sortedTransactions =
         <StockTransaction>[...transactions]
           ..sort((StockTransaction a, StockTransaction b) {
@@ -364,7 +379,7 @@ class PortfolioRepository {
 
     final List<PortfolioPositionSummary> summaries =
         positions.values
-            .map((item) => item.toSummary())
+            .map((item) => item.toSummary(currentPrices[item.symbol]))
             .where((PortfolioPositionSummary item) => item.totalShares > 0)
             .toList(growable: false)
           ..sort(
@@ -630,6 +645,8 @@ class PortfolioOverview {
     required this.totalOwnedStocks,
     required this.totalModal,
     required this.totalDividen,
+    required this.totalMarketValue,
+    required this.totalUnrealizedProfit,
     required this.positions,
     required this.recentTransactions,
     required this.dividends,
@@ -638,6 +655,8 @@ class PortfolioOverview {
   final int totalOwnedStocks;
   final double totalModal;
   final double totalDividen;
+  final double totalMarketValue;
+  final double totalUnrealizedProfit;
   final List<PortfolioPositionSummary> positions;
   final List<StockTransaction> recentTransactions;
   final List<Dividend> dividends;
@@ -652,6 +671,10 @@ class PortfolioPositionSummary {
     required this.averageBuyPrice,
     required this.totalCost,
     required this.realizedProfit,
+    required this.currentPrice,
+    required this.marketValue,
+    required this.unrealizedProfit,
+    required this.unrealizedProfitPercentage,
   });
 
   final String symbol;
@@ -661,6 +684,10 @@ class PortfolioPositionSummary {
   final double averageBuyPrice;
   final double totalCost;
   final double realizedProfit;
+  final double currentPrice;
+  final double marketValue;
+  final double unrealizedProfit;
+  final double unrealizedProfitPercentage;
 }
 
 class DividendWithIncomeResult {
@@ -680,16 +707,31 @@ class _PortfolioAccumulator {
   double totalCost = 0;
   double realizedProfit = 0;
 
-  PortfolioPositionSummary toSummary() {
+  PortfolioPositionSummary toSummary(double? currentMarketPrice) {
     final double normalizedCost = totalCost < 0 ? 0 : totalCost;
+    final double avgPrice = totalShares == 0 ? 0 : normalizedCost / totalShares;
+
+    // Jika harga pasar belum ada/gagal ditarik, fallback ke averageBuyPrice agar grafik/nilai tidak langsung anjlok ke 0
+    final double priceToUse = currentMarketPrice ?? avgPrice;
+
+    final double mktValue = totalShares * priceToUse;
+    final double unrlzdProfit = mktValue - normalizedCost;
+    final double unrlzdProfitPct = normalizedCost > 0
+        ? (unrlzdProfit / normalizedCost) * 100
+        : 0;
+
     return PortfolioPositionSummary(
       symbol: symbol,
       companyName: companyName,
       totalLot: totalShares / 100,
       totalShares: totalShares,
-      averageBuyPrice: totalShares == 0 ? 0 : normalizedCost / totalShares,
+      averageBuyPrice: avgPrice,
       totalCost: normalizedCost,
       realizedProfit: realizedProfit,
+      currentPrice: priceToUse,
+      marketValue: mktValue,
+      unrealizedProfit: unrlzdProfit,
+      unrealizedProfitPercentage: unrlzdProfitPct,
     );
   }
 }

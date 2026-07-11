@@ -40,7 +40,7 @@ class NewsImpactAnalysis {
   final List<String> halYangPerluDipantau;
   final String kesimpulanPemula;
   final String disclaimer;
-  
+
   // Metadata fields
   final bool isAiGenerated;
   final bool isFallback;

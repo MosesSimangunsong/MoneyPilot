@@ -103,12 +103,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     AppSpacing.xxl,
                   ),
                   children: <Widget>[
-                    Text(
-                      'Kelola sinkronisasi, keamanan, ekspor data, dan informasi privasi MoneyPilot dari satu tempat.',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
                     const SizedBox(height: AppSpacing.xl),
                     _SectionCard(
                       title: 'Keamanan',
@@ -123,20 +117,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                       : 'Nonaktif')
                                 : 'Perangkat belum mendukung',
                           ),
-                          const SizedBox(height: AppSpacing.sm),
-                          Text(
-                            _biometricAvailable
-                                ? 'Biometric diatur dari onboarding dan dipakai untuk mengunci aplikasi sesuai pengaturan user.'
-                                : 'Perangkat ini belum mendukung biometric, jadi aplikasi tetap memakai akses lokal tanpa kunci biometric.',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: AppColors.textSecondary),
-                          ),
                         ],
                       ),
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     _SectionCard(
-                      title: 'Status backend',
+                      title: 'Status server market, berita & analisis',
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
@@ -165,6 +151,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   ?.copyWith(color: AppColors.textSecondary),
                             ),
                           ],
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            'Status ini khusus untuk layanan market, berita, dan analisis. Status ini tidak berkaitan dengan sinkronisasi Google Spreadsheet.',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AppColors.textSecondary),
+                          ),
                           const SizedBox(height: AppSpacing.md),
                           OutlinedButton(
                             onPressed: _isCheckingBackend

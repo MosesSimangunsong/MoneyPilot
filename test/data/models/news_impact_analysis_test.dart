@@ -18,7 +18,8 @@ void main() {
       'skenarioNegatif': 'Skenario negatif',
       'halYangPerluDipantau': <String>['Pantau 1'],
       'kesimpulanPemula': 'Kesimpulan',
-      'disclaimer': 'Analisis ini bersifat edukatif dan bukan rekomendasi beli atau jual. Risiko investasi sepenuhnya berada di tangan pengguna.',
+      'disclaimer':
+          'Analisis ini bersifat edukatif dan bukan rekomendasi beli atau jual. Risiko investasi sepenuhnya berada di tangan pengguna.',
       'isAiGenerated': true,
       'isFallback': false,
       'isCached': false,

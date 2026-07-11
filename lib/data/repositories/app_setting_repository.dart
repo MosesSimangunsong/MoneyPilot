@@ -192,9 +192,7 @@ class AppSettingRepository {
   }
 
   String? _normalizeWebhookUrl(String? value) {
-    final String? compact = value
-        ?.replaceAll(RegExp(r'[\r\n\t]'), '')
-        .trim();
+    final String? compact = value?.replaceAll(RegExp(r'[\r\n\t]'), '').trim();
     if (compact == null || compact.isEmpty) {
       return null;
     }
@@ -202,9 +200,7 @@ class AppSettingRepository {
   }
 
   String? _normalizeSecretToken(String? value) {
-    final String? compact = value
-        ?.replaceAll(RegExp(r'[\r\n\t]'), '')
-        .trim();
+    final String? compact = value?.replaceAll(RegExp(r'[\r\n\t]'), '').trim();
     if (compact == null || compact.isEmpty) {
       return null;
     }

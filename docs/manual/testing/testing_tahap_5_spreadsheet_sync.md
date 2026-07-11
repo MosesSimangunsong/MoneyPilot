@@ -59,5 +59,5 @@
 
 ## Redirect Google Apps Script
 
-- [ ] Jika Google mengembalikan `302` atau `303`, sync tetap lanjut.
+- [ ] Jika Google mengembalikan redirect `302` atau `303`, sync tetap lanjut dengan `POST` yang sama.
 - [ ] Jika response akhir valid, aplikasi tidak lagi berhenti di HTML `Moved Temporarily`.

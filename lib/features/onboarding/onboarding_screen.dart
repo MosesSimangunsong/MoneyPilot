@@ -53,10 +53,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                'Selamat datang di MoneyPilot',
-                style: textTheme.headlineLarge,
-              ),
+  Center(
+    child: Image.asset(
+      'assets/icons/moneypilot_app_icon.png',
+      width: 88,
+      height: 88,
+      fit: BoxFit.contain,
+      errorBuilder: (
+        BuildContext context,
+        Object error,
+        StackTrace? stackTrace,
+      ) {
+        return const Icon(
+          Icons.account_balance_wallet_outlined,
+          size: 72,
+          color: AppColors.primary,
+        );
+      },
+    ),
+  ),
+  const SizedBox(height: AppSpacing.lg),
+  Text(
+    'Selamat datang di MoneyPilot',
+    style: textTheme.headlineLarge,
+  ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Kita siapkan alur awal yang ringkas supaya kamu bisa langsung mencatat transaksi, memantau portofolio, dan memakai fitur utama MoneyPilot.',

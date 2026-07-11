@@ -16,13 +16,22 @@ Flutter saat ini baru mengaktifkan sync dua arah untuk:
 
 1. `Categories`
 2. `Transactions`
+3. `Stock_Transactions`
+4. `Dividends`
+5. `Watchlist`
 
 Tahap sync manual yang berjalan:
 
 1. `push Categories`
 2. `push Transactions`
-3. `pull Categories`
-4. `pull Transactions`
+3. `push Stock_Transactions`
+4. `push Dividends`
+5. `push Watchlist`
+6. `pull Categories`
+7. `pull Transactions`
+8. `pull Stock_Transactions`
+9. `pull Dividends`
+10. `pull Watchlist`
 
 ## Scope Apps Script
 
@@ -39,8 +48,8 @@ Kode Apps Script final saat ini sudah menerima entity:
 1. Flutter membaca konfigurasi terbaru dari `AppSetting`.
 2. Flutter mengirim `POST` JSON ke Web App URL `/exec`.
 3. Jika Google mengembalikan redirect:
-   - `301`, `302`, `303` diikuti dengan `GET`.
-   - `307`, `308` diikuti dengan `POST` yang sama.
+   - Untuk request sync `POST`, `301`, `302`, `303`, `307`, dan `308` harus tetap diikuti dengan `POST` yang sama.
+   - Untuk request health check `GET`, redirect tetap diikuti dengan `GET`.
 4. Apps Script memvalidasi token dari Script Property.
 5. Apps Script membaca header row pertama.
 6. Apps Script mencari row berdasarkan `uuid`.
@@ -61,8 +70,7 @@ Kode Apps Script final saat ini sudah menerima entity:
 ## Redirect Rule di Flutter
 
 - Request pertama ke `/exec` selalu `POST`.
-- Redirect `301`, `302`, `303` diikuti dengan `GET` ke header `location`.
-- Redirect `307`, `308` menjaga method `POST` dan body JSON.
+- Redirect sync ke header `location` harus menjaga method `POST` dan body JSON.
 - Relative redirect URL harus di-resolve.
 - Redirect maksimum 3 hop.
 

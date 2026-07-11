@@ -16,7 +16,7 @@ class BackendStatusService {
     if (_baseUrl.isEmpty) {
       return const BackendStatusResult(
         isConnected: false,
-        message: 'URL backend belum diatur.',
+        message: 'URL server market, berita, dan analisis belum diatur.',
       );
     }
 
@@ -26,7 +26,7 @@ class BackendStatusService {
       if (response.statusCode != 200) {
         return BackendStatusResult(
           isConnected: false,
-          message: 'Backend merespons dengan status ${response.statusCode}.',
+          message: 'Server market, berita, dan analisis merespons dengan status ${response.statusCode}.',
         );
       }
 
@@ -35,7 +35,7 @@ class BackendStatusService {
       final String message =
           (payload['message'] as String?)?.trim().isNotEmpty == true
           ? (payload['message'] as String).trim()
-          : 'Backend MoneyPilot terhubung.';
+          : 'Server market, berita, dan analisis MoneyPilot terhubung.';
       final DateTime? serverTime = DateTime.tryParse(
         payload['serverTime'] as String? ?? '',
       )?.toUtc();
@@ -48,7 +48,7 @@ class BackendStatusService {
     } catch (_) {
       return const BackendStatusResult(
         isConnected: false,
-        message: 'Server MoneyPilot belum dapat dihubungi.',
+        message: 'Server market, berita, dan analisis belum dapat dihubungi.',
       );
     }
   }

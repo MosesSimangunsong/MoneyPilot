@@ -43,7 +43,7 @@ Checklist ini dipakai setelah dasar sync berjalan untuk memastikan mekanisme red
 
 - [ ] `flutter analyze` bersih.
 - [ ] `flutter test` lulus.
-- [ ] Test redirect `302` -> `GET` lulus.
-- [ ] Test redirect `303` -> `GET` lulus.
+- [ ] Test redirect `302` -> `POST` preserve body lulus.
+- [ ] Test redirect `303` -> `POST` preserve body lulus.
 - [ ] Test redirect `307` -> `POST` preserve body lulus.
 - [ ] Test redirect `308` -> `POST` preserve body lulus.

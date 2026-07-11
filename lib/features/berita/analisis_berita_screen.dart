@@ -342,7 +342,6 @@ class _AnalysisError extends StatelessWidget {
   }
 }
 
-
 class _MetadataBanner extends StatelessWidget {
   const _MetadataBanner({required this.analysis});
 
@@ -353,13 +352,22 @@ class _MetadataBanner extends StatelessWidget {
     final List<Widget> badges = <Widget>[];
 
     if (analysis.isCached) {
-      badges.add(const _Badge(label: 'Dari Cache', color: AppColors.textSecondary));
+      badges.add(
+        const _Badge(label: 'Dari Cache', color: AppColors.textSecondary),
+      );
     }
 
     if (analysis.isFallback) {
-      badges.add(const _Badge(label: 'Analisis Fallback Edukatif', color: AppColors.warning));
+      badges.add(
+        const _Badge(
+          label: 'Analisis Fallback Edukatif',
+          color: AppColors.warning,
+        ),
+      );
     } else if (analysis.isAiGenerated) {
-      badges.add(const _Badge(label: 'Dihasilkan oleh AI', color: AppColors.primaryDark));
+      badges.add(
+        const _Badge(label: 'Dihasilkan oleh AI', color: AppColors.primaryDark),
+      );
     }
 
     if (badges.isEmpty) return const SizedBox.shrink();
@@ -377,9 +385,9 @@ class _MetadataBanner extends StatelessWidget {
           Text(
             'Catatan sistem: ${analysis.fallbackReason}',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.warning,
-                  fontStyle: FontStyle.italic,
-                ),
+              color: AppColors.warning,
+              fontStyle: FontStyle.italic,
+            ),
           ),
         ],
       ],
@@ -408,9 +416,9 @@ class _Badge extends StatelessWidget {
       child: Text(
         label,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w700,
-            ),
+          color: color,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

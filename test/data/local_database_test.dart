@@ -427,4 +427,54 @@ void main() {
       expect(saved?.createdAt.isUtc, isTrue);
     },
   );
+
+  test(
+    'transaksi voice yang dikonfirmasi tersimpan ke repository existing dan memengaruhi summary',
+    () async {
+      await categoryRepository.seedDefaultCategoriesIfNeeded();
+      final Category category = (await categoryRepository.getByType(
+        'expense',
+      )).firstWhere((Category item) => item.name == 'Makanan & Minuman');
+
+      final transcript = await voiceTranscriptRepository.createTranscript(
+        rawText: 'Beli nasi goreng dua puluh lima ribu hari ini',
+        parsedType: 'expense',
+        parsedAmount: 25000,
+        parsedCategoryUuid: category.uuid,
+        confidenceScore: 90,
+      );
+
+      final MoneyTransaction transaction = await transactionRepository
+          .createTransaction(
+            type: 'expense',
+            title: 'Beli Nasi Goreng',
+            amount: 25000,
+            categoryUuid: category.uuid,
+            source: 'voice',
+            transactionDate: DateTime.utc(2026, 7, 11),
+          );
+
+      await voiceTranscriptRepository.markConverted(
+        transcriptUuid: transcript.uuid,
+        transactionUuid: transaction.uuid,
+      );
+
+      final MoneyTransaction? savedTransaction = await transactionRepository
+          .getByUuid(transaction.uuid);
+      final MonthlyTransactionSummary summary = await transactionRepository
+          .getMonthlySummary(DateTime.utc(2026, 7, 1));
+      final savedTranscript = await voiceTranscriptRepository.getByUuid(
+        transcript.uuid,
+      );
+
+      expect(savedTransaction, isNotNull);
+      expect(savedTransaction?.source, 'voice');
+      expect(savedTransaction?.uuid, isNotEmpty);
+      expect(savedTransaction?.syncStatus, 'pending');
+      expect(summary.expenseTotal, 25000);
+      expect(summary.transactionCount, 1);
+      expect(savedTranscript?.convertedToTransaction, isTrue);
+      expect(savedTranscript?.transactionUuid, transaction.uuid);
+    },
+  );
 }

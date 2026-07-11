@@ -137,15 +137,32 @@ class _PortofolioScreenState extends State<PortofolioScreen> {
   }
 
   Future<_PortfolioScreenData> _loadScreenData() async {
-    final PortfolioOverview overview = await widget.portfolioRepository
+    // 1. Ambil overview awal untuk mendapatkan daftar simbol aktif
+    final PortfolioOverview initialOverview = await widget.portfolioRepository
         .getPortfolioOverview();
+
+    // 2. Tarik harga pasar dari backend berdasarkan simbol aktif
     final MarketQuotesResponse marketResponse = await widget
         .marketDataApiService
         .getQuotesResult(
-          overview.positions
+          initialOverview.positions
               .map((PortfolioPositionSummary item) => item.symbol)
               .toList(growable: false),
         );
+
+    // 3. Petakan harga yang berhasil didapat (menggunakan normalized symbol)
+    final Map<String, double> currentPrices = <String, double>{};
+    for (final PortfolioPositionSummary pos in initialOverview.positions) {
+      final MarketQuote? quote =
+          marketResponse.quotes[normalizeMarketSymbolForBackend(pos.symbol)];
+      if (quote != null) {
+        currentPrices[pos.symbol] = quote.price;
+      }
+    }
+
+    // 4. Kalkulasi ulang overview dengan menyuntikkan harga terbaru
+    final PortfolioOverview overview = await widget.portfolioRepository
+        .getPortfolioOverview(currentPrices: currentPrices);
 
     String? marketStatusMessage;
     if (!marketResponse.backendReachable) {
@@ -262,13 +279,15 @@ class _PortfolioSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final PortfolioOverview overview =
         data ??
-        PortfolioOverview(
+        const PortfolioOverview(
           totalOwnedStocks: 0,
           totalModal: 0,
           totalDividen: 0,
-          positions: const <PortfolioPositionSummary>[],
-          recentTransactions: const <StockTransaction>[],
-          dividends: const <Dividend>[],
+          totalMarketValue: 0,
+          totalUnrealizedProfit: 0,
+          positions: <PortfolioPositionSummary>[],
+          recentTransactions: <StockTransaction>[],
+          dividends: <Dividend>[],
         );
 
     return Container(
@@ -295,6 +314,20 @@ class _PortfolioSummaryCard extends StatelessWidget {
             label: 'Total dividen',
             value: CurrencyFormatter.formatRupiah(overview.totalDividen),
             color: AppColors.success,
+          ),
+          _SummaryMetric(
+            label: 'Nilai pasar',
+            value: CurrencyFormatter.formatRupiah(overview.totalMarketValue),
+            color: AppColors.textPrimary,
+          ),
+          _SummaryMetric(
+            label: 'Unrealized P/L',
+            value: CurrencyFormatter.formatRupiah(
+              overview.totalUnrealizedProfit,
+            ),
+            color: overview.totalUnrealizedProfit >= 0
+                ? AppColors.success
+                : AppColors.warning,
           ),
         ],
       ),
@@ -348,17 +381,7 @@ class _PositionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double? marketValue = marketQuote == null
-        ? null
-        : marketQuote!.price * position.totalShares;
-    final double? gainLoss = marketValue == null
-        ? null
-        : marketValue - position.totalCost;
-    final double? gainLossPercent =
-        marketValue == null || position.totalCost == 0
-        ? null
-        : (gainLoss! / position.totalCost) * 100;
-    final Color gainLossColor = (gainLoss ?? 0) >= 0
+    final Color gainLossColor = position.unrealizedProfit >= 0
         ? AppColors.success
         : AppColors.warning;
 
@@ -427,16 +450,16 @@ class _PositionCard extends StatelessWidget {
                 ),
                 _PositionMeta(
                   label: 'Nilai Pasar',
-                  value: marketValue == null
+                  value: marketQuote == null
                       ? 'Harga pasar belum tersedia'
-                      : CurrencyFormatter.formatRupiah(marketValue),
+                      : CurrencyFormatter.formatRupiah(position.marketValue),
                 ),
                 _PositionMeta(
                   label: 'Estimasi Untung/Rugi',
-                  value: gainLoss == null
+                  value: marketQuote == null
                       ? 'Harga pasar belum tersedia'
-                      : '${CurrencyFormatter.formatRupiah(gainLoss)} (${gainLossPercent!.toStringAsFixed(2)}%)',
-                  valueColor: gainLoss == null ? null : gainLossColor,
+                      : '${CurrencyFormatter.formatRupiah(position.unrealizedProfit)} (${position.unrealizedProfitPercentage.toStringAsFixed(2)}%)',
+                  valueColor: marketQuote == null ? null : gainLossColor,
                 ),
               ],
             ),

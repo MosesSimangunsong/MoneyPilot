@@ -61,7 +61,7 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
         return AppPage(
           title: 'Analisis',
           description:
-              'Pantau saham, berita, dan dampak pasar secara edukatif.',
+              'Lihat ringkasan edukatif portofolio, watchlist, dan berita terkait tanpa mengubah data lokalmu.',
           actions: <Widget>[
             IconButton(
               tooltip: 'Muat ulang',
@@ -162,13 +162,15 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
   }
 
   Widget _buildTrackedSymbolCard(AnalysisTrackedSymbol item) {
-    final double? marketValue =
-        item.position == null || item.marketQuote == null
-        ? null
-        : item.position!.totalShares * item.marketQuote!.price;
-    final double? gainLoss = marketValue == null || item.position == null
-        ? null
-        : marketValue - item.position!.totalCost;
+    // Kita gunakan kalkulasi tersentralisasi dari position jika tersedia.
+    // Jika tidak ada di posisi (hanya di watchlist), gainLoss tetap null.
+    final double? gainLoss = item.position != null && item.marketQuote != null
+        ? item.position!.unrealizedProfit
+        : null;
+    final double? gainLossPct =
+        item.position != null && item.marketQuote != null
+        ? item.position!.unrealizedProfitPercentage
+        : null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -306,10 +308,11 @@ class _AnalisisScreenState extends State<AnalisisScreen> {
                         item.watchlistItem!.targetPrice!,
                       ),
                     ),
-                  if (gainLoss != null)
+                  if (gainLoss != null && gainLossPct != null)
                     _MetaItem(
                       label: 'Estimasi Untung/Rugi',
-                      value: CurrencyFormatter.formatRupiah(gainLoss),
+                      value:
+                          '${CurrencyFormatter.formatRupiah(gainLoss)} (${gainLossPct.toStringAsFixed(2)}%)',
                       valueColor: gainLoss >= 0
                           ? AppColors.success
                           : AppColors.warning,
@@ -534,7 +537,7 @@ class _DisclaimerCard extends StatelessWidget {
         border: Border.all(color: AppColors.border),
       ),
       child: Text(
-        'Informasi ini bersifat edukatif dan bukan rekomendasi beli atau jual.',
+        'Analisis di MoneyPilot bersifat edukatif. Gunakan data ini untuk memahami konteks, bukan sebagai rekomendasi beli atau jual.',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           color: AppColors.primaryDark,
           fontWeight: FontWeight.w600,
@@ -593,6 +596,38 @@ class _AnalysisSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String largestHoldingText = 'Belum ada';
+    String bestPerformerText = 'Belum ada';
+
+    if (data.overview.positions.isNotEmpty) {
+      // Hitung bobot terbesar
+      final List<PortfolioPositionSummary> sortedByWeight =
+          List<PortfolioPositionSummary>.from(data.overview.positions)
+            ..sort((a, b) => b.totalCost.compareTo(a.totalCost));
+
+      final PortfolioPositionSummary largest = sortedByWeight.first;
+      if (data.overview.totalModal > 0) {
+        final double weightPct =
+            (largest.totalCost / data.overview.totalModal) * 100;
+        largestHoldingText =
+            '${largest.symbol} (${weightPct.toStringAsFixed(1)}%)';
+      }
+
+      // Hitung performa terbaik berdasarkan Unrealized P/L %
+      final List<PortfolioPositionSummary> sortedByPerformance =
+          List<PortfolioPositionSummary>.from(data.overview.positions)..sort(
+            (a, b) => b.unrealizedProfitPercentage.compareTo(
+              a.unrealizedProfitPercentage,
+            ),
+          );
+
+      final PortfolioPositionSummary best = sortedByPerformance.first;
+      if (best.unrealizedProfitPercentage > 0) {
+        bestPerformerText =
+            '${best.symbol} (+${best.unrealizedProfitPercentage.toStringAsFixed(1)}%)';
+      }
+    }
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -600,22 +635,58 @@ class _AnalysisSummaryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border),
       ),
-      child: Wrap(
-        spacing: AppSpacing.xl,
-        runSpacing: AppSpacing.lg,
-        children: <Widget>[
-          _MetaItem(
-            label: 'Saham di portofolio',
-            value: '${data.overview.positions.length}',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: AppSpacing.xl,
+            runSpacing: AppSpacing.lg,
+            children: <Widget>[
+              _MetaItem(
+                label: 'Saham di portofolio',
+                value: '${data.overview.positions.length}',
+              ),
+              _MetaItem(
+                label: 'Jumlah watchlist',
+                value: '${data.watchlist.length}',
+              ),
+              _MetaItem(
+                label: 'Berita terbaru',
+                value: '${data.latestNews.length}',
+              ),
+            ],
           ),
-          _MetaItem(
-            label: 'Jumlah watchlist',
-            value: '${data.watchlist.length}',
-          ),
-          _MetaItem(
-            label: 'Berita terbaru',
-            value: '${data.latestNews.length}',
-          ),
+          if (data.overview.positions.isNotEmpty) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+              child: Divider(height: 1),
+            ),
+            Wrap(
+              spacing: AppSpacing.xl,
+              runSpacing: AppSpacing.lg,
+              children: <Widget>[
+                _MetaItem(
+                  label: 'Bobot terbesar (Risiko)',
+                  value: largestHoldingText,
+                ),
+                _MetaItem(
+                  label: 'Unrealized tertinggi',
+                  value: bestPerformerText,
+                  valueColor: bestPerformerText != 'Belum ada'
+                      ? AppColors.success
+                      : null,
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Pastikan portofolio Anda terdiversifikasi dengan baik untuk mengelola risiko konsentrasi.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
         ],
       ),
     );

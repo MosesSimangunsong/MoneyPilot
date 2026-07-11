@@ -154,7 +154,11 @@ class SpreadsheetSyncService {
     Uri currentUri = uri;
     String currentMethod = 'POST';
 
-    for (int redirectCount = 0; redirectCount <= _maxRedirects; redirectCount++) {
+    for (
+      int redirectCount = 0;
+      redirectCount <= _maxRedirects;
+      redirectCount++
+    ) {
       final http.Response response = await _sendRequestWithMethod(
         uri: currentUri,
         method: currentMethod,
@@ -221,7 +225,9 @@ class SpreadsheetSyncService {
       request.headers.addAll(_jsonHeaders);
       request.body = body ?? '';
     } else {
-      request.headers.addAll(const <String, String>{'Accept': 'application/json'});
+      request.headers.addAll(const <String, String>{
+        'Accept': 'application/json',
+      });
     }
     final http.StreamedResponse streamedResponse = await _client.send(request);
     return http.Response.fromStream(streamedResponse);
@@ -358,7 +364,8 @@ class SpreadsheetSyncService {
         !uri.hasAuthority ||
         !uri.path.endsWith('/exec')) {
       throw SpreadsheetSyncException(
-        message: 'URL Google Apps Script tidak valid. Gunakan URL Web App /exec.',
+        message:
+            'URL Google Apps Script tidak valid. Gunakan URL Web App /exec.',
         code: 'INVALID_URL',
         requestUrl: normalized,
       );

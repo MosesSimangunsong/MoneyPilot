@@ -142,5 +142,4 @@
 ## Catatan Implementasi Flutter
 
 - Request pertama ke `/exec` dikirim sebagai `POST`.
-- Jika Google mengembalikan `302` atau `303`, Flutter mengikuti redirect dengan `GET`.
-- Jika Google mengembalikan `307` atau `308`, Flutter menjaga `POST` dan body JSON yang sama.
+- Jika Google mengembalikan redirect saat sync, Flutter menjaga `POST` dan body JSON yang sama sampai menerima response akhir.

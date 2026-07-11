@@ -20,6 +20,7 @@ class AddEditTransactionArguments {
     this.initialPaymentMethod,
     this.initialNote,
     this.initialTransactionDate,
+    this.originalTranscript,
   });
 
   final String source;
@@ -31,6 +32,7 @@ class AddEditTransactionArguments {
   final String? initialPaymentMethod;
   final String? initialNote;
   final DateTime? initialTransactionDate;
+  final String? originalTranscript;
 }
 
 class AddEditTransactionScreen extends StatefulWidget {
@@ -108,11 +110,41 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                     Text(
                       widget.isEditing
                           ? 'Perbarui detail transaksi manualmu.'
+                          : widget.arguments?.source == 'voice'
+                          ? 'Lengkapi hasil transaksi suara sebelum disimpan.'
                           : 'Isi detail transaksi manualmu dengan rapi.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.textSecondary,
                       ),
                     ),
+                    if (!widget.isEditing &&
+                        widget.arguments?.source == 'voice' &&
+                        widget.arguments?.originalTranscript
+                                ?.trim()
+                                .isNotEmpty ==
+                            true) ...<Widget>[
+                      const SizedBox(height: AppSpacing.lg),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              'Transkrip suara',
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(color: AppColors.primary),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(widget.arguments!.originalTranscript!),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: AppSpacing.xl),
                     Text(
                       'Tipe transaksi',
